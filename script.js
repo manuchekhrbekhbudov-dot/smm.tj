@@ -1,12 +1,12 @@
 "use strict";
 
-/* =========================================
+/* =====================================================
    SMM.TJ — MAIN JAVASCRIPT
-========================================= */
+===================================================== */
 
-const DB_KEY = "SMM_TJ_DATABASE_V1";
+const DB_KEY = "smm_tj_database_v1";
 
-let db = JSON.parse(
+let database = JSON.parse(
     localStorage.getItem(DB_KEY) ||
     JSON.stringify({
         smm: [],
@@ -16,34 +16,49 @@ let db = JSON.parse(
     })
 );
 
-let currentRequestProfile = null;
-let adminLoggedIn = false;
 
-
-/* =========================================
+/* =====================================================
    HELPERS
-========================================= */
+===================================================== */
 
-const $ = (selector) =>
-    document.querySelector(selector);
-
-const $$ = (selector) =>
-    document.querySelectorAll(selector);
-
-function saveDB() {
+function saveDatabase() {
     localStorage.setItem(
         DB_KEY,
-        JSON.stringify(db)
+        JSON.stringify(database)
     );
 }
 
 function createId() {
     return (
         Date.now().toString(36) +
-        Math.random()
-            .toString(36)
-            .substring(2, 9)
+        Math.random().toString(36).substring(2)
     );
+}
+
+function $(selector) {
+    return document.querySelector(selector);
+}
+
+function $all(selector) {
+    return [...document.querySelectorAll(selector)];
+}
+
+function openModal(selector) {
+    const modal = $(selector);
+
+    if (modal) {
+        modal.classList.add("active");
+        document.body.style.overflow = "hidden";
+    }
+}
+
+function closeModal(selector) {
+    const modal = $(selector);
+
+    if (modal) {
+        modal.classList.remove("active");
+        document.body.style.overflow = "";
+    }
 }
 
 function escapeHTML(value) {
@@ -55,81 +70,339 @@ function escapeHTML(value) {
         .replaceAll("'", "&#039;");
 }
 
-function openModal(id) {
-    const modal = $(id);
+function showToast(message) {
 
-    if (modal) {
-        modal.classList.add("active");
-    }
-}
+    const old = document.querySelector(".smm-toast");
 
-function closeModal(id) {
-    const modal = $(id);
+    if (old) old.remove();
 
-    if (modal) {
-        modal.classList.remove("active");
-    }
-}
+    const toast = document.createElement("div");
 
-function toast(message) {
+    toast.className = "smm-toast";
 
-    const old = $(".toast");
+    toast.textContent = message;
 
-    if (old) {
-        old.remove();
-    }
+    toast.style.cssText = `
+        position:fixed;
+        left:50%;
+        bottom:25px;
+        transform:translateX(-50%);
+        z-index:99999;
+        max-width:90%;
+        padding:15px 22px;
+        border-radius:14px;
+        background:#18121f;
+        color:#fff;
+        border:1px solid #934cff;
+        box-shadow:0 20px 70px rgba(0,0,0,.55);
+        text-align:center;
+        font-size:14px;
+    `;
 
-    const element =
-        document.createElement("div");
-
-    element.className = "toast";
-
-    element.textContent = message;
-
-    $("#toastContainer").appendChild(
-        element
-    );
+    document.body.appendChild(toast);
 
     setTimeout(() => {
-        element.remove();
+        toast.remove();
     }, 3000);
 }
 
 
-/* =========================================
+/* =====================================================
    MOBILE MENU
-========================================= */
+===================================================== */
 
-const mobileMenuBtn =
-    $("#mobileMenuBtn");
-
-const mainNav =
-    $("#mainNav");
+const mobileMenuBtn = $("#mobileMenuBtn");
+const mainNav = $("#mainNav");
 
 if (mobileMenuBtn) {
 
-    mobileMenuBtn.addEventListener(
-        "click",
-        () => {
+    mobileMenuBtn.addEventListener("click", () => {
 
-            mainNav.classList.toggle(
-                "mobile"
-            );
+        mainNav.classList.toggle("mobile");
 
-        }
-    );
+    });
+
 }
 
+$all("#mainNav a").forEach(link => {
 
-$$(".nav a").forEach(link => {
+    link.addEventListener("click", () => {
 
-    link.addEventListener(
+        mainNav.classList.remove("mobile");
+
+    });
+
+});
+
+
+/* =====================================================
+   AUTH MODAL
+===================================================== */
+
+function openAuth() {
+
+    openModal("#authModal");
+
+    $("#authRoleSelection").style.display = "block";
+
+    $("#smmForm").classList.remove("active");
+
+    $("#clientForm").classList.remove("active");
+
+}
+
+$("#loginBtn")?.addEventListener("click", openAuth);
+
+$("#registerBtn")?.addEventListener("click", openAuth);
+
+$("#authClose")?.addEventListener(
+    "click",
+    () => closeModal("#authModal")
+);
+
+
+/* =====================================================
+   HERO ROLE BUTTONS
+===================================================== */
+
+function openSmmForm() {
+
+    openModal("#authModal");
+
+    $("#authRoleSelection").style.display = "none";
+
+    $("#clientForm").classList.remove("active");
+
+    $("#smmForm").classList.add("active");
+
+}
+
+function openClientForm() {
+
+    openModal("#authModal");
+
+    $("#authRoleSelection").style.display = "none";
+
+    $("#smmForm").classList.remove("active");
+
+    $("#clientForm").classList.add("active");
+
+}
+
+$("#heroSmmBtn")?.addEventListener(
+    "click",
+    openSmmForm
+);
+
+$("#heroClientBtn")?.addEventListener(
+    "click",
+    openClientForm
+);
+
+$("#smmRoleBtn")?.addEventListener(
+    "click",
+    openSmmForm
+);
+
+$("#clientRoleBtn")?.addEventListener(
+    "click",
+    openClientForm
+);
+
+$("#backToRolesFromSmm")?.addEventListener(
+    "click",
+    () => {
+
+        $("#smmForm").classList.remove("active");
+
+        $("#authRoleSelection").style.display = "block";
+
+    }
+);
+
+$("#backToRolesFromClient")?.addEventListener(
+    "click",
+    () => {
+
+        $("#clientForm").classList.remove("active");
+
+        $("#authRoleSelection").style.display = "block";
+
+    }
+);
+
+
+/* =====================================================
+   SMM REGISTRATION
+===================================================== */
+
+$("#smmForm")?.addEventListener(
+    "submit",
+    function(event) {
+
+        event.preventDefault();
+
+        const profile = {
+
+            id: createId(),
+
+            name:
+                $("#smmName").value.trim(),
+
+            instagram:
+                $("#smmInstagram").value.trim(),
+
+            phone:
+                $("#smmPhone").value.trim(),
+
+            category:
+                $("#smmCategory").value,
+
+            service:
+                $("#smmService").value.trim(),
+
+            experience:
+                $("#smmExperience").value.trim(),
+
+            price:
+                $("#smmPrice").value.trim(),
+
+            status:
+                "pending",
+
+            createdAt:
+                new Date().toISOString()
+
+        };
+
+        database.smm.push(profile);
+
+        saveDatabase();
+
+        this.reset();
+
+        closeModal("#authModal");
+
+        showToast(
+            "✅ Профил қабул шуд. Админ онро месанҷад."
+        );
+
+        renderAll();
+
+    }
+);
+
+
+/* =====================================================
+   CLIENT REGISTRATION
+===================================================== */
+
+$("#clientForm")?.addEventListener(
+    "submit",
+    function(event) {
+
+        event.preventDefault();
+
+        const client = {
+
+            id: createId(),
+
+            name:
+                $("#clientName").value.trim(),
+
+            phone:
+                $("#clientPhone").value.trim(),
+
+            business:
+                $("#clientBusiness").value.trim(),
+
+            category:
+                $("#clientCategory").value,
+
+            need:
+                $("#clientNeed").value.trim(),
+
+            createdAt:
+                new Date().toISOString()
+
+        };
+
+        database.clients.push(client);
+
+        saveDatabase();
+
+        this.reset();
+
+        closeModal("#authModal");
+
+        showToast(
+            "✅ Дархости шумо қабул шуд."
+        );
+
+        renderAll();
+
+    }
+);
+
+
+/* =====================================================
+   FIND SPECIALIST
+===================================================== */
+
+$("#findSpecialistBtn")?.addEventListener(
+    "click",
+    () => {
+
+        document
+            .querySelector("#specialists")
+            ?.scrollIntoView({
+                behavior: "smooth"
+            });
+
+    }
+);
+
+
+/* =====================================================
+   REGISTER FROM EMPTY
+===================================================== */
+
+$("#registerSmmFromEmpty")?.addEventListener(
+    "click",
+    openSmmForm
+);
+
+
+/* =====================================================
+   CTA REGISTER
+===================================================== */
+
+$("#ctaRegisterBtn")?.addEventListener(
+    "click",
+    openAuth
+);
+
+
+/* =====================================================
+   CATEGORY BUTTONS
+===================================================== */
+
+$all("[data-category]").forEach(button => {
+
+    button.addEventListener(
         "click",
         () => {
 
-            mainNav.classList.remove(
-                "mobile"
-            );
+            const category =
+                button.dataset.category;
+
+            renderSpecialists(category);
+
+            document
+                .querySelector("#specialists")
+                ?.scrollIntoView({
+                    behavior: "smooth"
+                });
 
         }
     );
@@ -137,387 +410,34 @@ $$(".nav a").forEach(link => {
 });
 
 
-/* =========================================
-   AUTH MODAL
-========================================= */
-
-function openAuth() {
-
-    openModal("#authModal");
-
-    $("#authRoleSelection")
-        .style.display = "block";
-
-    $("#smmForm")
-        .classList.remove("active");
-
-    $("#clientForm")
-        .classList.remove("active");
-}
-
-function closeAuth() {
-    closeModal("#authModal");
-}
-
-
-$("#loginBtn")
-    ?.addEventListener(
-        "click",
-        openAuth
-    );
-
-$("#registerBtn")
-    ?.addEventListener(
-        "click",
-        openAuth
-    );
-
-$("#ctaRegisterBtn")
-    ?.addEventListener(
-        "click",
-        openAuth
-    );
-
-$("#authClose")
-    ?.addEventListener(
-        "click",
-        closeAuth
-    );
-
-
-/* =========================================
-   SMM / CLIENT ROLE
-========================================= */
-
-function showSmmForm() {
-
-    $("#authRoleSelection")
-        .style.display = "none";
-
-    $("#smmForm")
-        .classList.add("active");
-
-    $("#clientForm")
-        .classList.remove("active");
-}
-
-function showClientForm() {
-
-    $("#authRoleSelection")
-        .style.display = "none";
-
-    $("#clientForm")
-        .classList.add("active");
-
-    $("#smmForm")
-        .classList.remove("active");
-}
-
-
-$("#smmRoleBtn")
-    ?.addEventListener(
-        "click",
-        showSmmForm
-    );
-
-$("#clientRoleBtn")
-    ?.addEventListener(
-        "click",
-        showClientForm
-    );
-
-$("#heroSmmBtn")
-    ?.addEventListener(
-        "click",
-        () => {
-
-            openAuth();
-            showSmmForm();
-
-        }
-    );
-
-$("#heroClientBtn")
-    ?.addEventListener(
-        "click",
-        () => {
-
-            openAuth();
-            showClientForm();
-
-        }
-    );
-
-$("#registerSmmFromEmpty")
-    ?.addEventListener(
-        "click",
-        () => {
-
-            openAuth();
-            showSmmForm();
-
-        }
-    );
-
-
-$("#backToRolesFromSmm")
-    ?.addEventListener(
-        "click",
-        () => {
-
-            $("#smmForm")
-                .classList.remove("active");
-
-            $("#authRoleSelection")
-                .style.display = "block";
-
-        }
-    );
-
-
-$("#backToRolesFromClient")
-    ?.addEventListener(
-        "click",
-        () => {
-
-            $("#clientForm")
-                .classList.remove("active");
-
-            $("#authRoleSelection")
-                .style.display = "block";
-
-        }
-    );
-
-
-/* =========================================
-   SMM REGISTRATION
-========================================= */
-
-$("#smmForm")
-    ?.addEventListener(
-        "submit",
-        event => {
-
-            event.preventDefault();
-
-            const profile = {
-
-                id: createId(),
-
-                name:
-                    $("#smmName")
-                    .value
-                    .trim(),
-
-                instagram:
-                    $("#smmInstagram")
-                    .value
-                    .trim(),
-
-                phone:
-                    $("#smmPhone")
-                    .value
-                    .trim(),
-
-                category:
-                    $("#smmCategory")
-                    .value,
-
-                service:
-                    $("#smmService")
-                    .value
-                    .trim(),
-
-                experience:
-                    $("#smmExperience")
-                    .value
-                    .trim(),
-
-                price:
-                    $("#smmPrice")
-                    .value
-                    .trim(),
-
-                status:
-                    "pending",
-
-                createdAt:
-                    new Date().toISOString()
-
-            };
-
-            db.smm.push(profile);
-
-            saveDB();
-
-            event.target.reset();
-
-            closeAuth();
-
-            toast(
-                "✅ Профил қабул шуд. Админ онро месанҷад."
-            );
-
-            renderAll();
-
-        }
-    );
-
-
-/* =========================================
-   CLIENT REGISTRATION
-========================================= */
-
-$("#clientForm")
-    ?.addEventListener(
-        "submit",
-        event => {
-
-            event.preventDefault();
-
-            const client = {
-
-                id: createId(),
-
-                name:
-                    $("#clientName")
-                    .value
-                    .trim(),
-
-                phone:
-                    $("#clientPhone")
-                    .value
-                    .trim(),
-
-                business:
-                    $("#clientBusiness")
-                    .value
-                    .trim(),
-
-                category:
-                    $("#clientCategory")
-                    .value,
-
-                need:
-                    $("#clientNeed")
-                    .value
-                    .trim(),
-
-                createdAt:
-                    new Date().toISOString()
-
-            };
-
-            db.clients.push(client);
-
-            saveDB();
-
-            event.target.reset();
-
-            closeAuth();
-
-            toast(
-                "✅ Дархости шумо қабул шуд."
-            );
-
-            renderAll();
-
-        }
-    );
-
-
-/* =========================================
-   FIND SPECIALIST
-========================================= */
-
-$("#findSpecialistBtn")
-    ?.addEventListener(
-        "click",
-        () => {
-
-            $("#specialists")
-                .scrollIntoView({
-                    behavior: "smooth"
-                });
-
-        }
-    );
-
-
-/* =========================================
-   CATEGORIES
-========================================= */
-
-$$(".category-card")
-    .forEach(card => {
-
-        card.addEventListener(
-            "click",
-            () => {
-
-                const category =
-                    card.dataset.category;
-
-                openCategory(
-                    category
-                );
-
-            }
-        );
-
-    });
-
-
-function openCategory(category) {
-
-    $("#specialists")
-        .scrollIntoView({
-            behavior: "smooth"
-        });
-
-    setTimeout(() => {
-
-        const specialists =
-            db.smm.filter(
-                person =>
-                    person.status ===
-                        "approved" &&
-                    person.category ===
-                        category
-            );
-
-        renderSpecialists(
-            specialists
-        );
-
-    }, 500);
-}
-
-
-/* =========================================
+/* =====================================================
    SPECIALISTS
-========================================= */
+===================================================== */
 
-function renderSpecialists(
-    customList = null
-) {
-
-    const list =
-        customList ||
-        db.smm.filter(
-            person =>
-                person.status ===
-                "approved"
-        );
+function renderSpecialists(category = "") {
 
     const container =
         $("#specialistsList");
 
     if (!container) return;
 
+    let specialists =
+        database.smm.filter(
+            profile =>
+                profile.status === "approved"
+        );
 
-    if (!list.length) {
+    if (category) {
+
+        specialists =
+            specialists.filter(
+                profile =>
+                    profile.category === category
+            );
+
+    }
+
+    if (!specialists.length) {
 
         container.innerHTML = `
 
@@ -532,13 +452,16 @@ function renderSpecialists(
                 </h3>
 
                 <p>
-                    Ҳоло ягон мутахассиси
-                    тасдиқшуда вуҷуд надорад.
+                    ${
+                        category
+                        ? "Барои ин категория ҳоло мутахассиси тасдиқшуда нест."
+                        : "Ҳоло ягон мутахассиси тасдиқшуда вуҷуд надорад."
+                    }
                 </p>
 
                 <button
                     class="btn btn--primary"
-                    onclick="openSmmRegistration()"
+                    onclick="openSmmForm()"
                 >
                     Ман SMM-щик ҳастам
                 </button>
@@ -552,281 +475,237 @@ function renderSpecialists(
 
 
     container.innerHTML =
-        list.map(person => `
+        specialists.map(
+            profile => `
 
-            <article
-                class="specialist-card"
-            >
+            <article class="specialist-card">
 
-                <div class="specialist-card__avatar">
+                <div class="avatar">
                     👨‍💻
                 </div>
 
-                <div>
+                <h3>
+                    ${escapeHTML(profile.name)}
+                </h3>
 
-                    <h3>
-                        ${escapeHTML(
-                            person.name
-                        )}
-                    </h3>
-
-                    <span
-                        class="verified"
-                    >
-                        ✓ Тасдиқшуда
-                    </span>
-
+                <div class="verified">
+                    ✓ Тасдиқшуда
                 </div>
 
                 <p>
-                    ${escapeHTML(
-                        person.service
-                    )}
+                    📂
+                    ${escapeHTML(profile.category)}
                 </p>
 
                 <p>
-                    📂 ${escapeHTML(
-                        person.category
-                    )}
+                    🛠
+                    ${escapeHTML(profile.service)}
                 </p>
 
                 <p>
-                    🎯 Таҷриба:
-                    ${escapeHTML(
-                        person.experience
-                    )}
+                    🎯
+                    ${escapeHTML(profile.experience)}
                 </p>
 
-                <div
-                    class="specialist-card__bottom"
-                >
+                <p>
+                    💰
+                    ${escapeHTML(profile.price)}
+                </p>
 
-                    <strong>
-                        ${escapeHTML(
-                            person.price
-                        )}
-                    </strong>
+                <div class="card-actions">
+
+                    <button
+                        class="btn btn--dark"
+                        onclick="openProfile('${profile.id}')"
+                    >
+                        Профил
+                    </button>
 
                     <button
                         class="btn btn--primary"
-                        onclick="viewProfile('${person.id}')"
+                        onclick="openRequest('${profile.id}')"
                     >
-                        Профил →
+                        Дархост
                     </button>
 
                 </div>
 
             </article>
 
-        `)
-        .join("");
+            `
+        ).join("");
+
 }
 
 
-/* =========================================
+/* =====================================================
    PROFILE
-========================================= */
+===================================================== */
 
-window.viewProfile =
-    function(id) {
+window.openProfile = function(id) {
 
-        const person =
-            db.smm.find(
-                x => x.id === id
-            );
+    const profile =
+        database.smm.find(
+            item => item.id === id
+        );
 
-        if (!person) return;
+    if (!profile) return;
 
+    $("#profileContent").innerHTML = `
 
-        $("#profileContent").innerHTML = `
+        <div class="profile-view">
 
-            <div class="profile">
-
-                <div class="profile__avatar">
-                    👨‍💻
-                </div>
-
-                <span class="verified">
-                    ✓ SMM-щик тасдиқшуда
-                </span>
-
-                <h2>
-                    ${escapeHTML(
-                        person.name
-                    )}
-                </h2>
-
-                <p>
-                    📂 ${escapeHTML(
-                        person.category
-                    )}
-                </p>
-
-                <p>
-                    🛠 ${escapeHTML(
-                        person.service
-                    )}
-                </p>
-
-                <p>
-                    🎯 Таҷриба:
-                    ${escapeHTML(
-                        person.experience
-                    )}
-                </p>
-
-                <p>
-                    💰 ${escapeHTML(
-                        person.price
-                    )}
-                </p>
-
-                ${
-                    person.instagram
-                    ?
-                    `
-                    <p>
-                        📸 ${escapeHTML(
-                            person.instagram
-                        )}
-                    </p>
-                    `
-                    :
-                    ""
-                }
-
-                <button
-                    class="btn btn--primary btn--full"
-                    onclick="openRequest('${person.id}')"
-                >
-                    📩 Дархости ҳамкорӣ
-                </button>
-
+            <div class="avatar">
+                👨‍💻
             </div>
 
-        `;
+            <h2>
+                ${escapeHTML(profile.name)}
+            </h2>
 
-        openModal("#profileModal");
+            <div class="verified">
+                ✓ SMM-щик тасдиқшуда
+            </div>
 
-    };
+            <p>
+                📂 Категория:
+                ${escapeHTML(profile.category)}
+            </p>
+
+            <p>
+                🛠 Хизмат:
+                ${escapeHTML(profile.service)}
+            </p>
+
+            <p>
+                🎯 Таҷриба:
+                ${escapeHTML(profile.experience)}
+            </p>
+
+            <p>
+                💰 Нарх:
+                ${escapeHTML(profile.price)}
+            </p>
+
+            ${
+                profile.instagram
+                ?
+                `
+                <p>
+                    📸 Instagram:
+                    ${escapeHTML(profile.instagram)}
+                </p>
+                `
+                :
+                ""
+            }
+
+            <button
+                class="btn btn--primary btn--full"
+                style="margin-top:20px"
+                onclick="openRequest('${profile.id}')"
+            >
+                📩 Ба ин SMM-щик дархост фиристодан
+            </button>
+
+        </div>
+
+    `;
+
+    openModal("#profileModal");
+
+};
 
 
-window.openSmmRegistration =
-    function() {
+/* =====================================================
+   CLOSE PROFILE
+===================================================== */
 
-        openAuth();
-        showSmmForm();
+$("#profileClose")?.addEventListener(
+    "click",
+    () => closeModal("#profileModal")
+);
 
-    };
 
-
-/* =========================================
+/* =====================================================
    REQUEST
-========================================= */
+===================================================== */
 
-window.openRequest =
-    function(id) {
+window.openRequest = function(id) {
 
-        const person =
-            db.smm.find(
-                x => x.id === id
-            );
-
-        if (!person) return;
-
-        currentRequestProfile =
-            id;
-
-        $("#requestProfileId")
-            .value = id;
-
-        $("#requestSpecialistName")
-            .textContent =
-            "Дархост ба " +
-            person.name;
-
-        closeModal(
-            "#profileModal"
+    const profile =
+        database.smm.find(
+            item => item.id === id
         );
 
-        openModal(
-            "#requestModal"
+    if (!profile) return;
+
+    $("#requestProfileId").value =
+        profile.id;
+
+    $("#requestSpecialistName").textContent =
+        "Дархост ба " + profile.name;
+
+    closeModal("#profileModal");
+
+    openModal("#requestModal");
+
+};
+
+$("#requestClose")?.addEventListener(
+    "click",
+    () => closeModal("#requestModal")
+);
+
+
+$("#requestForm")?.addEventListener(
+    "submit",
+    function(event) {
+
+        event.preventDefault();
+
+        const request = {
+
+            id: createId(),
+
+            profileId:
+                $("#requestProfileId").value,
+
+            name:
+                $("#requestName").value.trim(),
+
+            phone:
+                $("#requestPhone").value.trim(),
+
+            message:
+                $("#requestMessage").value.trim(),
+
+            createdAt:
+                new Date().toISOString()
+
+        };
+
+        database.requests.push(request);
+
+        saveDatabase();
+
+        this.reset();
+
+        closeModal("#requestModal");
+
+        showToast(
+            "✅ Дархост фиристода шуд."
         );
 
-    };
+        renderAll();
+
+    }
+);
 
 
-$("#requestClose")
-    ?.addEventListener(
-        "click",
-        () => {
-
-            closeModal(
-                "#requestModal"
-            );
-
-        }
-    );
-
-
-$("#requestForm")
-    ?.addEventListener(
-        "submit",
-        event => {
-
-            event.preventDefault();
-
-            const request = {
-
-                id: createId(),
-
-                profileId:
-                    $("#requestProfileId")
-                    .value,
-
-                name:
-                    $("#requestName")
-                    .value
-                    .trim(),
-
-                phone:
-                    $("#requestPhone")
-                    .value
-                    .trim(),
-
-                message:
-                    $("#requestMessage")
-                    .value
-                    .trim(),
-
-                createdAt:
-                    new Date().toISOString()
-
-            };
-
-            db.requests.push(request);
-
-            saveDB();
-
-            event.target.reset();
-
-            closeModal(
-                "#requestModal"
-            );
-
-            toast(
-                "✅ Дархост фиристода шуд."
-            );
-
-            renderAll();
-
-        }
-    );
-
-
-/* =========================================
+/* =====================================================
    REVIEWS
-========================================= */
+===================================================== */
 
 function renderReviews() {
 
@@ -835,8 +714,7 @@ function renderReviews() {
 
     if (!container) return;
 
-
-    if (!db.reviews.length) {
+    if (!database.reviews.length) {
 
         container.innerHTML = `
 
@@ -855,220 +733,171 @@ function renderReviews() {
                     отзыв нагузоштааст.
                 </p>
 
-                <button
-                    class="btn btn--primary"
-                    onclick="openReviewModal()"
-                >
-                    ⭐ Аввалин отзывро гузоред
-                </button>
-
             </div>
 
         `;
 
         return;
+
     }
 
 
     container.innerHTML =
-        db.reviews
-            .map(review => `
+        database.reviews
+        .filter(
+            review =>
+                review.status !== "rejected"
+        )
+        .map(
+            review => `
 
-                <article class="review-card">
+            <article class="review-card">
 
-                    <div class="review-stars">
-                        ${"⭐".repeat(
-                            review.rating
-                        )}
-                    </div>
+                <div class="stars">
+                    ${
+                        "⭐".repeat(
+                            Number(review.rating)
+                        )
+                    }
+                </div>
 
-                    <p>
-                        “${escapeHTML(
-                            review.text
-                        )}”
-                    </p>
+                <p>
+                    “${escapeHTML(review.text)}”
+                </p>
 
-                    <strong>
-                        ${escapeHTML(
-                            review.name
-                        )}
-                    </strong>
+                <strong>
+                    ${escapeHTML(review.name)}
+                </strong>
 
-                    <small>
-                        Муштарӣ
-                    </small>
+                <small>
+                    Муштарӣ
+                </small>
 
-                </article>
+            </article>
 
-            `)
-            .join("");
-
-}
-
-
-function openReviewModal() {
-
-    openModal(
-        "#reviewModal"
-    );
+            `
+        ).join("");
 
 }
 
-window.openReviewModal =
-    openReviewModal;
+
+$("#addReviewBtn")?.addEventListener(
+    "click",
+    () => openModal("#reviewModal")
+);
+
+$("#reviewClose")?.addEventListener(
+    "click",
+    () => closeModal("#reviewModal")
+);
 
 
-$("#addReviewBtn")
-    ?.addEventListener(
-        "click",
-        openReviewModal
-    );
+$("#reviewForm")?.addEventListener(
+    "submit",
+    function(event) {
+
+        event.preventDefault();
+
+        const review = {
+
+            id: createId(),
+
+            name:
+                $("#reviewName").value.trim(),
+
+            rating:
+                Number($("#reviewRating").value),
+
+            text:
+                $("#reviewText").value.trim(),
+
+            status:
+                "approved",
+
+            createdAt:
+                new Date().toISOString()
+
+        };
+
+        database.reviews.push(review);
+
+        saveDatabase();
+
+        this.reset();
+
+        closeModal("#reviewModal");
+
+        showToast(
+            "⭐ Отзыв нигоҳ дошта шуд."
+        );
+
+        renderReviews();
+
+        renderAdmin();
+
+    }
+);
 
 
-$("#reviewClose")
-    ?.addEventListener(
-        "click",
-        () => {
-
-            closeModal(
-                "#reviewModal"
-            );
-
-        }
-    );
-
-
-$("#reviewForm")
-    ?.addEventListener(
-        "submit",
-        event => {
-
-            event.preventDefault();
-
-            const review = {
-
-                id: createId(),
-
-                name:
-                    $("#reviewName")
-                    .value
-                    .trim(),
-
-                rating:
-                    Number(
-                        $("#reviewRating")
-                        .value
-                    ),
-
-                text:
-                    $("#reviewText")
-                    .value
-                    .trim(),
-
-                createdAt:
-                    new Date().toISOString()
-
-            };
-
-            db.reviews.push(review);
-
-            saveDB();
-
-            event.target.reset();
-
-            closeModal(
-                "#reviewModal"
-            );
-
-            toast(
-                "⭐ Отзыв нигоҳ дошта шуд."
-            );
-
-            renderReviews();
-
-            renderAdmin();
-
-        }
-    );
-
-
-/* =========================================
+/* =====================================================
    AI
-========================================= */
+===================================================== */
 
 function openAI() {
 
     $("#aiResult").innerHTML = "";
 
-    openModal(
-        "#aiModal"
-    );
+    openModal("#aiModal");
 
 }
 
-$("#openAiBtn")
-    ?.addEventListener(
-        "click",
-        openAI
-    );
+$("#openAiBtn")?.addEventListener(
+    "click",
+    openAI
+);
 
-$("#startAiBtn")
-    ?.addEventListener(
-        "click",
-        openAI
-    );
+$("#startAiBtn")?.addEventListener(
+    "click",
+    openAI
+);
 
-$("#aiClose")
-    ?.addEventListener(
-        "click",
-        () => {
-
-            closeModal(
-                "#aiModal"
-            );
-
-        }
-    );
+$("#aiClose")?.addEventListener(
+    "click",
+    () => closeModal("#aiModal")
+);
 
 
-$$("[data-ai-category]")
-    .forEach(button => {
+$all("[data-ai-category]").forEach(
+    button => {
 
         button.addEventListener(
             "click",
             () => {
 
                 const category =
-                    button.dataset
-                        .aiCategory;
+                    button.dataset.aiCategory;
 
-                const specialists =
-                    db.smm.filter(
-                        person =>
-                            person.status ===
-                                "approved" &&
-                            person.category ===
-                                category
-                    );
-
-                showAIResults(
-                    category,
-                    specialists
-                );
+                runAI(category);
 
             }
         );
 
-    });
+    }
+);
 
 
-function showAIResults(
-    category,
-    specialists
-) {
+function runAI(category) {
 
     const result =
         $("#aiResult");
+
+    const specialists =
+        database.smm.filter(
+            profile =>
+                profile.status === "approved" &&
+                profile.category === category
+        );
+
 
     if (!specialists.length) {
 
@@ -1085,8 +914,8 @@ function showAIResults(
                 </h3>
 
                 <p>
-                    Барои ин категория
-                    ҳоло SMM-щик тасдиқ нашудааст.
+                    Барои ин категория ҳоло
+                    SMM-щики тасдиқшуда нестанд.
                 </p>
 
             </div>
@@ -1099,205 +928,165 @@ function showAIResults(
 
     result.innerHTML = `
 
-        <div class="ai-results">
+        <h3 style="margin:20px 0 12px">
+            Мутахассисони мувофиқ:
+        </h3>
 
-            <h3>
-                Мутахассисони мувофиқ:
-            </h3>
+        ${specialists.map(
+            profile => `
 
-            ${specialists
-                .map(person => `
+            <div
+                class="ai-result-card"
+                style="
+                    padding:18px;
+                    margin-top:10px;
+                    border:1px solid rgba(255,255,255,.1);
+                    border-radius:15px;
+                "
+            >
 
-                    <div
-                        class="ai-result-card"
-                    >
+                <strong>
+                    ${escapeHTML(profile.name)}
+                </strong>
 
-                        <strong>
-                            ${escapeHTML(
-                                person.name
-                            )}
-                        </strong>
+                <p>
+                    ${escapeHTML(profile.service)}
+                </p>
 
-                        <p>
-                            ${escapeHTML(
-                                person.service
-                            )}
-                        </p>
+                <button
+                    class="btn btn--primary"
+                    style="margin-top:10px"
+                    onclick="openProfile('${profile.id}')"
+                >
+                    Профил →
+                </button>
 
-                        <button
-                            class="btn btn--primary"
-                            onclick="viewProfile('${person.id}')"
-                        >
-                            Профил →
-                        </button>
+            </div>
 
-                    </div>
-
-                `)
-                .join("")}
-
-        </div>
+            `
+        ).join("")}
 
     `;
 
 }
 
 
-/* =========================================
-   ADMIN PANEL
-========================================= */
-
-$("#adminBtn")
-    ?.addEventListener(
-        "click",
-        () => {
-
-            openModal(
-                "#adminModal"
-            );
-
-            if (adminLoggedIn) {
-
-                $("#adminLogin")
-                    .style.display =
-                    "none";
-
-                $("#adminDashboard")
-                    .style.display =
-                    "block";
-
-                renderAdmin();
-
-            }
-
-        }
-    );
-
-
-$("#adminClose")
-    ?.addEventListener(
-        "click",
-        () => {
-
-            closeModal(
-                "#adminModal"
-            );
-
-        }
-    );
-
+/* =====================================================
+   ADMIN
+===================================================== */
 
 /*
-    DEMO PASSWORD
-
-    admin123
-
-    Баъд аз пайваст кардани
-    backend инро ба login-и
-    воқеӣ иваз мекунем.
+   DEMO PASSWORD:
+   admin123
 */
 
-$("#adminLoginForm")
-    ?.addEventListener(
-        "submit",
-        event => {
+const ADMIN_PASSWORD =
+    "admin123";
 
-            event.preventDefault();
 
-            const password =
-                $("#adminPassword")
-                .value;
+$("#adminBtn")?.addEventListener(
+    "click",
+    () => {
 
-            if (
-                password !==
-                "admin123"
-            ) {
+        $("#adminLogin").style.display =
+            "block";
 
-                toast(
-                    "❌ Парол нодуруст аст."
-                );
+        $("#adminDashboard").style.display =
+            "none";
 
-                return;
-            }
+        $("#adminPassword").value = "";
 
-            adminLoggedIn = true;
+        openModal("#adminModal");
 
-            $("#adminLogin")
-                .style.display =
-                "none";
+    }
+);
 
-            $("#adminDashboard")
-                .style.display =
-                "block";
 
-            $("#adminPassword")
-                .value = "";
+$("#adminClose")?.addEventListener(
+    "click",
+    () => closeModal("#adminModal")
+);
 
-            renderAdmin();
 
-            toast(
-                "👑 Ба Admin Panel ворид шудед."
+$("#adminLoginForm")?.addEventListener(
+    "submit",
+    function(event) {
+
+        event.preventDefault();
+
+        const password =
+            $("#adminPassword").value;
+
+        if (
+            password !== ADMIN_PASSWORD
+        ) {
+
+            showToast(
+                "❌ Пароли нодуруст."
             );
 
-        }
-    );
-
-
-$("#adminLogout")
-    ?.addEventListener(
-        "click",
-        () => {
-
-            adminLoggedIn = false;
-
-            $("#adminDashboard")
-                .style.display =
-                "none";
-
-            $("#adminLogin")
-                .style.display =
-                "block";
-
-            toast(
-                "Шумо аз Admin Panel баромадед."
-            );
+            return;
 
         }
-    );
 
 
-/* =========================================
+        $("#adminLogin").style.display =
+            "none";
+
+        $("#adminDashboard").style.display =
+            "block";
+
+        renderAdmin();
+
+    }
+);
+
+
+/* =====================================================
+   ADMIN LOGOUT
+===================================================== */
+
+$("#adminLogout")?.addEventListener(
+    "click",
+    () => {
+
+        $("#adminDashboard").style.display =
+            "none";
+
+        $("#adminLogin").style.display =
+            "block";
+
+        closeModal("#adminModal");
+
+    }
+);
+
+
+/* =====================================================
    ADMIN RENDER
-========================================= */
+===================================================== */
 
 function renderAdmin() {
 
-    $("#adminSmmCount")
-        .textContent =
-        db.smm.length;
+    $("#adminSmmCount").textContent =
+        database.smm.length;
 
-    $("#adminClientCount")
-        .textContent =
-        db.clients.length;
+    $("#adminClientCount").textContent =
+        database.clients.length;
 
-    $("#adminRequestCount")
-        .textContent =
-        db.requests.length;
+    $("#adminRequestCount").textContent =
+        database.requests.length;
 
-    $("#adminReviewCount")
-        .textContent =
-        db.reviews.length;
+    $("#adminReviewCount").textContent =
+        database.reviews.length;
 
 
     const pending =
-        db.smm.filter(
-            x =>
-                x.status ===
-                "pending"
+        database.smm.filter(
+            x => x.status === "pending"
         ).length;
 
-    $("#pendingSmmCount")
-        .textContent =
+    $("#pendingSmmCount").textContent =
         pending;
 
 
@@ -1312,493 +1101,518 @@ function renderAdmin() {
 }
 
 
-/* =========================================
+/* =====================================================
    ADMIN SMM
-========================================= */
+===================================================== */
 
 function renderAdminSmm() {
 
     const container =
         $("#adminSmmList");
 
-    if (!db.smm.length) {
+    if (!database.smm.length) {
 
         container.innerHTML = `
             <div class="empty-state">
-                Ҳоло ягон SMM-щик нест.
+                Ҳоло SMM-щик сабт нашудааст.
             </div>
         `;
 
         return;
+
     }
 
 
     container.innerHTML =
-        db.smm
-            .map(person => `
+        database.smm.map(
+            profile => `
 
-                <div class="admin-item">
+            <div class="admin-item">
 
-                    <strong>
-                        ${escapeHTML(
-                            person.name
-                        )}
-                    </strong>
+                <strong>
+                    ${escapeHTML(profile.name)}
+                </strong>
 
-                    <p>
-                        📞 ${escapeHTML(
-                            person.phone
-                        )}
-                    </p>
+                <p>
+                    📂 ${escapeHTML(profile.category)}
+                </p>
 
-                    <p>
-                        📂 ${escapeHTML(
-                            person.category
-                        )}
-                    </p>
+                <p>
+                    🛠 ${escapeHTML(profile.service)}
+                </p>
 
-                    <p>
-                        🛠 ${escapeHTML(
-                            person.service
-                        )}
-                    </p>
+                <p>
+                    📱 ${escapeHTML(profile.phone)}
+                </p>
 
-                    <p>
-                        Статус:
-                        <strong>
-                            ${getStatusText(
-                                person.status
-                            )}
-                        </strong>
-                    </p>
+                <p>
+                    Статус:
 
+                    ${
+                        profile.status === "approved"
+                        ?
+                        `<span class="statusApproved">
+                            Тасдиқшуда
+                        </span>`
+                        :
+                        profile.status === "rejected"
+                        ?
+                        `<span class="statusRejected">
+                            Радшуда
+                        </span>`
+                        :
+                        `<span class="statusPending">
+                            Дар интизорӣ
+                        </span>`
+                    }
 
-                    <div
-                        class="admin-item__buttons"
-                    >
-
-                        ${
-                            person.status !==
-                            "approved"
-                            ?
-                            `
-                            <button
-                                class="btn btn--primary"
-                                onclick="approveSmm('${person.id}')"
-                            >
-                                ✓ Тасдиқ
-                            </button>
-                            `
-                            :
-                            ""
-                        }
+                </p>
 
 
-                        ${
-                            person.status !==
-                            "rejected"
-                            ?
-                            `
-                            <button
-                                class="btn btn--dark"
-                                onclick="rejectSmm('${person.id}')"
-                            >
-                                ✕ Рад
-                            </button>
-                            `
-                            :
-                            ""
-                        }
+                <div class="admin-actions">
+
+                    ${
+                        profile.status !== "approved"
+                        ?
+                        `
+                        <button
+                            class="btn btn--primary"
+                            onclick="approveSmm('${profile.id}')"
+                        >
+                            ✓ Тасдиқ
+                        </button>
+                        `
+                        :
+                        ""
+                    }
 
 
+                    ${
+                        profile.status !== "rejected"
+                        ?
+                        `
                         <button
                             class="btn btn--dark"
-                            onclick="deleteSmm('${person.id}')"
+                            onclick="rejectSmm('${profile.id}')"
                         >
-                            🗑 Нест кардан
+                            ✕ Рад
                         </button>
+                        `
+                        :
+                        ""
+                    }
 
-                    </div>
-
-                </div>
-
-            `)
-            .join("");
-
-}
-
-
-function getStatusText(status) {
-
-    if (status === "approved")
-        return "✓ Тасдиқшуда";
-
-    if (status === "rejected")
-        return "✕ Радшуда";
-
-    return "⏳ Дар интизорӣ";
-}
-
-
-window.approveSmm =
-    function(id) {
-
-        const person =
-            db.smm.find(
-                x => x.id === id
-            );
-
-        if (!person) return;
-
-        person.status =
-            "approved";
-
-        saveDB();
-
-        renderAll();
-
-        toast(
-            "✅ SMM-щик тасдиқ шуд."
-        );
-
-    };
-
-
-window.rejectSmm =
-    function(id) {
-
-        const person =
-            db.smm.find(
-                x => x.id === id
-            );
-
-        if (!person) return;
-
-        person.status =
-            "rejected";
-
-        saveDB();
-
-        renderAll();
-
-        toast(
-            "❌ SMM-щик рад шуд."
-        );
-
-    };
-
-
-window.deleteSmm =
-    function(id) {
-
-        const confirmDelete =
-            confirm(
-                "Ин SMM-щик нест карда шавад?"
-            );
-
-        if (!confirmDelete)
-            return;
-
-        db.smm =
-            db.smm.filter(
-                x => x.id !== id
-            );
-
-        saveDB();
-
-        renderAll();
-
-        toast(
-            "🗑 SMM-щик нест шуд."
-        );
-
-    };
-
-
-/* =========================================
-   ADMIN CLIENTS
-========================================= */
-
-function renderAdminClients() {
-
-    const container =
-        $("#adminClientList");
-
-    if (!db.clients.length) {
-
-        container.innerHTML = `
-            <div class="empty-state">
-                Ҳоло ягон муштарӣ нест.
-            </div>
-        `;
-
-        return;
-    }
-
-
-    container.innerHTML =
-        db.clients
-            .map(client => `
-
-                <div class="admin-item">
-
-                    <strong>
-                        ${escapeHTML(
-                            client.name
-                        )}
-                    </strong>
-
-                    <p>
-                        🏢 ${escapeHTML(
-                            client.business
-                        )}
-                    </p>
-
-                    <p>
-                        📞 ${escapeHTML(
-                            client.phone
-                        )}
-                    </p>
-
-                    <p>
-                        📂 ${escapeHTML(
-                            client.category
-                        )}
-                    </p>
-
-                    <p>
-                        💬 ${escapeHTML(
-                            client.need
-                        )}
-                    </p>
-
-                </div>
-
-            `)
-            .join("");
-
-}
-
-
-/* =========================================
-   ADMIN REQUESTS
-========================================= */
-
-function renderAdminRequests() {
-
-    const container =
-        $("#adminRequestList");
-
-    if (!db.requests.length) {
-
-        container.innerHTML = `
-            <div class="empty-state">
-                Ҳоло ягон дархост нест.
-            </div>
-        `;
-
-        return;
-    }
-
-
-    container.innerHTML =
-        db.requests
-            .map(request => {
-
-                const person =
-                    db.smm.find(
-                        x =>
-                            x.id ===
-                            request.profileId
-                    );
-
-                return `
-
-                    <div class="admin-item">
-
-                        <strong>
-                            ${escapeHTML(
-                                request.name
-                            )}
-                        </strong>
-
-                        <p>
-                            SMM:
-                            ${
-                                person
-                                ?
-                                escapeHTML(
-                                    person.name
-                                )
-                                :
-                                "Номаълум"
-                            }
-                        </p>
-
-                        <p>
-                            📞 ${escapeHTML(
-                                request.phone
-                            )}
-                        </p>
-
-                        <p>
-                            💬 ${escapeHTML(
-                                request.message
-                            )}
-                        </p>
-
-                    </div>
-
-                `;
-
-            })
-            .join("");
-
-}
-
-
-/* =========================================
-   ADMIN REVIEWS
-========================================= */
-
-function renderAdminReviews() {
-
-    const container =
-        $("#adminReviewList");
-
-    if (!db.reviews.length) {
-
-        container.innerHTML = `
-            <div class="empty-state">
-                Ҳоло ягон отзыв нест.
-            </div>
-        `;
-
-        return;
-    }
-
-
-    container.innerHTML =
-        db.reviews
-            .map(review => `
-
-                <div class="admin-item">
-
-                    <strong>
-                        ${escapeHTML(
-                            review.name
-                        )}
-                    </strong>
-
-                    <p>
-                        ${"⭐".repeat(
-                            review.rating
-                        )}
-                    </p>
-
-                    <p>
-                        ${escapeHTML(
-                            review.text
-                        )}
-                    </p>
 
                     <button
                         class="btn btn--dark"
-                        onclick="deleteReview('${review.id}')"
+                        onclick="deleteSmm('${profile.id}')"
                     >
                         🗑 Нест кардан
                     </button>
 
                 </div>
 
-            `)
-            .join("");
+            </div>
+
+            `
+        ).join("");
 
 }
 
 
-window.deleteReview =
-    function(id) {
+/* =====================================================
+   APPROVE SMM
+===================================================== */
 
-        const ok =
-            confirm(
-                "Ин отзыв нест карда шавад?"
-            );
+window.approveSmm = function(id) {
 
-        if (!ok) return;
-
-        db.reviews =
-            db.reviews.filter(
-                x => x.id !== id
-            );
-
-        saveDB();
-
-        renderAll();
-
-        toast(
-            "🗑 Отзыв нест шуд."
+    const profile =
+        database.smm.find(
+            x => x.id === id
         );
 
-    };
+    if (!profile) return;
+
+    profile.status = "approved";
+
+    saveDatabase();
+
+    renderAll();
+
+    renderAdmin();
+
+    showToast(
+        "✅ SMM-щик тасдиқ шуд."
+    );
+
+};
 
 
-/* =========================================
-   CLOSE MODALS WHEN CLICK OUTSIDE
-========================================= */
+/* =====================================================
+   REJECT SMM
+===================================================== */
 
-$$(".modal-overlay")
-    .forEach(overlay => {
+window.rejectSmm = function(id) {
+
+    const profile =
+        database.smm.find(
+            x => x.id === id
+        );
+
+    if (!profile) return;
+
+    profile.status = "rejected";
+
+    saveDatabase();
+
+    renderAll();
+
+    renderAdmin();
+
+    showToast(
+        "❌ SMM-щик рад шуд."
+    );
+
+};
+
+
+/* =====================================================
+   DELETE SMM
+===================================================== */
+
+window.deleteSmm = function(id) {
+
+    database.smm =
+        database.smm.filter(
+            x => x.id !== id
+        );
+
+    saveDatabase();
+
+    renderAll();
+
+    renderAdmin();
+
+    showToast(
+        "🗑 Профил нест карда шуд."
+    );
+
+};
+
+
+/* =====================================================
+   ADMIN CLIENTS
+===================================================== */
+
+function renderAdminClients() {
+
+    const container =
+        $("#adminClientList");
+
+    if (!database.clients.length) {
+
+        container.innerHTML = `
+            <div class="empty-state">
+                Ҳоло муштарӣ сабт нашудааст.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        database.clients.map(
+            client => `
+
+            <div class="admin-item">
+
+                <strong>
+                    ${escapeHTML(client.name)}
+                </strong>
+
+                <p>
+                    🏢 ${escapeHTML(client.business)}
+                </p>
+
+                <p>
+                    📂 ${escapeHTML(client.category)}
+                </p>
+
+                <p>
+                    📱 ${escapeHTML(client.phone)}
+                </p>
+
+                <p>
+                    💬 ${escapeHTML(client.need)}
+                </p>
+
+                <button
+                    class="btn btn--dark"
+                    onclick="deleteClient('${client.id}')"
+                >
+                    🗑 Нест кардан
+                </button>
+
+            </div>
+
+            `
+        ).join("");
+
+}
+
+
+window.deleteClient = function(id) {
+
+    database.clients =
+        database.clients.filter(
+            x => x.id !== id
+        );
+
+    saveDatabase();
+
+    renderAll();
+
+    renderAdmin();
+
+    showToast(
+        "🗑 Муштарӣ нест карда шуд."
+    );
+
+};
+
+
+/* =====================================================
+   ADMIN REQUESTS
+===================================================== */
+
+function renderAdminRequests() {
+
+    const container =
+        $("#adminRequestList");
+
+    if (!database.requests.length) {
+
+        container.innerHTML = `
+            <div class="empty-state">
+                Ҳоло дархост нест.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        database.requests.map(
+            request => {
+
+                const profile =
+                    database.smm.find(
+                        x =>
+                            x.id === request.profileId
+                    );
+
+                return `
+
+                <div class="admin-item">
+
+                    <strong>
+                        ${escapeHTML(request.name)}
+                    </strong>
+
+                    <p>
+                        📱 ${escapeHTML(request.phone)}
+                    </p>
+
+                    <p>
+                        👨‍💻 SMM:
+                        ${
+                            profile
+                            ?
+                            escapeHTML(profile.name)
+                            :
+                            "Нест шудааст"
+                        }
+                    </p>
+
+                    <p>
+                        💬 ${escapeHTML(request.message)}
+                    </p>
+
+                    <button
+                        class="btn btn--dark"
+                        onclick="deleteRequest('${request.id}')"
+                    >
+                        🗑 Нест кардан
+                    </button>
+
+                </div>
+
+                `;
+
+            }
+        ).join("");
+
+}
+
+
+window.deleteRequest = function(id) {
+
+    database.requests =
+        database.requests.filter(
+            x => x.id !== id
+        );
+
+    saveDatabase();
+
+    renderAdmin();
+
+    showToast(
+        "🗑 Дархост нест карда шуд."
+    );
+
+};
+
+
+/* =====================================================
+   ADMIN REVIEWS
+===================================================== */
+
+function renderAdminReviews() {
+
+    const container =
+        $("#adminReviewList");
+
+    if (!database.reviews.length) {
+
+        container.innerHTML = `
+            <div class="empty-state">
+                Ҳоло отзыв нест.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        database.reviews.map(
+            review => `
+
+            <div class="admin-item">
+
+                <strong>
+                    ${escapeHTML(review.name)}
+                </strong>
+
+                <p>
+                    ${"⭐".repeat(
+                        Number(review.rating)
+                    )}
+                </p>
+
+                <p>
+                    ${escapeHTML(review.text)}
+                </p>
+
+                <button
+                    class="btn btn--dark"
+                    onclick="deleteReview('${review.id}')"
+                >
+                    🗑 Нест кардан
+                </button>
+
+            </div>
+
+            `
+        ).join("");
+
+}
+
+
+window.deleteReview = function(id) {
+
+    database.reviews =
+        database.reviews.filter(
+            x => x.id !== id
+        );
+
+    saveDatabase();
+
+    renderReviews();
+
+    renderAdmin();
+
+    showToast(
+        "🗑 Отзыв нест карда шуд."
+    );
+
+};
+
+
+/* =====================================================
+   CLOSE MODAL BY BACKGROUND
+===================================================== */
+
+$all(".modal-overlay").forEach(
+    overlay => {
 
         overlay.addEventListener(
             "click",
-            event => {
+            function(event) {
 
                 if (
-                    event.target ===
-                    overlay
+                    event.target === overlay
                 ) {
 
-                    overlay.classList
-                        .remove("active");
+                    overlay.classList.remove(
+                        "active"
+                    );
+
+                    document.body.style.overflow =
+                        "";
 
                 }
 
             }
         );
 
-    });
+    }
+);
 
 
-/* =========================================
-   ESCAPE KEY
-========================================= */
+/* =====================================================
+   ESC KEY
+===================================================== */
 
 document.addEventListener(
     "keydown",
     event => {
 
-        if (
-            event.key === "Escape"
-        ) {
+        if (event.key !== "Escape") return;
 
-            $$(".modal-overlay")
-                .forEach(modal => {
+        $all(".modal-overlay.active")
+            .forEach(modal => {
 
-                    modal.classList
-                        .remove("active");
+                modal.classList.remove(
+                    "active"
+                );
 
-                });
+            });
 
-        }
+        document.body.style.overflow = "";
 
     }
 );
 
 
-/* =========================================
+/* =====================================================
    RENDER ALL
-========================================= */
+===================================================== */
 
 function renderAll() {
 
@@ -1806,21 +1620,31 @@ function renderAll() {
 
     renderReviews();
 
-    if (adminLoggedIn) {
+    if (
+        $("#adminDashboard") &&
+        $("#adminDashboard").style.display !== "none"
+    ) {
+
         renderAdmin();
+
     }
 
 }
 
 
-/* =========================================
+/* =====================================================
    START
-========================================= */
+===================================================== */
 
-saveDB();
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
-renderAll();
+        renderAll();
 
-console.log(
-    "SMM.TJ loaded successfully."
+        console.log(
+            "SMM.TJ loaded successfully."
+        );
+
+    }
 );
