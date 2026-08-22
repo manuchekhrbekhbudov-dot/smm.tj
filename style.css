@@ -1184,3 +1184,68 @@ footer {
     outline: 2px solid #a85cff;
     outline-offset: 3px;
 }
+/* =========================================
+   LANGUAGE SELECT
+========================================= */
+
+.language-wrapper {
+    display: flex;
+    align-items: center;
+    margin-right: 8px;
+}
+
+.language-select {
+    appearance: none;
+    -webkit-appearance: none;
+
+    border: 1px solid rgba(255,255,255,0.15);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(123,45,255,0.9),
+            rgba(180,70,255,0.9)
+        );
+
+    color: #fff;
+
+    padding: 10px 30px 10px 13px;
+
+    border-radius: 12px;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    outline: none;
+
+    box-shadow:
+        0 8px 25px rgba(130,40,255,0.25);
+}
+
+.language-select option {
+    background: #171020;
+    color: #fff;
+}
+
+.language-select:hover {
+    transform: translateY(-1px);
+}
+
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+
+    .language-wrapper {
+        margin-right: 5px;
+    }
+
+    .language-select {
+        padding: 9px 25px 9px 10px;
+        font-size: 12px;
+        border-radius: 10px;
+    }
+
+}
