@@ -1,16 +1,23 @@
-const SUPABASE_URL = "https://lcldaingzicxbottlznq.supabase.co";
-const SUPABASE_KEY = "sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
-
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
-
-console.log("SMM.TJ → Supabase connected");
+"use strict";
 
 /* =========================================
    SMM.TJ — SUPABASE
 ========================================= */
+
+const SUPABASE_URL =
+    "https://lcldaingzicxbottlznq.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+console.log("SMM.TJ → Supabase connected");
+
 
 /* =========================================
    STATE
@@ -32,7 +39,6 @@ function $(id) {
     return document.getElementById(id);
 }
 
-
 function escapeHTML(text) {
     return String(text ?? "")
         .replaceAll("&", "&amp;")
@@ -42,12 +48,10 @@ function escapeHTML(text) {
         .replaceAll("'", "&#039;");
 }
 
-
 function modalOpen(id) {
     const el = $(id);
     if (el) el.classList.add("active");
 }
-
 
 function modalClose(id) {
     const el = $(id);
@@ -98,7 +102,6 @@ async function loadData() {
             })
     ]);
 
-
     if (smm.error)
         console.error("SMM:", smm.error);
 
@@ -111,12 +114,10 @@ async function loadData() {
     if (requests.error)
         console.error("REQUESTS:", requests.error);
 
-
     db.smm = smm.data || [];
     db.clients = clients.data || [];
     db.reviews = reviews.data || [];
     db.requests = requests.data || [];
-
 
     renderAll();
 
@@ -144,25 +145,22 @@ function openAuth() {
 
     modalOpen("authModal");
 
-    $("roleSelection").style.display = "grid";
+    if ($("roleSelection"))
+        $("roleSelection").style.display = "grid";
 
-    $("smmForm").classList.remove("active");
-
-    $("clientForm").classList.remove("active");
+    $("smmForm")?.classList.remove("active");
+    $("clientForm")?.classList.remove("active");
 }
-
 
 $("loginBtn")?.addEventListener(
     "click",
     openAuth
 );
 
-
 $("registerBtn")?.addEventListener(
     "click",
     openAuth
 );
-
 
 $("authClose")?.addEventListener(
     "click",
@@ -178,43 +176,38 @@ function openSmmForm() {
 
     modalOpen("authModal");
 
-    $("roleSelection").style.display = "none";
+    if ($("roleSelection"))
+        $("roleSelection").style.display = "none";
 
-    $("smmForm").classList.add("active");
-
-    $("clientForm").classList.remove("active");
+    $("smmForm")?.classList.add("active");
+    $("clientForm")?.classList.remove("active");
 }
-
 
 function openClientForm() {
 
     modalOpen("authModal");
 
-    $("roleSelection").style.display = "none";
+    if ($("roleSelection"))
+        $("roleSelection").style.display = "none";
 
-    $("clientForm").classList.add("active");
-
-    $("smmForm").classList.remove("active");
+    $("clientForm")?.classList.add("active");
+    $("smmForm")?.classList.remove("active");
 }
-
 
 $("smmBtn")?.addEventListener(
     "click",
     openSmmForm
 );
 
-
 $("smmRole")?.addEventListener(
     "click",
     openSmmForm
 );
 
-
 $("clientBtn")?.addEventListener(
     "click",
     openClientForm
 );
-
 
 $("clientRole")?.addEventListener(
     "click",
@@ -240,12 +233,13 @@ $("smmForm")?.addEventListener(
         if (button)
             button.disabled = true;
 
-
         const person = {
 
-            name: $("smmName").value.trim(),
+            name:
+                $("smmName").value.trim(),
 
-            phone: $("smmPhone").value.trim(),
+            phone:
+                $("smmPhone").value.trim(),
 
             instagram:
                 $("smmInstagram").value.trim(),
@@ -265,20 +259,20 @@ $("smmForm")?.addEventListener(
             status: "pending"
         };
 
-
         const { error } =
             await supabaseClient
                 .from("smm_profiles")
                 .insert(person);
 
-
         if (button)
             button.disabled = false;
 
-
         if (error) {
 
-            console.error(error);
+            console.error(
+                "SMM INSERT ERROR:",
+                error
+            );
 
             alert(
                 "❌ Хато шуд. Маълумот сабт нашуд."
@@ -287,11 +281,9 @@ $("smmForm")?.addEventListener(
             return;
         }
 
-
         alert(
             "✅ Профил қабул шуд. Админ онро месанҷад."
         );
-
 
         this.reset();
 
@@ -320,7 +312,6 @@ $("clientForm")?.addEventListener(
         if (button)
             button.disabled = true;
 
-
         const client = {
 
             name:
@@ -339,21 +330,24 @@ $("clientForm")?.addEventListener(
                 $("clientNeed").value.trim()
         };
 
-
-        const { data, error } =
-            await supabaseClient
-                .from("clients")
-                .insert(client)
-                .select()
-                .single();
-
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("clients")
+            .insert(client)
+            .select()
+            .single();
 
         if (error) {
 
+            console.error(
+                "CLIENT INSERT ERROR:",
+                error
+            );
+
             if (button)
                 button.disabled = false;
-
-            console.error(error);
 
             alert(
                 "❌ Хато шуд. Дархост сабт нашуд."
@@ -362,49 +356,46 @@ $("clientForm")?.addEventListener(
             return;
         }
 
-
-        /*
-         * Ҳамзамон request месозем,
-         * то Admin онро ҳамчун дархост бинад.
-         */
-
         const request = {
 
             client_id: data.id,
 
-            client_name: client.name,
+            client_name:
+                client.name,
 
-            phone: client.phone,
+            phone:
+                client.phone,
 
-            message: client.need,
+            message:
+                client.need,
 
-            specialist_name: null,
+            specialist_name:
+                null,
 
-            status: "new"
+            status:
+                "new"
         };
 
+        const {
+            error: requestError
+        } = await supabaseClient
+            .from("requests")
+            .insert(request);
 
-        const requestResult =
-            await supabaseClient
-                .from("requests")
-                .insert(request);
+        if (requestError) {
 
-
-        if (requestResult.error)
             console.error(
                 "REQUEST ERROR:",
-                requestResult.error
+                requestError
             );
-
+        }
 
         if (button)
             button.disabled = false;
 
-
         alert(
             "✅ Дархости шумо қабул шуд."
         );
-
 
         this.reset();
 
@@ -416,7 +407,7 @@ $("clientForm")?.addEventListener(
 
 
 /* =========================================
-   FIND BUTTON
+   FIND
 ========================================= */
 
 $("findBtn")?.addEventListener(
@@ -439,29 +430,24 @@ function openAI() {
 
     modalOpen("aiModal");
 
-    $("aiResult").innerHTML = "";
+    if ($("aiResult"))
+        $("aiResult").innerHTML = "";
 }
-
 
 $("aiBtn")?.addEventListener(
     "click",
     openAI
 );
 
-
 $("startAiBtn")?.addEventListener(
     "click",
     openAI
 );
 
-
 $("aiClose")?.addEventListener(
     "click",
     () => modalClose("aiModal")
 );
-
-
-/* AI CATEGORY */
 
 document
     .querySelectorAll("[data-ai]")
@@ -470,11 +456,9 @@ document
         button.addEventListener(
             "click",
             () => {
-
                 findByAI(
                     button.dataset.ai
                 );
-
             }
         );
 
@@ -490,36 +474,23 @@ function findByAI(category) {
                 person.category === category
         );
 
-
     if (!people.length) {
 
         $("aiResult").innerHTML = `
-
             <div class="empty">
-
                 <div>🤖</div>
-
-                <h3>
-                    Ҳоло мутахассис нест
-                </h3>
-
+                <h3>Ҳоло мутахассис нест</h3>
                 <p>
-                    Барои
-                    ${escapeHTML(category)}
-                    SMM-щики тасдиқшуда
-                    пайдо нашуд.
+                    Барои ${escapeHTML(category)}
+                    SMM-щики тасдиқшуда пайдо нашуд.
                 </p>
-
             </div>
-
         `;
 
         return;
     }
 
-
     $("aiResult").innerHTML = `
-
         <h3 style="margin-top:25px">
             Мутахассисони мувофиқ:
         </h3>
@@ -541,18 +512,15 @@ function findByAI(category) {
                 </strong>
 
                 <p>
-                    🛠
-                    ${escapeHTML(person.service)}
+                    🛠 ${escapeHTML(person.service)}
                 </p>
 
                 <p>
-                    🎯
-                    ${escapeHTML(person.experience)}
+                    🎯 ${escapeHTML(person.experience)}
                 </p>
 
                 <p>
-                    💰
-                    ${escapeHTML(person.price)}
+                    💰 ${escapeHTML(person.price)}
                 </p>
 
                 <button
@@ -582,45 +550,32 @@ function renderSpecialists() {
     if (!box)
         return;
 
-
     const people =
         db.smm.filter(
             person =>
                 person.status === "approved"
         );
 
-
     if (!people.length) {
 
         box.innerHTML = `
-
             <div class="empty">
-
                 <div>👨‍💻</div>
-
-                <h3>
-                    Ҳоло SMM-щик нест
-                </h3>
-
+                <h3>Ҳоло SMM-щик нест</h3>
                 <p>
                     Ҳоло ягон мутахассиси
                     тасдиқшуда вуҷуд надорад.
                 </p>
-
             </div>
-
         `;
 
         return;
     }
 
-
     box.innerHTML =
         people.map(person => `
 
-            <article
-                class="specialist-card"
-            >
+            <article class="specialist-card">
 
                 <div class="avatar">
                     👨‍💻
@@ -635,18 +590,15 @@ function renderSpecialists() {
                 </p>
 
                 <p>
-                    🛠
-                    ${escapeHTML(person.service)}
+                    🛠 ${escapeHTML(person.service)}
                 </p>
 
                 <p>
-                    🎯
-                    ${escapeHTML(person.experience)}
+                    🎯 ${escapeHTML(person.experience)}
                 </p>
 
                 <p>
-                    💰
-                    ${escapeHTML(person.price)}
+                    💰 ${escapeHTML(person.price)}
                 </p>
 
                 <button
@@ -674,10 +626,8 @@ window.openProfile =
                 x => x.id === id
             );
 
-
         if (!person)
             return;
-
 
         alert(
             "SMM-щик: " +
@@ -713,38 +663,26 @@ function renderReviews() {
     if (!box)
         return;
 
-
     if (!db.reviews.length) {
 
         box.innerHTML = `
-
             <div class="empty">
-
                 <div>⭐</div>
-
-                <h3>
-                    Ҳоло отзыв нест
-                </h3>
-
+                <h3>Ҳоло отзыв нест</h3>
                 <p>
                     Ҳанӯз ягон клиент
                     отзыв нагузоштааст.
                 </p>
-
             </div>
-
         `;
 
         return;
     }
 
-
     box.innerHTML =
         db.reviews.map(review => `
 
-            <article
-                class="review-card"
-            >
+            <article class="review-card">
 
                 <div>
                     ${"⭐".repeat(
@@ -753,9 +691,7 @@ function renderReviews() {
                 </div>
 
                 <p>
-                    «${escapeHTML(
-                        review.text
-                    )}»
+                    «${escapeHTML(review.text)}»
                 </p>
 
                 <strong>
@@ -781,19 +717,16 @@ $("reviewBtn")?.addEventListener(
     () => modalOpen("reviewModal")
 );
 
-
 $("reviewClose")?.addEventListener(
     "click",
     () => modalClose("reviewModal")
 );
-
 
 $("reviewForm")?.addEventListener(
     "submit",
     async function(e) {
 
         e.preventDefault();
-
 
         const review = {
 
@@ -808,19 +741,21 @@ $("reviewForm")?.addEventListener(
             text:
                 $("reviewText").value.trim(),
 
-            status: "pending"
+            status:
+                "pending"
         };
-
 
         const { error } =
             await supabaseClient
                 .from("reviews")
                 .insert(review);
 
-
         if (error) {
 
-            console.error(error);
+            console.error(
+                "REVIEW ERROR:",
+                error
+            );
 
             alert(
                 "❌ Отзыв сабт нашуд."
@@ -829,11 +764,9 @@ $("reviewForm")?.addEventListener(
             return;
         }
 
-
         alert(
             "⭐ Отзыв қабул шуд. Баъди тасдиқи админ дар сайт пайдо мешавад."
         );
-
 
         this.reset();
 
@@ -851,28 +784,24 @@ $("reviewForm")?.addEventListener(
 const ADMIN_PASSWORD =
     "admin123";
 
-
 $("adminBtn")?.addEventListener(
     "click",
     () => {
 
         modalOpen("adminModal");
 
-        $("adminLogin").style.display =
-            "block";
+        if ($("adminLogin"))
+            $("adminLogin").style.display = "block";
 
-        $("adminDashboard").style.display =
-            "none";
-
+        if ($("adminDashboard"))
+            $("adminDashboard").style.display = "none";
     }
 );
-
 
 $("adminClose")?.addEventListener(
     "click",
     () => modalClose("adminModal")
 );
-
 
 $("adminLoginBtn")?.addEventListener(
     "click",
@@ -880,7 +809,6 @@ $("adminLoginBtn")?.addEventListener(
 
         const password =
             $("adminPassword").value;
-
 
         if (password !== ADMIN_PASSWORD) {
 
@@ -890,7 +818,6 @@ $("adminLoginBtn")?.addEventListener(
 
             return;
         }
-
 
         $("adminLogin").style.display =
             "none";
@@ -912,29 +839,25 @@ function renderAdmin() {
     if (!$("adminDashboard"))
         return;
 
+    if ($("smmCount"))
+        $("smmCount").textContent =
+            db.smm.length;
 
-    $("smmCount").textContent =
-        db.smm.length;
+    if ($("clientCount"))
+        $("clientCount").textContent =
+            db.clients.length;
 
+    if ($("requestCount"))
+        $("requestCount").textContent =
+            db.requests.length;
 
-    $("clientCount").textContent =
-        db.clients.length;
-
-
-    $("requestCount").textContent =
-        db.requests.length;
-
-
-    $("reviewCount").textContent =
-        db.reviews.length;
-
+    if ($("reviewCount"))
+        $("reviewCount").textContent =
+            db.reviews.length;
 
     renderAdminSmm();
-
     renderAdminClients();
-
     renderAdminRequests();
-
     renderAdminReviews();
 }
 
@@ -951,7 +874,6 @@ function renderAdminSmm() {
     if (!box)
         return;
 
-
     if (!db.smm.length) {
 
         box.innerHTML =
@@ -959,7 +881,6 @@ function renderAdminSmm() {
 
         return;
     }
-
 
     box.innerHTML =
         db.smm.map(person => `
@@ -971,18 +892,15 @@ function renderAdminSmm() {
                 </strong>
 
                 <p>
-                    🛠
-                    ${escapeHTML(person.service)}
+                    🛠 ${escapeHTML(person.service)}
                 </p>
 
                 <p>
-                    📱
-                    ${escapeHTML(person.phone)}
+                    📱 ${escapeHTML(person.phone)}
                 </p>
 
                 <p>
-                    📸
-                    ${escapeHTML(
+                    📸 ${escapeHTML(
                         person.instagram || "—"
                     )}
                 </p>
@@ -990,9 +908,7 @@ function renderAdminSmm() {
                 <p>
                     Статус:
                     <b>
-                        ${escapeHTML(
-                            person.status
-                        )}
+                        ${escapeHTML(person.status)}
                     </b>
                 </p>
 
@@ -1035,7 +951,9 @@ function renderAdminSmm() {
 }
 
 
-/* APPROVE SMM */
+/* =========================================
+   APPROVE SMM
+========================================= */
 
 window.approveSmm =
     async function(id) {
@@ -1048,7 +966,6 @@ window.approveSmm =
                 })
                 .eq("id", id);
 
-
         if (error) {
 
             console.error(error);
@@ -1060,19 +977,17 @@ window.approveSmm =
             return;
         }
 
-
         alert(
             "✅ SMM-щик тасдиқ шуд."
         );
 
-
         await loadData();
-
-        renderAdmin();
     };
 
 
-/* DELETE SMM */
+/* =========================================
+   DELETE SMM
+========================================= */
 
 window.deleteSmm =
     async function(id) {
@@ -1084,13 +999,11 @@ window.deleteSmm =
         )
             return;
 
-
         const { error } =
             await supabaseClient
                 .from("smm_profiles")
                 .delete()
                 .eq("id", id);
-
 
         if (error) {
 
@@ -1103,10 +1016,7 @@ window.deleteSmm =
             return;
         }
 
-
         await loadData();
-
-        renderAdmin();
     };
 
 
@@ -1122,7 +1032,6 @@ function renderAdminClients() {
     if (!box)
         return;
 
-
     if (!db.clients.length) {
 
         box.innerHTML =
@@ -1131,44 +1040,29 @@ function renderAdminClients() {
         return;
     }
 
-
     box.innerHTML =
         db.clients.map(client => `
 
             <div class="admin-item">
 
                 <strong>
-                    ${escapeHTML(
-                        client.name
-                    )}
+                    ${escapeHTML(client.name)}
                 </strong>
 
                 <p>
-                    🏢
-                    ${escapeHTML(
-                        client.business
-                    )}
+                    🏢 ${escapeHTML(client.business)}
                 </p>
 
                 <p>
-                    📱
-                    ${escapeHTML(
-                        client.phone
-                    )}
+                    📱 ${escapeHTML(client.phone)}
                 </p>
 
                 <p>
-                    📂
-                    ${escapeHTML(
-                        client.category
-                    )}
+                    📂 ${escapeHTML(client.category)}
                 </p>
 
                 <p>
-                    💬
-                    ${escapeHTML(
-                        client.need
-                    )}
+                    💬 ${escapeHTML(client.need)}
                 </p>
 
             </div>
@@ -1189,7 +1083,6 @@ function renderAdminRequests() {
     if (!box)
         return;
 
-
     if (!db.requests.length) {
 
         box.innerHTML =
@@ -1197,7 +1090,6 @@ function renderAdminRequests() {
 
         return;
     }
-
 
     box.innerHTML =
         db.requests.map(request => `
@@ -1213,25 +1105,17 @@ function renderAdminRequests() {
                 </strong>
 
                 <p>
-                    📱
-                    ${escapeHTML(
-                        request.phone
-                    )}
+                    📱 ${escapeHTML(request.phone)}
                 </p>
 
                 <p>
-                    💬
-                    ${escapeHTML(
-                        request.message
-                    )}
+                    💬 ${escapeHTML(request.message)}
                 </p>
 
                 <p>
                     Статус:
                     <b>
-                        ${escapeHTML(
-                            request.status
-                        )}
+                        ${escapeHTML(request.status)}
                     </b>
                 </p>
 
@@ -1253,10 +1137,8 @@ function renderAdminReviews() {
     if (!dashboard)
         return;
 
-
     let box =
         $("adminReviewList");
-
 
     if (!box) {
 
@@ -1269,20 +1151,8 @@ function renderAdminReviews() {
         box.className =
             "admin-list";
 
-
-        const headings =
-            dashboard.querySelectorAll("h3");
-
-        const lastHeading =
-            headings[headings.length - 1];
-
-
-        if (lastHeading)
-            lastHeading.after(box);
-        else
-            dashboard.appendChild(box);
+        dashboard.appendChild(box);
     }
-
 
     loadAllReviewsForAdmin(box);
 }
@@ -1290,14 +1160,15 @@ function renderAdminReviews() {
 
 async function loadAllReviewsForAdmin(box) {
 
-    const { data, error } =
-        await supabaseClient
-            .from("reviews")
-            .select("*")
-            .order("created_at", {
-                ascending: false
-            });
-
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("reviews")
+        .select("*")
+        .order("created_at", {
+            ascending: false
+        });
 
     if (error) {
 
@@ -1309,7 +1180,6 @@ async function loadAllReviewsForAdmin(box) {
         return;
     }
 
-
     if (!data.length) {
 
         box.innerHTML =
@@ -1318,89 +1188,83 @@ async function loadAllReviewsForAdmin(box) {
         return;
     }
 
-
     box.innerHTML = `
 
         <h3 style="margin-top:25px">
             ⭐ Отзывҳо
         </h3>
 
-        ${
-            data.map(review => `
+        ${data.map(review => `
 
-                <div class="admin-item">
+            <div class="admin-item">
 
-                    <strong>
-                        ${escapeHTML(
-                            review.client_name ||
-                            review.name ||
-                            "Клиент"
-                        )}
-                    </strong>
+                <strong>
+                    ${escapeHTML(
+                        review.client_name ||
+                        review.name ||
+                        "Клиент"
+                    )}
+                </strong>
 
-                    <p>
-                        ${"⭐".repeat(
-                            Number(review.rating)
-                        )}
-                    </p>
+                <p>
+                    ${"⭐".repeat(
+                        Number(review.rating)
+                    )}
+                </p>
 
-                    <p>
-                        ${escapeHTML(
-                            review.text
-                        )}
-                    </p>
+                <p>
+                    ${escapeHTML(review.text)}
+                </p>
 
-                    <p>
-                        Статус:
-                        <b>
-                            ${escapeHTML(
-                                review.status
-                            )}
-                        </b>
-                    </p>
+                <p>
+                    Статус:
+                    <b>
+                        ${escapeHTML(review.status)}
+                    </b>
+                </p>
 
-                    <div
-                        style="
-                            display:flex;
-                            gap:8px;
-                            flex-wrap:wrap;
-                        "
-                    >
+                <div
+                    style="
+                        display:flex;
+                        gap:8px;
+                        flex-wrap:wrap;
+                    "
+                >
 
-                        ${
-                            review.status !==
-                            "approved"
-                            ?
-                            `
-                            <button
-                                class="btn btn-primary"
-                                onclick="approveReview('${review.id}')"
-                            >
-                                ✓ Тасдиқ
-                            </button>
-                            `
-                            :
-                            ""
-                        }
-
+                    ${
+                        review.status !== "approved"
+                        ?
+                        `
                         <button
-                            class="btn btn-dark"
-                            onclick="deleteReview('${review.id}')"
+                            class="btn btn-primary"
+                            onclick="approveReview('${review.id}')"
                         >
-                            🗑 Нест кардан
+                            ✓ Тасдиқ
                         </button>
+                        `
+                        :
+                        ""
+                    }
 
-                    </div>
+                    <button
+                        class="btn btn-dark"
+                        onclick="deleteReview('${review.id}')"
+                    >
+                        🗑 Нест кардан
+                    </button>
 
                 </div>
 
-            `).join("")
-        }
+            </div>
+
+        `).join("")}
     `;
 }
 
 
-/* APPROVE REVIEW */
+/* =========================================
+   APPROVE REVIEW
+========================================= */
 
 window.approveReview =
     async function(id) {
@@ -1413,7 +1277,6 @@ window.approveReview =
                 })
                 .eq("id", id);
 
-
         if (error) {
 
             console.error(error);
@@ -1425,19 +1288,17 @@ window.approveReview =
             return;
         }
 
-
         alert(
             "⭐ Отзыв тасдиқ шуд."
         );
 
-
         await loadData();
-
-        renderAdmin();
     };
 
 
-/* DELETE REVIEW */
+/* =========================================
+   DELETE REVIEW
+========================================= */
 
 window.deleteReview =
     async function(id) {
@@ -1449,13 +1310,11 @@ window.deleteReview =
         )
             return;
 
-
         const { error } =
             await supabaseClient
                 .from("reviews")
                 .delete()
                 .eq("id", id);
-
 
         if (error) {
 
@@ -1468,10 +1327,7 @@ window.deleteReview =
             return;
         }
 
-
         await loadData();
-
-        renderAdmin();
     };
 
 
@@ -1487,18 +1343,14 @@ document
             "click",
             function(e) {
 
-                if (
-                    e.target === modal
-                ) {
+                if (e.target === modal) {
 
                     modal.classList.remove(
                         "active"
                     );
                 }
-
             }
         );
-
     });
 
 
@@ -1512,7 +1364,6 @@ document.addEventListener(
 
         if (e.key !== "Escape")
             return;
-
 
         document
             .querySelectorAll(
@@ -1530,7 +1381,7 @@ document.addEventListener(
 
 
 /* =========================================
-   RENDER
+   RENDER ALL
 ========================================= */
 
 function renderAll() {
