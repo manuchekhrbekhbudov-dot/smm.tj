@@ -1249,3 +1249,42 @@ footer {
     }
 
 }
+/* LANGUAGE BUTTON */
+
+.language-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 10px 14px;
+
+    margin-left: 10px;
+
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+
+    background: rgba(255,255,255,0.08);
+
+    color: #fff;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.language-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(255,255,255,0.15);
+}
+
+@media (max-width: 768px) {
+
+    .language-btn {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+}
