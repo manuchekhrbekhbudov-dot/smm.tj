@@ -742,7 +742,7 @@ $("reviewForm")?.addEventListener(
                 $("reviewText").value.trim(),
 
             status:
-                "pending"
+                "approved"
         };
 
         const { error } =
@@ -765,7 +765,7 @@ $("reviewForm")?.addEventListener(
         }
 
         alert(
-            "⭐ Отзыв қабул шуд. Баъди тасдиқи админ дар сайт пайдо мешавад."
+            "⭐ Отзыв қабул шуд ва дар сайт пайдо мешавад."
         );
 
         this.reset();
@@ -775,7 +775,6 @@ $("reviewForm")?.addEventListener(
         await loadData();
     }
 );
-
 
 /* =========================================
    ADMIN
