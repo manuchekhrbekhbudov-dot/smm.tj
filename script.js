@@ -1,3 +1,12 @@
+const SUPABASE_URL = "URL-И-SUPABASE-И-ТУ";
+const SUPABASE_KEY = "PUBLISHABLE-KEY-И-ТУ";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+console.log("SMM.TJ → Supabase connected");
 "use strict";
 
 /* =========================
