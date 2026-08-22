@@ -2058,72 +2058,60 @@ loadData();
 
 })();
 /* =========================================
-   🌍 LANGUAGE BUTTON
+   LANGUAGE BUTTON
 ========================================= */
 
-(function () {
+setTimeout(() => {
 
-    function addLanguageButton() {
+    if (document.getElementById("languageBtn")) return;
 
-        if (document.getElementById("languageBtn"))
-            return;
+    const header = document.querySelector(".header");
 
-        const header =
-            document.querySelector(".header");
-
-        if (!header)
-            return;
-
-        const button =
-            document.createElement("button");
-
-        button.id = "languageBtn";
-        button.className = "language-btn";
-
-        button.innerHTML = "🇹🇯 TJ ▾";
-
-        button.onclick = function () {
-
-            const current =
-                localStorage.getItem("language") || "tg";
-
-            let next;
-
-            if (current === "tg") {
-                next = "ru";
-            }
-            else if (current === "ru") {
-                next = "en";
-            }
-            else {
-                next = "tg";
-            }
-
-            localStorage.setItem(
-                "language",
-                next
-            );
-
-            location.reload();
-        };
-
-        header.appendChild(button);
+    if (!header) {
+        console.log("❌ Header not found");
+        return;
     }
 
+    const btn = document.createElement("button");
 
-    if (
-        document.readyState === "loading"
-    ) {
+    btn.id = "languageBtn";
+    btn.type = "button";
+    btn.textContent = "🇹🇯 TJ";
 
-        document.addEventListener(
-            "DOMContentLoaded",
-            addLanguageButton
+    btn.style.cssText = `
+        padding: 9px 14px;
+        margin-left: 10px;
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 12px;
+        background: rgba(255,255,255,.08);
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+        z-index: 9999;
+    `;
+
+    btn.onclick = () => {
+
+        const current =
+            localStorage.getItem("smm_language") || "tg";
+
+        const next =
+            current === "tg"
+                ? "ru"
+                : current === "ru"
+                    ? "en"
+                    : "tg";
+
+        localStorage.setItem(
+            "smm_language",
+            next
         );
 
-    } else {
+        location.reload();
+    };
 
-        addLanguageButton();
+    header.appendChild(btn);
 
-    }
+    console.log("✅ Language button added");
 
-})();
+}, 2000);
