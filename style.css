@@ -1621,19 +1621,430 @@ button {
     line-height: 1.6;
     margin-bottom: 25px;
 }
+/* ================================
+   MOBILE — SMM.TJ
+================================ */
 
-@media (max-width: 600px) {
+@media (max-width: 600px){
 
-    .auth-modal {
-        padding: 28px 20px;
-        border-radius: 24px;
+    body{
+        width:100%;
+        overflow-x:hidden;
     }
 
-    .choice-grid {
-        grid-template-columns: 1fr;
+    .container{
+        width:calc(100% - 30px);
+        margin:auto;
     }
 
-    .role-card {
-        padding: 16px;
+    /* HEADER */
+
+    .header{
+        position:sticky;
+        top:0;
+    }
+
+    .header-inner{
+        width:calc(100% - 30px);
+        height:70px;
+    }
+
+    .logo{
+        font-size:25px;
+    }
+
+    .menu{
+        display:block;
+        font-size:30px;
+        line-height:1;
+    }
+
+    .nav.mobile{
+        position:absolute;
+        top:70px;
+        left:15px;
+        right:15px;
+
+        display:flex;
+        flex-direction:column;
+        gap:0;
+
+        padding:8px;
+
+        background:#100c18;
+        border:1px solid rgba(160,90,255,.25);
+        border-radius:18px;
+
+        box-shadow:0 20px 60px rgba(0,0,0,.55);
+    }
+
+    .nav.mobile a{
+        padding:15px;
+        border-radius:12px;
+    }
+
+    .nav.mobile a:hover{
+        background:#1c1528;
+    }
+
+
+    /* HERO */
+
+    .hero{
+        min-height:auto;
+        padding:70px 0 45px;
+    }
+
+    .hero-grid{
+        display:flex;
+        flex-direction:column;
+        gap:35px;
+    }
+
+    .hero h1{
+        font-size:43px;
+        line-height:1.03;
+        letter-spacing:-1.5px;
+    }
+
+    .hero p{
+        font-size:16px;
+        line-height:1.6;
+    }
+
+    .hero-buttons{
+        display:flex;
+        flex-direction:column;
+        width:100%;
+    }
+
+    .big-btn{
+        width:100%;
+        min-height:54px;
+        font-size:15px;
+    }
+
+    .hero-card{
+        width:100%;
+        padding:22px;
+        border-radius:22px;
+    }
+
+    .hero-card h3{
+        font-size:22px;
+    }
+
+    .role-preview button{
+        width:100%;
+        min-height:58px;
+        font-size:15px;
+    }
+
+
+    /* SECTIONS */
+
+    .section{
+        padding:65px 0;
+    }
+
+    .section-title{
+        margin-bottom:25px;
+    }
+
+    .section-title h2{
+        font-size:34px;
+        line-height:1.1;
+    }
+
+
+    /* CATEGORIES */
+
+    .categories{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+    }
+
+    .category{
+        min-height:120px;
+        padding:20px 15px;
+        font-size:25px;
+    }
+
+    .category b{
+        font-size:15px;
+        margin-top:8px;
+    }
+
+
+    /* SPECIALISTS */
+
+    .specialists{
+        display:grid;
+        grid-template-columns:1fr;
+        gap:15px;
+    }
+
+    .card{
+        width:100%;
+        padding:20px;
+        border-radius:20px;
+    }
+
+    .card h3{
+        font-size:20px;
+    }
+
+    .card-bottom{
+        align-items:center;
+    }
+
+    .card-bottom .btn{
+        padding:11px 14px;
+    }
+
+
+    /* EMPTY */
+
+    .empty{
+        padding:40px 18px;
+        font-size:14px;
+        line-height:1.6;
+    }
+
+
+    /* AI */
+
+    .ai-box{
+        padding:25px 18px;
+        border-radius:22px;
+    }
+
+    .ai-options{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+    }
+
+    .ai-options button{
+        min-height:58px;
+        padding:12px 8px;
+        font-size:14px;
+    }
+
+    #startAi{
+        width:100%;
+        min-height:54px;
+    }
+
+
+    /* REVIEWS */
+
+    .review-top{
+        display:flex;
+        flex-direction:column;
+        align-items:stretch;
+        gap:18px;
+    }
+
+    .review-top .btn{
+        width:100%;
+        min-height:52px;
+    }
+
+    .reviews{
+        display:grid;
+        grid-template-columns:1fr;
+        gap:15px;
+    }
+
+    .review{
+        padding:21px;
+        border-radius:19px;
+    }
+
+    .review p{
+        font-size:15px;
+    }
+
+
+    /* FOOTER */
+
+    .footer{
+        padding:45px 0;
+    }
+
+    .footer-grid{
+        display:flex;
+        flex-direction:column;
+        gap:25px;
+    }
+
+    .footer-links{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+    }
+
+    .footer-links a,
+    .footer-links button{
+        padding:12px;
+    }
+
+
+    /* MODALS */
+
+    .overlay{
+        align-items:flex-end;
+        padding:0;
+    }
+
+    .modal{
+        width:100%;
+        max-height:92vh;
+
+        padding:25px 18px 30px;
+
+        border-radius:25px 25px 0 0;
+
+        border-bottom:0;
+    }
+
+    .modal h2{
+        font-size:25px;
+        padding-right:40px;
+    }
+
+    .modal-subtitle{
+        font-size:14px;
+        line-height:1.5;
+    }
+
+    .close{
+        width:38px;
+        height:38px;
+        right:14px;
+        top:14px;
+    }
+
+
+    /* ROLE */
+
+    .roles{
+        gap:10px;
+    }
+
+    .role{
+        padding:18px;
+        min-height:105px;
+    }
+
+    .role h3{
+        font-size:17px;
+    }
+
+    .role p{
+        font-size:13px;
+        line-height:1.5;
+    }
+
+
+    /* FORM */
+
+    .form-grid{
+        gap:11px;
+    }
+
+    .field label{
+        font-size:13px;
+    }
+
+    .field input,
+    .field textarea,
+    .field select{
+        min-height:50px;
+        font-size:16px;
+        padding:13px;
+        border-radius:12px;
+    }
+
+    .field textarea{
+        min-height:120px;
+    }
+
+    .form-actions{
+        display:grid;
+        grid-template-columns:1fr;
+        gap:10px;
+    }
+
+    .form-actions .btn{
+        width:100%;
+        min-height:52px;
+    }
+
+
+    /* ADMIN */
+
+    .admin-grid{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+    }
+
+    .admin-stat{
+        padding:15px;
+        font-size:13px;
+    }
+
+    .admin-stat strong{
+        font-size:25px;
+    }
+
+    .admin-item{
+        padding:15px;
+        font-size:14px;
+        line-height:1.5;
+    }
+
+    .admin-item-actions{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+    }
+
+    .admin-item-actions .btn{
+        width:100%;
+        padding:11px 8px;
+        font-size:13px;
+    }
+}
+
+
+/* VERY SMALL PHONES */
+
+@media (max-width:380px){
+
+    .hero h1{
+        font-size:37px;
+    }
+
+    .section-title h2{
+        font-size:30px;
+    }
+
+    .categories{
+        grid-template-columns:1fr;
+    }
+
+    .ai-options{
+        grid-template-columns:1fr;
+    }
+
+    .admin-grid{
+        grid-template-columns:1fr;
+    }
+
+    .footer-links{
+        grid-template-columns:1fr;
     }
 }
