@@ -1908,3 +1908,99 @@ footer {
         width: 150px;
     }
 }
+/* =========================
+   LANGUAGE — MOBILE
+========================= */
+
+@media (max-width: 760px) {
+
+    .language-switcher {
+        display: flex !important;
+        align-items: center;
+        gap: 5px;
+        position: relative;
+        z-index: 99999;
+    }
+
+    .language-switcher button {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+
+        width: auto !important;
+        min-width: 58px !important;
+        height: 38px !important;
+
+        padding: 0 9px !important;
+
+        background: rgba(255,255,255,0.07) !important;
+        color: #fff !important;
+
+        border: 1px solid rgba(255,255,255,0.15) !important;
+        border-radius: 10px !important;
+
+        font-size: 12px !important;
+        font-weight: 700 !important;
+
+        white-space: nowrap;
+    }
+
+    .language-switcher button:hover {
+        background: #8b3dff !important;
+    }
+
+    .language-menu {
+        display: none;
+        position: fixed !important;
+
+        top: 70px !important;
+        right: 12px !important;
+
+        width: 150px !important;
+
+        padding: 7px !important;
+
+        background: #15111f !important;
+
+        border: 1px solid rgba(255,255,255,.15) !important;
+        border-radius: 14px !important;
+
+        z-index: 999999 !important;
+    }
+
+    .language-menu.active {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .language-menu button {
+        width: 100% !important;
+        min-width: 0 !important;
+        height: 42px !important;
+
+        justify-content: flex-start !important;
+
+        padding: 0 12px !important;
+
+        font-size: 13px !important;
+    }
+}
+
+
+/* Хурдатар телефон */
+
+@media (max-width: 480px) {
+
+    .language-switcher {
+        gap: 4px;
+    }
+
+    .language-switcher button {
+        min-width: 52px !important;
+        height: 36px !important;
+
+        padding: 0 7px !important;
+
+        font-size: 11px !important;
+    }
+}
