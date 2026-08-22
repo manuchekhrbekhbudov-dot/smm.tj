@@ -1,0 +1,455 @@
+// ================================
+// SMM.TJ — MAIN JAVASCRIPT
+// ================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    // ================================
+    // ELEMENTS
+    // ================================
+
+    const menuBtn = document.getElementById("menuBtn");
+    const nav = document.querySelector(".nav");
+
+    const loginBtn = document.getElementById("loginBtn");
+    const registerBtn = document.getElementById("registerBtn");
+
+    const findBtn = document.getElementById("findBtn");
+    const aiBtn = document.getElementById("aiBtn");
+
+    const startAi = document.getElementById("startAi");
+    const aiMainBtn = document.getElementById("aiMainBtn");
+
+
+    // ================================
+    // MOBILE MENU
+    // ================================
+
+    if (menuBtn && nav) {
+
+        menuBtn.addEventListener("click", () => {
+
+            nav.classList.toggle("mobile-active");
+
+            if (nav.classList.contains("mobile-active")) {
+                menuBtn.textContent = "✕";
+            } else {
+                menuBtn.textContent = "☰";
+            }
+
+        });
+
+    }
+
+
+    // ================================
+    // CLOSE MOBILE MENU
+    // ================================
+
+    document.querySelectorAll(".nav a").forEach(link => {
+
+        link.addEventListener("click", () => {
+
+            nav.classList.remove("mobile-active");
+
+            if (menuBtn) {
+                menuBtn.textContent = "☰";
+            }
+
+        });
+
+    });
+
+
+    // ================================
+    // SMOOTH SCROLL
+    // ================================
+
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+
+        link.addEventListener("click", function (event) {
+
+            const targetId = this.getAttribute("href");
+
+            if (targetId === "#") return;
+
+            const target = document.querySelector(targetId);
+
+            if (target) {
+
+                event.preventDefault();
+
+                target.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+
+            }
+
+        });
+
+    });
+
+
+    // ================================
+    // COUNTERS
+    // ================================
+
+    const counters = document.querySelectorAll("[data-number]");
+
+    const runCounter = (counter) => {
+
+        const target = Number(counter.dataset.number);
+
+        let current = 0;
+
+        const duration = 1800;
+
+        const startTime = performance.now();
+
+        const update = (currentTime) => {
+
+            const progress = Math.min(
+                (currentTime - startTime) / duration,
+                1
+            );
+
+            const eased = 1 - Math.pow(1 - progress, 3);
+
+            current = Math.floor(target * eased);
+
+            counter.textContent = current.toLocaleString("tg-TJ");
+
+            if (progress < 1) {
+
+                requestAnimationFrame(update);
+
+            } else {
+
+                counter.textContent =
+                    target.toLocaleString("tg-TJ") + "+";
+
+            }
+
+        };
+
+        requestAnimationFrame(update);
+
+    };
+
+
+    // ================================
+    // COUNTER OBSERVER
+    // ================================
+
+    const counterObserver = new IntersectionObserver(
+        (entries, observer) => {
+
+            entries.forEach(entry => {
+
+                if (entry.isIntersecting) {
+
+                    runCounter(entry.target);
+
+                    observer.unobserve(entry.target);
+
+                }
+
+            });
+
+        },
+        {
+            threshold: 0.5
+        }
+    );
+
+
+    counters.forEach(counter => {
+        counterObserver.observe(counter);
+    });
+
+
+    // ================================
+    // AI OPEN
+    // ================================
+
+    const openAI = () => {
+
+        const aiSection = document.getElementById("ai");
+
+        if (aiSection) {
+
+            aiSection.scrollIntoView({
+                behavior: "smooth"
+            });
+
+        }
+
+    };
+
+
+    if (aiBtn) {
+        aiBtn.addEventListener("click", openAI);
+    }
+
+    if (startAi) {
+        startAi.addEventListener("click", openAI);
+    }
+
+    if (aiMainBtn) {
+        aiMainBtn.addEventListener("click", openAI);
+    }
+
+
+    // ================================
+    // FIND SMM
+    // ================================
+
+    if (findBtn) {
+
+        findBtn.addEventListener("click", () => {
+
+            const specialists =
+                document.getElementById("specialists");
+
+            if (specialists) {
+
+                specialists.scrollIntoView({
+                    behavior: "smooth"
+                });
+
+            }
+
+        });
+
+    }
+
+
+    // ================================
+    // LOGIN
+    // ================================
+
+    if (loginBtn) {
+
+        loginBtn.addEventListener("click", () => {
+
+            alert(
+                "Саҳифаи даромад дар қадами нав сохта мешавад."
+            );
+
+        });
+
+    }
+
+
+    // ================================
+    // REGISTRATION
+    // ================================
+
+    if (registerBtn) {
+
+        registerBtn.addEventListener("click", () => {
+
+            alert(
+                "Сабти ном барои SMM-щикҳо ва муштариён дар қадами нав сохта мешавад."
+            );
+
+        });
+
+    }
+
+
+    // ================================
+    // CATEGORY BUTTONS
+    // ================================
+
+    document.querySelectorAll(".category").forEach(category => {
+
+        category.addEventListener("click", () => {
+
+            const categoryName =
+                category.querySelector("strong")?.textContent;
+
+            if (!categoryName) return;
+
+            alert(
+                `Категорияи «${categoryName}» интихоб шуд.`
+            );
+
+        });
+
+    });
+
+
+    // ================================
+    // SPECIALIST CARDS
+    // ================================
+
+    document.querySelectorAll(
+        ".specialist-card .card-footer button"
+    ).forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            const card = button.closest(".specialist-card");
+
+            const name =
+                card?.querySelector("h3")?.textContent;
+
+            if (!name) return;
+
+            alert(
+                `Профили ${name} дар қадами нав кушода мешавад.`
+            );
+
+        });
+
+    });
+
+
+    // ================================
+    // VIEW ALL
+    // ================================
+
+    const viewAll = document.querySelector(".view-all");
+
+    if (viewAll) {
+
+        viewAll.addEventListener("click", () => {
+
+            alert(
+                "Рӯйхати пурраи SMM-щикҳо дар қадами нав сохта мешавад."
+            );
+
+        });
+
+    }
+
+
+    // ================================
+    // SCROLL REVEAL
+    // ================================
+
+    const revealElements = document.querySelectorAll(
+        ".section, .specialist-card, .category, .review-card, .ai-section"
+    );
+
+    revealElements.forEach(element => {
+
+        element.style.opacity = "0";
+        element.style.transform = "translateY(35px)";
+        element.style.transition =
+            "opacity 0.8s ease, transform 0.8s ease";
+
+    });
+
+
+    const revealObserver = new IntersectionObserver(
+        (entries, observer) => {
+
+            entries.forEach(entry => {
+
+                if (entry.isIntersecting) {
+
+                    entry.target.style.opacity = "1";
+                    entry.target.style.transform =
+                        "translateY(0)";
+
+                    observer.unobserve(entry.target);
+
+                }
+
+            });
+
+        },
+        {
+            threshold: 0.12
+        }
+    );
+
+
+    revealElements.forEach(element => {
+        revealObserver.observe(element);
+    });
+
+
+    // ================================
+    // MOUSE GLOW EFFECT
+    // ================================
+
+    const glowOne =
+        document.querySelector(".glow-one");
+
+    const glowTwo =
+        document.querySelector(".glow-two");
+
+
+    document.addEventListener("mousemove", event => {
+
+        const x =
+            event.clientX / window.innerWidth;
+
+        const y =
+            event.clientY / window.innerHeight;
+
+
+        if (glowOne) {
+
+            glowOne.style.transform =
+                `translate(${x * 80}px, ${y * 60}px)`;
+
+        }
+
+
+        if (glowTwo) {
+
+            glowTwo.style.transform =
+                `translate(${-x * 60}px, ${-y * 40}px)`;
+
+        }
+
+    });
+
+
+    // ================================
+    // BUTTON RIPPLE EFFECT
+    // ================================
+
+    document.querySelectorAll("button").forEach(button => {
+
+        button.addEventListener("click", function (event) {
+
+            const ripple =
+                document.createElement("span");
+
+            ripple.classList.add("ripple");
+
+            const rect =
+                this.getBoundingClientRect();
+
+            ripple.style.left =
+                `${event.clientX - rect.left}px`;
+
+            ripple.style.top =
+                `${event.clientY - rect.top}px`;
+
+            this.appendChild(ripple);
+
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+
+        });
+
+    });
+
+
+    // ================================
+    // CONSOLE
+    // ================================
+
+    console.log(
+        "🚀 SMM.TJ фаъол шуд!"
+    );
+
+});
