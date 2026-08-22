@@ -1616,3 +1616,169 @@ footer {
     }
 
 }
+/* =========================================
+   🌍 LANGUAGE SWITCHER
+========================================= */
+
+.language-switcher {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    z-index: 5000;
+}
+
+.language-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 72px;
+    height: 42px;
+
+    padding: 0 13px;
+
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 12px;
+
+    background: rgba(255,255,255,.06);
+    color: #fff;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background .2s ease,
+        transform .2s ease,
+        border-color .2s ease;
+}
+
+.language-btn:hover {
+    background: rgba(255,255,255,.11);
+    border-color: rgba(255,255,255,.25);
+    transform: translateY(-1px);
+}
+
+
+/* =========================================
+   LANGUAGE MENU
+========================================= */
+
+.language-menu {
+    position: absolute;
+
+    top: calc(100% + 8px);
+    right: 0;
+
+    width: 160px;
+
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+
+    padding: 7px;
+
+    background: #17131f;
+
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px;
+
+    box-shadow:
+        0 18px 50px rgba(0,0,0,.5);
+
+    z-index: 99999;
+}
+
+.language-menu.active {
+    display: flex;
+}
+
+.language-menu button {
+    width: 100%;
+
+    min-height: 42px;
+
+    padding: 10px 12px;
+
+    border: 0;
+    border-radius: 9px;
+
+    background: transparent;
+    color: #fff;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition: background .2s ease;
+}
+
+.language-menu button:hover {
+    background: rgba(255,255,255,.09);
+}
+
+
+/* =========================================
+   📱 MOBILE
+========================================= */
+
+@media (max-width: 760px) {
+
+    .language-switcher {
+        display: inline-flex !important;
+        margin-right: 8px;
+    }
+
+    .language-btn {
+        min-width: 64px;
+        height: 40px;
+
+        padding: 0 10px;
+
+        font-size: 13px;
+    }
+
+    .language-menu {
+        position: fixed;
+
+        top: 74px;
+        right: 12px;
+
+        width: 155px;
+
+        z-index: 99999;
+    }
+}
+
+
+/* =========================================
+   📱 SMALL PHONE
+========================================= */
+
+@media (max-width: 480px) {
+
+    .language-btn {
+        min-width: 58px;
+        height: 38px;
+
+        font-size: 12px;
+    }
+
+    .language-menu {
+        top: 70px;
+        right: 10px;
+
+        width: 145px;
+    }
+
+    .language-menu button {
+        min-height: 40px;
+        font-size: 13px;
+    }
+}
