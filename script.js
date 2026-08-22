@@ -997,52 +997,119 @@ window.deleteSmm =
 /* =========================================
    ADMIN CLIENTS
 ========================================= */
+/* =========================================
+   ADMIN CLIENTS
+========================================= */
 
 function renderAdminClients() {
 
-    const box =
-        $("adminClientList");
+    const box = $("adminClientList");
 
     if (!box)
         return;
 
     if (!db.clients.length) {
 
-        box.innerHTML =
-            "<p>Ҳоло клиент нест.</p>";
+        box.innerHTML = `
+            <div class="admin-item">
+                <p>Ҳоло клиент нест.</p>
+            </div>
+        `;
 
         return;
     }
 
-    box.innerHTML =
-        db.clients.map(client => `
+    box.innerHTML = db.clients.map(client => `
 
-            <div class="admin-item">
+        <div class="admin-item">
 
-                <strong>
-                    ${escapeHTML(client.name)}
-                </strong>
+            <strong>
+                ${escapeHTML(client.name)}
+            </strong>
 
-                <p>
-                    🏢 ${escapeHTML(client.business)}
-                </p>
+            <p>
+                🏢 ${escapeHTML(client.business)}
+            </p>
 
-                <p>
-                    📱 ${escapeHTML(client.phone)}
-                </p>
+            <p>
+                📱 ${escapeHTML(client.phone)}
+            </p>
 
-                <p>
-                    📂 ${escapeHTML(client.category)}
-                </p>
+            <p>
+                📂 ${escapeHTML(client.category)}
+            </p>
 
-                <p>
-                    💬 ${escapeHTML(client.need)}
-                </p>
+            <p>
+                💬 ${escapeHTML(client.need)}
+            </p>
+
+            <div
+                style="
+                    display:flex;
+                    gap:8px;
+                    flex-wrap:wrap;
+                    margin-top:12px;
+                "
+            >
+
+                <button
+                    class="btn btn-dark"
+                    onclick="deleteClient('${client.id}')"
+                >
+                    🗑 Нест кардан
+                </button>
 
             </div>
 
-        `).join("");
+        </div>
+
+    `).join("");
 }
+
+
+/* =========================================
+   DELETE CLIENT
+========================================= */
+
+window.deleteClient = async function(id) {
+
+    if (
+        !confirm(
+            "Ин клиентро нест кунем?"
+        )
+    )
+        return;
+
+
+    const { error } =
+        await supabaseClient
+            .from("clients")
+            .delete()
+            .eq("id", id);
+
+
+    if (error) {
+
+        console.error(
+            "DELETE CLIENT ERROR:",
+            error
+        );
+
+        alert(
+            "❌ Клиент нест карда нашуд."
+        );
+
+        return;
+    }
+
+
+    alert(
+        "🗑 Клиент нест карда шуд."
+    );
+
+
+    await loadData();
+};
 
 
 /* =========================================
@@ -1057,13 +1124,18 @@ function renderAdminRequests() {
     if (!box)
         return;
 
+
     if (!db.requests.length) {
 
-        box.innerHTML =
-            "<p>Ҳоло дархост нест.</p>";
+        box.innerHTML = `
+            <div class="admin-item">
+                <p>Ҳоло дархост нест.</p>
+            </div>
+        `;
 
         return;
     }
+
 
     box.innerHTML =
         db.requests.map(request => `
@@ -1079,24 +1151,195 @@ function renderAdminRequests() {
                 </strong>
 
                 <p>
-                    📱 ${escapeHTML(request.phone)}
+                    📱 ${escapeHTML(
+                        request.phone
+                    )}
                 </p>
 
                 <p>
-                    💬 ${escapeHTML(request.message)}
+                    💬 ${escapeHTML(
+                        request.message
+                    )}
                 </p>
 
                 <p>
                     Статус:
                     <b>
-                        ${escapeHTML(request.status)}
+                        ${escapeHTML(
+                            request.status
+                        )}
                     </b>
                 </p>
+
+
+                <div
+                    style="
+                        display:flex;
+                        gap:8px;
+                        flex-wrap:wrap;
+                        margin-top:12px;
+                    "
+                >
+
+                    ${
+                        request.status === "new"
+                        ?
+                        `
+                            <button
+                                class="btn btn-primary"
+                                onclick="acceptRequest('${request.id}')"
+                            >
+                                ✓ Қабул кардан
+                            </button>
+
+                            <button
+                                class="btn btn-dark"
+                                onclick="rejectRequest('${request.id}')"
+                            >
+                                ✕ Рад кардан
+                            </button>
+                        `
+                        :
+                        ""
+                    }
+
+
+                    <button
+                        class="btn btn-dark"
+                        onclick="deleteRequest('${request.id}')"
+                    >
+                        🗑 Нест кардан
+                    </button>
+
+                </div>
 
             </div>
 
         `).join("");
 }
+
+
+/* =========================================
+   ACCEPT REQUEST
+========================================= */
+
+window.acceptRequest = async function(id) {
+
+    const { error } =
+        await supabaseClient
+            .from("requests")
+            .update({
+                status: "accepted"
+            })
+            .eq("id", id);
+
+
+    if (error) {
+
+        console.error(
+            "ACCEPT REQUEST ERROR:",
+            error
+        );
+
+        alert(
+            "❌ Дархост қабул нашуд."
+        );
+
+        return;
+    }
+
+
+    alert(
+        "✅ Дархост қабул шуд."
+    );
+
+
+    await loadData();
+};
+
+
+/* =========================================
+   REJECT REQUEST
+========================================= */
+
+window.rejectRequest = async function(id) {
+
+    const { error } =
+        await supabaseClient
+            .from("requests")
+            .update({
+                status: "rejected"
+            })
+            .eq("id", id);
+
+
+    if (error) {
+
+        console.error(
+            "REJECT REQUEST ERROR:",
+            error
+        );
+
+        alert(
+            "❌ Дархост рад нашуд."
+        );
+
+        return;
+    }
+
+
+    alert(
+        "✕ Дархост рад шуд."
+    );
+
+
+    await loadData();
+};
+
+
+/* =========================================
+   DELETE REQUEST
+========================================= */
+
+window.deleteRequest = async function(id) {
+
+    if (
+        !confirm(
+            "Ин дархостро нест кунем?"
+        )
+    )
+        return;
+
+
+    const { error } =
+        await supabaseClient
+            .from("requests")
+            .delete()
+            .eq("id", id);
+
+
+    if (error) {
+
+        console.error(
+            "DELETE REQUEST ERROR:",
+            error
+        );
+
+        alert(
+            "❌ Дархост нест карда нашуд."
+        );
+
+        return;
+    }
+
+
+    alert(
+        "🗑 Дархост нест карда шуд."
+    );
+
+
+    await loadData();
+};
 
 
 /* =========================================
