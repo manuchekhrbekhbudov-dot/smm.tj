@@ -1184,6 +1184,435 @@ footer {
     outline: 2px solid #a85cff;
     outline-offset: 3px;
 }
-#languageBtn {
-    display: none !important;
+/* =========================================
+   📱 SMM.TJ — MOBILE ONLY
+========================================= */
+
+@media (max-width: 760px) {
+
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 100%;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    /* HEADER */
+
+    .header {
+        height: 68px;
+        padding: 0 16px;
+    }
+
+    .header-inner {
+        width: 100%;
+    }
+
+    .logo {
+        font-size: 22px;
+    }
+
+    .header-buttons {
+        display: none !important;
+    }
+
+    .menu-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+
+        width: 44px;
+        height: 44px;
+
+        padding: 0;
+        border-radius: 12px;
+
+        font-size: 22px;
+    }
+
+    /* MOBILE MENU */
+
+    .nav.mobile,
+    .nav.mobile-active {
+        display: flex !important;
+
+        position: fixed;
+
+        top: 78px;
+        left: 12px;
+        right: 12px;
+
+        width: auto;
+
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 5px;
+
+        padding: 12px;
+
+        background: rgba(10, 8, 18, .98);
+
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 18px;
+
+        z-index: 9999;
+
+        box-shadow:
+            0 20px 60px rgba(0,0,0,.55);
+    }
+
+    .nav.mobile a,
+    .nav.mobile-active a {
+        width: 100%;
+        padding: 14px;
+
+        border-radius: 10px;
+
+        font-size: 15px;
+    }
+
+
+    /* HERO */
+
+    .hero {
+        width: 100%;
+
+        padding: 55px 16px 40px;
+
+        display: block;
+    }
+
+    .hero-content {
+        width: 100%;
+    }
+
+    .hero h1 {
+        width: 100%;
+
+        font-size: 40px;
+        line-height: 1.05;
+
+        letter-spacing: -1px;
+
+        overflow-wrap: anywhere;
+    }
+
+    .hero p {
+        width: 100%;
+
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    .hero-buttons {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+
+        gap: 10px;
+    }
+
+    .hero-buttons .btn {
+        width: 100%;
+        min-height: 52px;
+    }
+
+
+    /* HERO CARD */
+
+    .hero-card {
+        width: 100%;
+        margin-top: 28px;
+
+        padding: 20px;
+
+        border-radius: 20px;
+    }
+
+    .hero-card h2 {
+        font-size: 21px;
+        line-height: 1.3;
+    }
+
+    .role-buttons {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+
+        gap: 10px;
+    }
+
+    .role-btn {
+        width: 100%;
+        min-height: 54px;
+    }
+
+
+    /* SECTIONS */
+
+    .section {
+        width: 100%;
+
+        padding: 55px 16px;
+    }
+
+    .section-title {
+        width: 100%;
+    }
+
+    .section-title h2 {
+        width: 100%;
+
+        font-size: 32px;
+        line-height: 1.1;
+
+        overflow-wrap: anywhere;
+    }
+
+
+    /* SPECIALISTS */
+
+    .specialists-grid {
+        width: 100%;
+
+        display: grid;
+        grid-template-columns: 1fr;
+
+        gap: 14px;
+    }
+
+    .specialist-card {
+        width: 100%;
+        min-width: 0;
+
+        padding: 20px;
+
+        border-radius: 18px;
+    }
+
+
+    /* AI */
+
+    .ai-box {
+        width: 100%;
+
+        padding: 25px 18px;
+
+        border-radius: 20px;
+    }
+
+    .ai-box h2 {
+        font-size: 32px;
+        line-height: 1.1;
+    }
+
+    .ai-options {
+        width: 100%;
+
+        display: grid;
+        grid-template-columns: 1fr;
+
+        gap: 10px;
+    }
+
+    .ai-options button {
+        width: 100%;
+        min-height: 50px;
+    }
+
+
+    /* REVIEWS */
+
+    .reviews-head {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+
+        gap: 15px;
+    }
+
+    .reviews-head .btn {
+        width: 100%;
+    }
+
+    .reviews-grid {
+        width: 100%;
+
+        display: grid;
+        grid-template-columns: 1fr;
+
+        gap: 14px;
+    }
+
+    .review-card {
+        width: 100%;
+        min-width: 0;
+
+        padding: 20px;
+
+        border-radius: 18px;
+
+        overflow-wrap: anywhere;
+    }
+
+
+    /* FOOTER */
+
+    footer {
+        width: 100%;
+        padding: 40px 16px 25px;
+    }
+
+    .footer-inner {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+
+        align-items: center;
+
+        text-align: center;
+
+        gap: 15px;
+    }
+
+
+    /* MODALS */
+
+    .modal {
+        padding: 10px;
+    }
+
+    .modal-box {
+        width: 100%;
+        max-width: 100%;
+
+        max-height: 90vh;
+
+        overflow-y: auto;
+
+        padding: 20px 16px;
+
+        border-radius: 20px;
+    }
+
+    .modal-box h2 {
+        font-size: 25px;
+    }
+
+
+    /* FORMS */
+
+    .form {
+        width: 100%;
+    }
+
+    .form input,
+    .form select,
+    .form textarea,
+    #reviewForm input,
+    #reviewForm select,
+    #reviewForm textarea {
+        width: 100%;
+        min-width: 0;
+
+        font-size: 16px;
+    }
+
+    .form button,
+    #reviewForm button {
+        width: 100%;
+        min-height: 50px;
+    }
+
+
+    /* ADMIN */
+
+    .admin-box {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .admin-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+
+        gap: 10px;
+    }
+
+    .admin-list,
+    .admin-item {
+        width: 100%;
+        min-width: 0;
+    }
+
+}
+
+
+/* =========================================
+   📱 SMALL PHONES
+========================================= */
+
+@media (max-width: 480px) {
+
+    .hero h1 {
+        font-size: 36px;
+    }
+
+    .section-title h2 {
+        font-size: 29px;
+    }
+
+    .hero-card {
+        padding: 17px;
+    }
+
+    .ai-box {
+        padding: 22px 16px;
+    }
+
+    .ai-box h2 {
+        font-size: 29px;
+    }
+
+    .admin-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+
+}
+
+
+/* =========================================
+   📱 VERY SMALL PHONES
+========================================= */
+
+@media (max-width: 360px) {
+
+    .hero h1 {
+        font-size: 32px;
+    }
+
+    .section-title h2 {
+        font-size: 27px;
+    }
+
+    .logo {
+        font-size: 20px;
+    }
+
+    .admin-stats {
+        grid-template-columns: 1fr;
+    }
+
 }
