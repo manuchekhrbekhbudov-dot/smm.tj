@@ -656,58 +656,33 @@ window.openProfile =
 ========================================= */
 
 function renderReviews() {
+  const box = $("#reviewsList");
 
-    const box =
-        $("reviewsList");
+  if (!box) return;
 
-    if (!box)
-        return;
+  if (!db.reviews.length) {
+    box.innerHTML = `
+      <div class="empty-state">
+        <div>⭐</div>
+        <h3>Холо отзыв нест</h3>
+        <p>Ҳанӯз ягон клиент отзыв нагузоштааст.</p>
+      </div>
+    `;
+    return;
+  }
 
-    if (!db.reviews.length) {
+  box.innerHTML = db.reviews.map(review => `
+    <div class="review-card">
+      <strong>${escapeHTML(review.name)}</strong>
 
-        box.innerHTML = `
-            <div class="empty">
-                <div>⭐</div>
-                <h3>кадом SMM ба шумо бештар маъқул шуд ?</h3>
-                <p>
-                    Мо интизори фикру мулоҳизаҳои шумо ҳастем! 🤍
-Ҳар як фикри шумо барои мо муҳим аст. Боз ҳам беҳтар шудан — бо шарофати шумост. ✨
-                </p>
-            </div>
-        `;
+      <div class="stars">
+        ${"⭐".repeat(review.rating || 5)}
+      </div>
 
-        return;
-    }
-
-    box.innerHTML =
-        db.reviews.map(review => `
-
-            <article class="review-card">
-
-                <div>
-                    ${"⭐".repeat(
-                        Number(review.rating)
-                    )}
-                </div>
-
-                <p>
-                    «${escapeHTML(review.text)}»
-                </p>
-
-                <strong>
-                    ${escapeHTML(
-                        review.client_name ||
-                        review.name ||
-                        "Клиент"
-                    )}
-                </strong>
-
-            </article>
-
-        `).join("");
+      <p>${escapeHTML(review.text)}</p>
+    </div>
+  `).join("");
 }
-
-
 /* =========================================
    ADD REVIEW
 ========================================= */
