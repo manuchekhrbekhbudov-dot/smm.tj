@@ -1,21 +1,16 @@
-"use strict";
+const SUPABASE_URL = "https://lcldaingzicxbottlznq.supabase.co";
+const SUPABASE_KEY = "sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+console.log("SMM.TJ → Supabase connected");
 
 /* =========================================
    SMM.TJ — SUPABASE
 ========================================= */
-
-const SUPABASE_URL =
-    "https://lcldaingzicxbottlznq.supabase.co";
-
-const SUPABASE_KEY =
-    "sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
-
-const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
-
 
 /* =========================================
    STATE
