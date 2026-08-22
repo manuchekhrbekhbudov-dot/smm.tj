@@ -1620,3 +1620,440 @@ console.log(
 );
 
 loadData();
+/* =========================================
+   🌍 3 LANGUAGES — TJ / RU / EN
+========================================= */
+
+(function () {
+
+    const translations = {
+
+        /* =====================
+           TAJIK
+        ===================== */
+        tg: {
+            "Асосӣ": "Асосӣ",
+            "SMM-щикҳо": "SMM-щикҳо",
+            "Категорияҳо": "Категорияҳо",
+            "AI": "AI",
+            "Баррасиҳо": "Баррасиҳо",
+            "Отзывы": "Баррасиҳо",
+            "Даромадан": "Даромадан",
+            "Сабти ном": "Сабти ном",
+
+            "Платформаи рақами 1 барои SMM":
+                "Платформаи рақами 1 барои SMM",
+
+            "SMM-мутахассиси":
+                "SMM-мутахассиси",
+
+            "беҳтаринро":
+                "беҳтаринро",
+
+            "барои бизнеси худ пайдо кунед":
+                "барои бизнеси худ пайдо кунед",
+
+            "Мутахассиси мувофиқро аз рӯи таҷриба, рейтинг, баррасиҳо, нарх ва самти фаъолият пайдо кунед.":
+                "Мутахассиси мувофиқро аз рӯи таҷриба, рейтинг, баррасиҳо, нарх ва самти фаъолият пайдо кунед.",
+
+            "SMM-щик пайдо кардан":
+                "SMM-щик пайдо кардан",
+
+            "Бо ёрии AI интихоб кардан":
+                "Бо ёрии AI интихоб кардан",
+
+            "Ман SMM-щик ҳастам":
+                "Ман SMM-щик ҳастам",
+
+            "Ман бизнес дорам":
+                "Ман бизнес дорам",
+
+            "Хизматҳои худро пешниҳод кунед ва муштариён пайдо кунед.":
+                "Хизматҳои худро пешниҳод кунед ва муштариён пайдо кунед.",
+
+            "Барои бизнеси худ SMM-мутахассис пайдо кунед.":
+                "Барои бизнеси худ SMM-мутахассис пайдо кунед.",
+
+            "🔥 Беҳтаринҳо":
+                "🔥 Беҳтаринҳо",
+
+            "TOP":
+                "TOP",
+
+            "Ҳамаро дидан →":
+                "Ҳамаро дидан →",
+
+            "Баррасиҳои":
+                "Баррасиҳои",
+
+            "воқеӣ":
+                "воқеӣ",
+
+            "Платформа барои пайваст кардани бизнес ва SMM-мутахассисон.":
+                "Платформа барои пайваст кардани бизнес ва SMM-мутахассисон.",
+
+            "© 2026 SMM.TJ — Ҳама ҳуқуқҳо ҳифз шудаанд.":
+                "© 2026 SMM.TJ — Ҳама ҳуқуқҳо ҳифз шудаанд."
+        },
+
+
+        /* =====================
+           RUSSIAN
+        ===================== */
+        ru: {
+            "Асосӣ": "Главная",
+            "SMM-щикҳо": "SMM-специалисты",
+            "Категорияҳо": "Категории",
+            "AI": "AI",
+            "Баррасиҳо": "Отзывы",
+            "Отзывы": "Отзывы",
+            "Даромадан": "Войти",
+            "Сабти ном": "Регистрация",
+
+            "Платформаи рақами 1 барои SMM":
+                "Платформа №1 для SMM",
+
+            "SMM-мутахассиси":
+                "Найдите",
+
+            "беҳтаринро":
+                "лучшего SMM-специалиста",
+
+            "барои бизнеси худ пайдо кунед":
+                "для своего бизнеса",
+
+            "Мутахассиси мувофиқро аз рӯи таҷриба, рейтинг, баррасиҳо, нарх ва самти фаъолият пайдо кунед.":
+                "Найдите подходящего специалиста по опыту, рейтингу, отзывам, цене и направлению работы.",
+
+            "SMM-щик пайдо кардан":
+                "🔎 Найти SMM-специалиста",
+
+            "Бо ёрии AI интихоб кардан":
+                "🤖 Выбрать с помощью AI",
+
+            "Ман SMM-щик ҳастам":
+                "Я SMM-специалист",
+
+            "Ман бизнес дорам":
+                "У меня есть бизнес",
+
+            "Хизматҳои худро пешниҳод кунед ва муштариён пайдо кунед.":
+                "Предлагайте свои услуги и находите клиентов.",
+
+            "Барои бизнеси худ SMM-мутахассис пайдо кунед.":
+                "Найдите SMM-специалиста для своего бизнеса.",
+
+            "🔥 Беҳтаринҳо":
+                "🔥 Лучшие",
+
+            "TOP":
+                "TOP",
+
+            "Ҳамаро дидан →":
+                "Посмотреть всех →",
+
+            "Баррасиҳои":
+                "Реальные",
+
+            "воқеӣ":
+                "отзывы",
+
+            "Платформа барои пайваст кардани бизнес ва SMM-мутахассисон.":
+                "Платформа для связи бизнеса и SMM-специалистов.",
+
+            "© 2026 SMM.TJ — Ҳама ҳуқуқҳо ҳифз шудаанд.":
+                "© 2026 SMM.TJ — Все права защищены."
+        },
+
+
+        /* =====================
+           ENGLISH
+        ===================== */
+        en: {
+            "Асосӣ": "Home",
+            "SMM-щикҳо": "SMM Specialists",
+            "Категорияҳо": "Categories",
+            "AI": "AI",
+            "Баррасиҳо": "Reviews",
+            "Отзывы": "Reviews",
+            "Даромадан": "Login",
+            "Сабти ном": "Sign up",
+
+            "Платформаи рақами 1 барои SMM":
+                "The #1 SMM Platform",
+
+            "SMM-мутахассиси":
+                "Find the",
+
+            "беҳтаринро":
+                "best SMM specialist",
+
+            "барои бизнеси худ пайдо кунед":
+                "for your business",
+
+            "Мутахассиси мувофиқро аз рӯи таҷриба, рейтинг, баррасиҳо, нарх ва самти фаъолият пайдо кунед.":
+                "Find the right specialist by experience, rating, reviews, price and field of work.",
+
+            "SMM-щик пайдо кардан":
+                "🔎 Find an SMM Specialist",
+
+            "Бо ёрии AI интихоб кардан":
+                "🤖 Choose with AI",
+
+            "Ман SMM-щик ҳастам":
+                "I am an SMM specialist",
+
+            "Ман бизнес дорам":
+                "I have a business",
+
+            "Хизматҳои худро пешниҳод кунед ва муштариён пайдо кунед.":
+                "Offer your services and find clients.",
+
+            "Барои бизнеси худ SMM-мутахассис пайдо кунед.":
+                "Find an SMM specialist for your business.",
+
+            "🔥 Беҳтаринҳо":
+                "🔥 Top Specialists",
+
+            "TOP":
+                "TOP",
+
+            "Ҳамаро дидан →":
+                "View all →",
+
+            "Баррасиҳои":
+                "Real",
+
+            "воқеӣ":
+                "reviews",
+
+            "Платформа барои пайваст кардани бизнес ва SMM-мутахассисон.":
+                "A platform connecting businesses with SMM specialists.",
+
+            "© 2026 SMM.TJ — Ҳама ҳуқуқҳо ҳифз шудаанд.":
+                "© 2026 SMM.TJ — All rights reserved."
+        }
+
+    };
+
+
+    /* =========================================
+       LANGUAGE BUTTON
+    ========================================= */
+
+    function createLanguageButton() {
+
+        const headerButtons =
+            document.querySelector(".header-buttons");
+
+        if (!headerButtons)
+            return;
+
+        if (document.getElementById("languageSelect"))
+            return;
+
+        const wrapper =
+            document.createElement("div");
+
+        wrapper.className =
+            "language-wrapper";
+
+        wrapper.innerHTML = `
+            <select id="languageSelect" class="language-select">
+                <option value="tg">🇹🇯 TJ</option>
+                <option value="ru">🇷🇺 RU</option>
+                <option value="en">🇬🇧 EN</option>
+            </select>
+        `;
+
+        headerButtons.prepend(wrapper);
+
+        const select =
+            document.getElementById("languageSelect");
+
+        select.addEventListener(
+            "change",
+            function () {
+
+                changeLanguage(this.value);
+
+            }
+        );
+    }
+
+
+    /* =========================================
+       TRANSLATE PAGE
+    ========================================= */
+
+    function translatePage(lang) {
+
+        const dictionary =
+            translations[lang];
+
+        if (!dictionary)
+            return;
+
+
+        const walker =
+            document.createTreeWalker(
+                document.body,
+                NodeFilter.SHOW_TEXT
+            );
+
+
+        const nodes = [];
+
+        let node;
+
+        while (
+            node = walker.nextNode()
+        ) {
+
+            const parent =
+                node.parentElement;
+
+            if (!parent)
+                continue;
+
+            const tag =
+                parent.tagName;
+
+            if (
+                tag === "SCRIPT" ||
+                tag === "STYLE" ||
+                tag === "NOSCRIPT"
+            )
+                continue;
+
+            nodes.push(node);
+        }
+
+
+        nodes.forEach(function (textNode) {
+
+            const original =
+                textNode.textContent.trim();
+
+            if (!original)
+                return;
+
+
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    dictionary,
+                    original
+                )
+            ) {
+
+                const translated =
+                    dictionary[original];
+
+                textNode.textContent =
+                    textNode.textContent.replace(
+                        original,
+                        translated
+                    );
+            }
+
+        });
+
+
+        document.documentElement.lang =
+            lang === "tg"
+                ? "tg"
+                : lang;
+
+
+        localStorage.setItem(
+            "smm_language",
+            lang
+        );
+
+
+        const select =
+            document.getElementById(
+                "languageSelect"
+            );
+
+        if (select)
+            select.value = lang;
+    }
+
+
+    /* =========================================
+       CHANGE LANGUAGE
+    ========================================= */
+
+    window.changeLanguage =
+        function (lang) {
+
+            /*
+             * Барои он ки ҳангоми
+             * TJ → RU → EN → TJ
+             * матнҳо гум нашаванд,
+             * саҳифаро reload мекунем.
+             */
+
+            localStorage.setItem(
+                "smm_language",
+                lang
+            );
+
+            location.reload();
+        };
+
+
+    /* =========================================
+       START
+    ========================================= */
+
+    function initLanguages() {
+
+        createLanguageButton();
+
+        const savedLanguage =
+            localStorage.getItem(
+                "smm_language"
+            ) || "tg";
+
+
+        if (
+            savedLanguage === "tg"
+        ) {
+
+            const select =
+                document.getElementById(
+                    "languageSelect"
+                );
+
+            if (select)
+                select.value = "tg";
+
+            return;
+        }
+
+
+        translatePage(
+            savedLanguage
+        );
+    }
+
+
+    if (
+        document.readyState ===
+        "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            initLanguages
+        );
+
+    } else {
+
+        initLanguages();
+
+    }
+
+})();
