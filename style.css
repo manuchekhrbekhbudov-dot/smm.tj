@@ -1184,3 +1184,6 @@ footer {
     outline: 2px solid #a85cff;
     outline-offset: 3px;
 }
+#languageBtn {
+    display: none !important;
+}
