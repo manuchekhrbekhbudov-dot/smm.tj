@@ -1,18 +1,94 @@
-const SUPABASE_URL = "URL-И-SUPABASE-И-ТУ";
-const SUPABASE_KEY = "PUBLISHABLE-KEY-И-ТУ";
+"use strict";
 
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
+const SUPABASE_URL =
+    "https://lcldaingzicxbottlznq.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
 console.log("SMM.TJ → Supabase connected");
-"use strict";
+
 
 /* =========================
    DATABASE
 ========================= */
+/* =========================
+   SUPABASE DATABASE
+========================= */
 
+async function loadData() {
+
+    const [
+        smmResult,
+        clientsResult,
+        reviewsResult,
+        requestsResult
+    ] = await Promise.all([
+
+        supabaseClient
+            .from("smm_profiles")
+            .select("*")
+            .order("created_at", { ascending: false }),
+
+        supabaseClient
+            .from("clients")
+            .select("*")
+            .order("created_at", { ascending: false }),
+
+        supabaseClient
+            .from("reviews")
+            .select("*")
+            .eq("status", "approved")
+            .order("created_at", { ascending: false }),
+
+        supabaseClient
+            .from("requests")
+            .select("*")
+            .order("created_at", { ascending: false })
+
+    ]);
+
+    if (smmResult.error)
+        console.error("SMM:", smmResult.error);
+
+    if (clientsResult.error)
+        console.error("CLIENTS:", clientsResult.error);
+
+    if (reviewsResult.error)
+        console.error("REVIEWS:", reviewsResult.error);
+
+    if (requestsResult.error)
+        console.error("REQUESTS:", requestsResult.error);
+
+
+    db.smm = smmResult.data || [];
+
+    db.clients = clientsResult.data || [];
+
+    db.reviews = reviewsResult.data || [];
+
+    db.requests = requestsResult.data || [];
+
+
+    renderAll();
+
+    console.log("✅ SMM.TJ database loaded");
+}
+
+
+/* temporary local object */
+const db = {
+    smm: [],
+    clients: [],
+    reviews: [],
+    requests: []
+};
 const DB_KEY = "smm_tj_database";
 
 let db = JSON.parse(
@@ -20,6 +96,9 @@ let db = JSON.parse(
     '{"smm":[],"clients":[],"reviews":[],"requests":[]}'
 );
 
+function save() {
+    localStorage.setItem(DB_KEY, JSON.stringify(db));
+}
 function save() {
     localStorage.setItem(DB_KEY, JSON.stringify(db));
 }
