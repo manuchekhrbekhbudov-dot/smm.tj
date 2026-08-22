@@ -2057,3 +2057,73 @@ loadData();
     }
 
 })();
+/* =========================================
+   🌍 LANGUAGE BUTTON
+========================================= */
+
+(function () {
+
+    function addLanguageButton() {
+
+        if (document.getElementById("languageBtn"))
+            return;
+
+        const header =
+            document.querySelector(".header");
+
+        if (!header)
+            return;
+
+        const button =
+            document.createElement("button");
+
+        button.id = "languageBtn";
+        button.className = "language-btn";
+
+        button.innerHTML = "🇹🇯 TJ ▾";
+
+        button.onclick = function () {
+
+            const current =
+                localStorage.getItem("language") || "tg";
+
+            let next;
+
+            if (current === "tg") {
+                next = "ru";
+            }
+            else if (current === "ru") {
+                next = "en";
+            }
+            else {
+                next = "tg";
+            }
+
+            localStorage.setItem(
+                "language",
+                next
+            );
+
+            location.reload();
+        };
+
+        header.appendChild(button);
+    }
+
+
+    if (
+        document.readyState === "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            addLanguageButton
+        );
+
+    } else {
+
+        addLanguageButton();
+
+    }
+
+})();
