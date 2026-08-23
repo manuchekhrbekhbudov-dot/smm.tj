@@ -1,23 +1,64 @@
 <!DOCTYPE html>
 <html lang="tg">
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>SMM.TJ — Маркетплейси SMM-мутахассисон</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="style.css">
+    <meta
+        name="description"
+        content="SMM.TJ — платформаи пайдо кардани SMM-специалист барои бизнес">
+
+    <title>SMM.TJ — Платформаи SMM</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css">
+
 </head>
+
 
 <body>
 
-<!-- HEADER -->
+
+<!-- ==================================================
+     LOADING
+================================================== -->
+
+<div id="loader">
+
+    <div class="loader-logo">
+        SMM<span>.TJ</span>
+    </div>
+
+    <div class="loader-bar">
+        <div id="loaderProgress"></div>
+    </div>
+
+    <p>
+        Платформа бор шуда истодааст...
+    </p>
+
+</div>
+
+
+<!-- ==================================================
+     HEADER
+================================================== -->
 
 <header class="header">
 
-    <a href="index.html" class="logo">
+    <a
+        href="index.html"
+        class="logo">
+
         SMM<span>.TJ</span>
+
     </a>
+
 
     <nav class="navigation">
 
@@ -33,9 +74,16 @@
             Барои бизнес
         </a>
 
+        <a href="#about">
+            Дар бораи мо
+        </a>
+
     </nav>
 
-    <div class="header-actions">
+
+    <div
+        class="header-actions"
+        id="headerActions">
 
         <button
             class="btn btn-outline"
@@ -45,8 +93,9 @@
 
         </button>
 
+
         <button
-            class="btn btn-dark"
+            class="btn btn-purple"
             onclick="openAuth('register')">
 
             Регистрация
@@ -58,41 +107,59 @@
 </header>
 
 
-<!-- HERO -->
+<!-- ==================================================
+     MAIN
+================================================== -->
 
 <main>
 
+
+<!-- ==================================================
+     HERO
+================================================== -->
+
 <section class="hero">
+
 
     <div class="hero-content">
 
+
         <div class="eyebrow">
-            SMM.TJ · МАРКЕТПЛЕЙС
+
+            SMM.TJ · ПЛАТФОРМАИ SMM
+
         </div>
 
+
         <h1>
-            SMM-специалистеро,
-            ки барои бизнесатон
-            <span>мувофиқ аст,</span>
-            пайдо кунед.
+
+            SMM-специалисти
+            <span>мувофиқро</span>
+            барои бизнеси худ пайдо кунед.
+
         </h1>
 
+
         <p>
-            Платформа барои бизнесҳо ва
-            SMM-специалистҳо. Мутахассисро
-            пайдо кунед, проект пешниҳод кунед
-            ё профили худро созед.
+
+            Мутахассисони касбиро аз рӯи
+            самт, таҷриба, рейтинг ва
+            портфолио интихоб кунед.
+
         </p>
+
 
         <div class="hero-actions">
 
+
             <button
-                class="btn btn-dark btn-large"
+                class="btn btn-purple btn-large"
                 onclick="openClientRequest()">
 
                 Мутахассис ёфтан →
 
             </button>
+
 
             <button
                 class="btn btn-outline btn-large"
@@ -102,43 +169,125 @@
 
             </button>
 
+
         </div>
+
+
+        <!-- СТАТИСТИКА АЗ БАЗА -->
+
+        <div class="hero-stats">
+
+
+            <div class="hero-stat">
+
+                <strong id="specialistsCount">
+                    0
+                </strong>
+
+                <span>
+                    SMM-специалист
+                </span>
+
+            </div>
+
+
+            <div class="hero-stat">
+
+                <strong id="clientsCount">
+                    0
+                </strong>
+
+                <span>
+                    Клиент
+                </span>
+
+            </div>
+
+
+            <div class="hero-stat">
+
+                <strong id="projectsCount">
+                    0
+                </strong>
+
+                <span>
+                    Лоиҳаи анҷомёфта
+                </span>
+
+            </div>
+
+
+            <div class="hero-stat">
+
+                <strong id="reviewsCount">
+                    0
+                </strong>
+
+                <span>
+                    Отзыв
+                </span>
+
+            </div>
+
+
+        </div>
+
 
     </div>
 
 
-    <!-- AI -->
+    <!-- ==================================================
+         AI
+    ================================================== -->
 
-    <div class="ai-box">
+    <div class="ai-card">
+
 
         <div class="ai-header">
 
-            <strong>
-                🤖 AI Matching
-            </strong>
 
-            <span>
-                ONLINE
+            <div class="ai-name">
+
+                <div class="ai-icon">
+                    ✦
+                </div>
+
+                <strong>
+                    Интихоби оқилона
+                </strong>
+
+            </div>
+
+
+            <span class="ai-online">
+                ● ФАЪОЛ
             </span>
+
 
         </div>
 
+
         <h2>
-            Мутахассисро бо ёрии AI пайдо кунед
+
+            Бигзор система
+            мутахассисро барои шумо ёбад.
+
         </h2>
 
+
         <label>
-            Кадом хизматрасонӣ лозим аст?
+            Ба шумо кадом хизматрасонӣ лозим аст?
         </label>
+
 
         <select id="aiCategory">
 
             <option value="">
-                Интихоб кунед
+                Самтро интихоб кунед
             </option>
 
             <option value="smm">
-                SMM Management
+                SMM-менеҷмент
             </option>
 
             <option value="target">
@@ -161,13 +310,14 @@
 
 
         <label>
-            Буҷет
+            Буҷети моҳонаи шумо
         </label>
+
 
         <select id="aiBudget">
 
             <option value="">
-                Интихоб кунед
+                Буҷетро интихоб кунед
             </option>
 
             <option value="1500">
@@ -190,74 +340,40 @@
 
 
         <button
-            class="btn btn-light full"
-            onclick="findWithAI()">
+            class="btn btn-purple full"
+            onclick="runAI()">
 
-            Пайдо кардани мутахассис →
+            Мутахассис ёфтан →
 
         </button>
 
-        <div id="aiResult"></div>
+
+        <div
+            id="aiResult"
+            class="ai-result">
+
+            Самт ва буҷетро интихоб кунед.
+
+        </div>
+
 
     </div>
+
 
 </section>
 
 
-<!-- STATISTICS -->
-
-<section class="statistics">
-
-    <div>
-        <strong id="specialistsCount">
-            0
-        </strong>
-
-        <span>
-            SMM-специалист
-        </span>
-    </div>
-
-    <div>
-        <strong id="clientsCount">
-            0
-        </strong>
-
-        <span>
-            Клиент
-        </span>
-    </div>
-
-    <div>
-        <strong id="projectsCount">
-            0
-        </strong>
-
-        <span>
-            Проекти анҷомёфта
-        </span>
-    </div>
-
-    <div>
-        <strong id="reviewsCount">
-            0
-        </strong>
-
-        <span>
-            Отзыв
-        </span>
-    </div>
-
-</section>
-
-
-<!-- SPECIALISTS -->
+<!-- ==================================================
+     КАТАЛОГ
+================================================== -->
 
 <section
     class="section"
     id="specialists">
 
+
     <div class="section-heading">
+
 
         <div>
 
@@ -265,21 +381,30 @@
                 КАТАЛОГ
             </div>
 
+
             <h2>
                 SMM-специалистҳо
             </h2>
 
+
             <p>
-                Мутахассисони воқеии платформа
-                аз база нишон дода мешаванд.
+
+                Дар ин ҷо танҳо профилҳои
+                воқеии дар платформа
+                сабтиномшуда нишон дода мешаванд.
+
             </p>
 
         </div>
 
+
     </div>
 
 
+    <!-- ФИЛТРҲО -->
+
     <div class="filters">
+
 
         <button
             class="filter active"
@@ -289,13 +414,15 @@
 
         </button>
 
+
         <button
             class="filter"
             onclick="filterSpecialists('smm', this)">
 
-            SMM Manager
+            SMM-менеҷер
 
         </button>
+
 
         <button
             class="filter"
@@ -305,6 +432,7 @@
 
         </button>
 
+
         <button
             class="filter"
             onclick="filterSpecialists('content', this)">
@@ -312,6 +440,7 @@
             Контент
 
         </button>
+
 
         <button
             class="filter"
@@ -321,6 +450,7 @@
 
         </button>
 
+
         <button
             class="filter"
             onclick="filterSpecialists('mobile', this)">
@@ -329,224 +459,496 @@
 
         </button>
 
+
     </div>
 
+
+    <!-- МАЪЛУМОТИ ВОҚЕӢ АЗ БАЗА -->
 
     <div
         id="specialistsList"
         class="specialists-grid">
 
-        <!-- JavaScript инҷо specialist-ҳоро аз база мегузорад -->
+
+        <div class="empty-state">
+
+
+            <div class="empty-icon">
+                ✦
+            </div>
+
+
+            <h3>
+                Ҳоло мутахассис нест
+            </h3>
+
+
+            <p>
+
+                Вақте аввалин SMM-специалист
+                сабтином мешавад, профили ӯ
+                автоматӣ дар ин ҷо пайдо мешавад.
+
+            </p>
+
+
+            <button
+                class="btn btn-purple"
+                onclick="openAuth('specialist')">
+
+                Профил сохтан
+
+            </button>
+
+
+        </div>
+
 
     </div>
+
 
 </section>
 
 
-<!-- HOW IT WORKS -->
+<!-- ==================================================
+     HOW IT WORKS
+================================================== -->
 
 <section
-    class="section dark-section"
+    class="dark-section"
     id="how">
 
+
     <div class="eyebrow">
-        ЧӢ ГУНА КОР МЕКУНАД?
+        ЧӢ ГУНА КОР МЕКУНАД
     </div>
 
+
     <h2>
+
         Аз ҷустуҷӯ то
         <span>лоиҳаи анҷомёфта.</span>
+
     </h2>
 
 
     <div class="steps">
 
+
         <div class="step">
 
-            <small>
+
+            <span class="step-number">
                 01
-            </small>
+            </span>
+
 
             <h3>
                 Мутахассисро ёбед
             </h3>
 
+
             <p>
-                Категория, буҷет ва талаботи худро
-                интихоб кунед.
+
+                Самт, буҷет ва талаботи
+                худро интихоб кунед.
+
             </p>
+
 
         </div>
 
 
         <div class="step">
 
-            <small>
+
+            <span class="step-number">
                 02
-            </small>
+            </span>
+
 
             <h3>
-                Пешниҳоди проект
+                Профилро бинед
             </h3>
 
+
             <p>
-                Ба SMM-специалист дархости
-                ҳамкорӣ фиристед.
+
+                Таҷриба, портфолио,
+                рейтинг ва отзывҳоро бинед.
+
             </p>
+
 
         </div>
 
 
         <div class="step">
 
-            <small>
+
+            <span class="step-number">
                 03
-            </small>
+            </span>
+
 
             <h3>
-                Проектро анҷом диҳед
+                Лоиҳа пешниҳод кунед
             </h3>
 
+
             <p>
-                Пас аз анҷоми проект клиент
-                метавонад отзыв гузорад.
+
+                Ба мутахассиси интихобшуда
+                дархости ҳамкорӣ фиристед.
+
             </p>
 
+
         </div>
+
+
+        <div class="step">
+
+
+            <span class="step-number">
+                04
+            </span>
+
+
+            <h3>
+                Лоиҳаро анҷом диҳед
+            </h3>
+
+
+            <p>
+
+                Пас аз анҷомёбӣ лоиҳа
+                автоматӣ ба ҳисоб илова мешавад.
+
+            </p>
+
+
+        </div>
+
 
     </div>
+
 
 </section>
 
 
-<!-- BUSINESS -->
+<!-- ==================================================
+     BUSINESS
+================================================== -->
 
 <section
-    class="section business"
+    class="business-section"
     id="business">
 
-    <div>
+
+    <div class="business-content">
+
 
         <div class="eyebrow">
             БАРОИ БИЗНЕС
         </div>
 
+
         <h2>
+
             Мутахассиси худро
             <span>пайдо кунед.</span>
+
         </h2>
 
+
         <p>
-            Талаботи худро фиристед ва
-            SMM-специалистҳои мувофиқро пайдо кунед.
+
+            Соҳа, буҷет ва вазифаи худро
+            нависед. Платформа ба шумо
+            мутахассисони мувофиқро пешниҳод мекунад.
+
         </p>
 
+
         <button
-            class="btn btn-dark btn-large"
+            class="btn btn-purple btn-large"
             onclick="openClientRequest()">
 
             Дархост фиристодан →
 
         </button>
 
+
     </div>
+
+
+    <div class="business-card">
+
+
+        <div class="business-card-top">
+
+            <span>
+                Дархости нав
+            </span>
+
+            <span class="purple">
+                SMM.TJ
+            </span>
+
+        </div>
+
+
+        <div class="business-row">
+
+            <span>
+                Соҳа
+            </span>
+
+            <strong>
+                —
+            </strong>
+
+        </div>
+
+
+        <div class="business-row">
+
+            <span>
+                Буҷет
+            </span>
+
+            <strong>
+                —
+            </strong>
+
+        </div>
+
+
+        <div class="business-row">
+
+            <span>
+                Самт
+            </span>
+
+            <strong>
+                —
+            </strong>
+
+        </div>
+
+
+        <div class="business-row">
+
+            <span>
+                Мутобиқати оқилона
+            </span>
+
+            <strong class="purple">
+                Омода
+            </strong>
+
+        </div>
+
+
+    </div>
+
 
 </section>
 
 
-<!-- CTA -->
+<!-- ==================================================
+     ABOUT
+================================================== -->
+
+<section
+    class="section about-section"
+    id="about">
+
+
+    <div class="eyebrow">
+        SMM.TJ
+    </div>
+
+
+    <h2>
+        Як платформа барои
+        бизнес ва SMM-специалист.
+    </h2>
+
+
+    <p>
+
+        Бизнес мутахассиси мувофиқро
+        пайдо мекунад. SMM-специалист бошад,
+        профили худро месозад ва аз
+        бизнесҳо лоиҳа мегирад.
+
+    </p>
+
+
+</section>
+
+
+<!-- ==================================================
+     CTA
+================================================== -->
 
 <section class="cta">
 
+
+    <div class="eyebrow">
+        SMM.TJ
+    </div>
+
+
     <h2>
-        Шумо SMM-специалист ҳастед?
+        SMM-специалист ҳастед?
     </h2>
 
+
     <p>
-        Профили худро созед ва аз
-        бизнесҳо проект гиред.
+
+        Профили худро созед,
+        портфолио илова кунед ва
+        имкониятҳои нави кориро пайдо кунед.
+
     </p>
 
+
     <button
-        class="btn btn-light btn-large"
+        class="btn btn-purple btn-large"
         onclick="openAuth('specialist')">
 
         Профил сохтан →
 
     </button>
 
+
 </section>
+
 
 </main>
 
 
-<!-- FOOTER -->
+<!-- ==================================================
+     FOOTER
+================================================== -->
 
 <footer>
 
+
     <div class="footer-logo">
-        SMM.TJ
+
+        SMM<span>.TJ</span>
+
     </div>
+
 
     <p>
-        Маркетплейси SMM-специалистони Тоҷикистон.
+
+        Платформаи SMM-специалистҳо
+        ва бизнесҳои Тоҷикистон.
+
     </p>
 
+
     <div class="footer-bottom">
+
         © 2026 SMM.TJ
+        · Ҳамаи ҳуқуқҳо ҳифз шудаанд.
+
     </div>
+
 
 </footer>
 
 
-<!-- AUTH MODAL -->
+<!-- ==================================================
+     AUTH MODAL
+================================================== -->
 
 <div
     class="modal"
     id="authModal">
 
-    <div class="modal-content">
+
+    <div class="modal-box">
+
 
         <button
             class="modal-close"
-            onclick="closeModal()">
+            onclick="closeAuth()">
 
             ×
 
         </button>
 
+
         <h2 id="authTitle">
             Регистрация
         </h2>
 
+
         <p id="authDescription">
+
             Ҳисоби худро созед.
+
         </p>
 
 
-        <div id="registerRole">
+        <!-- НАҚШ -->
 
-            <label>
-                Ман:
-            </label>
+        <div
+            id="roleSelector"
+            class="role-selector">
 
-            <div class="role-buttons">
 
-                <button
-                    onclick="selectRole('client')">
+            <button
+                id="clientRole"
+                onclick="selectRole('client')">
 
-                    👤 Клиент
 
-                </button>
+                <span>
+                    👤
+                </span>
 
-                <button
-                    onclick="selectRole('specialist')">
 
-                    👨‍💻 SMM-специалист
+                <strong>
+                    Клиент
+                </strong>
 
-                </button>
 
-            </div>
+                <small>
+                    Ман бизнес дорам
+                </small>
+
+
+            </button>
+
+
+            <button
+                id="specialistRole"
+                onclick="selectRole('specialist')">
+
+
+                <span>
+                    👨‍💻
+                </span>
+
+
+                <strong>
+                    SMM-специалист
+                </strong>
+
+
+                <small>
+                    Ман хизмат мерасонам
+                </small>
+
+
+            </button>
+
 
         </div>
 
@@ -556,15 +958,18 @@
             type="text"
             placeholder="Ном">
 
+
         <input
             id="authPhone"
             type="tel"
-            placeholder="+992 ...">
+            placeholder="Рақами телефон">
+
 
         <input
             id="authEmail"
             type="email"
             placeholder="Email">
+
 
         <input
             id="authPassword"
@@ -573,77 +978,104 @@
 
 
         <button
-            class="btn btn-dark full"
+            class="btn btn-purple full"
             onclick="submitAuth()">
 
-            Продолжить →
+            Давом додан →
 
         </button>
+
+
+        <div class="auth-switch">
+
+            Аллакай аккаунт доред?
+
+            <button
+                onclick="switchAuthMode()">
+
+                Даромадан
+
+            </button>
+
+        </div>
+
 
     </div>
 
 </div>
 
 
-<!-- CLIENT REQUEST -->
+<!-- ==================================================
+     CLIENT REQUEST
+================================================== -->
 
 <div
     class="modal"
     id="requestModal">
 
-    <div class="modal-content">
+
+    <div class="modal-box">
+
 
         <button
             class="modal-close"
-            onclick="closeRequestModal()">
+            onclick="closeRequest()">
 
             ×
 
         </button>
 
+
         <h2>
-            Дархости шумо
+            Дархости лоиҳа
         </h2>
 
+
         <p>
-            Талаботи бизнесро нависед.
+
+            Талаботи худро пур кунед.
+            Барои фиристодани дархост
+            бояд ба аккаунт даромада бошед.
+
         </p>
 
 
         <input
-            id="businessName"
+            id="requestBusiness"
+            type="text"
             placeholder="Номи бизнес">
 
-        <select id="businessCategory">
+
+        <select id="requestCategory">
 
             <option value="">
-                Соҳа
+                Самти кор
             </option>
 
-            <option>
-                Ресторан
+            <option value="smm">
+                SMM-менеҷмент
             </option>
 
-            <option>
-                Beauty
+            <option value="target">
+                Таргет
             </option>
 
-            <option>
-                Мағоза
+            <option value="content">
+                Контент
             </option>
 
-            <option>
-                Education
+            <option value="design">
+                Дизайн
             </option>
 
-            <option>
-                Дигар
+            <option value="mobile">
+                Мобилография
             </option>
 
         </select>
 
 
-        <select id="businessBudget">
+        <select id="requestBudget">
 
             <option value="">
                 Буҷет
@@ -669,23 +1101,28 @@
 
 
         <textarea
-            id="businessDescription"
+            id="requestDescription"
             placeholder="Талаботи худро нависед...">
         </textarea>
 
 
         <button
-            class="btn btn-dark full"
-            onclick="sendClientRequest()">
+            class="btn btn-purple full"
+            onclick="submitRequest()">
 
             Фиристодани дархост →
 
         </button>
 
+
     </div>
 
 </div>
 
+
+<!-- ==================================================
+     TOAST
+================================================== -->
 
 <div
     id="toast"
@@ -693,7 +1130,12 @@
 </div>
 
 
+<!-- ==================================================
+     JAVASCRIPT
+================================================== -->
+
 <script src="script.js"></script>
+
 
 </body>
 </html>
