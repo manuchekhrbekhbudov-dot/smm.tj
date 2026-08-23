@@ -1,755 +1,699 @@
 <!DOCTYPE html>
 <html lang="tg">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SMM.TJ — Мутахассиси мувофиқро пайдо кун</title>
+    <title>SMM.TJ — Маркетплейси SMM-мутахассисон</title>
 
-<meta name="description"
-content="SMM.TJ — платформаи premium барои пайвасти клиентҳо ба беҳтарин мутахассисони SMM дар Тоҷикистон.">
-
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><rect width=%2224%22 height=%2224%22 rx=%226%22 fill=%22%237C3AED%22/></svg>">
-
-<link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- =========================================================
-     HEADER
-========================================================= -->
+<!-- HEADER -->
 
-<header class="site-header">
+<header class="header">
 
-  <div class="container nav-row">
-
-    <a href="#top" class="brand">
-
-      <span class="brand-mark">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>
-        </svg>
-      </span>
-
-      SMM.TJ
-
+    <a href="index.html" class="logo">
+        SMM<span>.TJ</span>
     </a>
 
+    <nav class="navigation">
 
-    <nav class="nav-links">
+        <a href="#specialists">
+            Мутахассисон
+        </a>
 
-      <a href="#top" class="active">
-        Асосӣ
-      </a>
+        <a href="#how">
+            Чӣ гуна кор мекунад
+        </a>
 
-      <a href="#specialists">
-        Мутахассисон
-      </a>
-
-      <a href="#ai-match">
-        AI Match
-      </a>
-
-      <a href="#categories">
-        Категорияҳо
-      </a>
+        <a href="#business">
+            Барои бизнес
+        </a>
 
     </nav>
 
+    <div class="header-actions">
 
-    <div
-      class="nav-actions"
-      data-auth-slot
-    ></div>
+        <button
+            class="btn btn-outline"
+            onclick="openAuth('login')">
 
+            Даромадан
 
-    <button
-      class="menu-toggle"
-      aria-label="Меню"
-    >
-      <span data-icon="menu"></span>
-    </button>
+        </button>
 
-  </div>
+        <button
+            class="btn btn-dark"
+            onclick="openAuth('register')">
+
+            Регистрация
+
+        </button>
+
+    </div>
 
 </header>
 
 
+<!-- HERO -->
 
-<!-- =========================================================
-     MOBILE MENU
-========================================================= -->
+<main>
 
-<div class="mobile-drawer">
+<section class="hero">
 
-  <div class="mobile-drawer-panel">
+    <div class="hero-content">
+
+        <div class="eyebrow">
+            SMM.TJ · МАРКЕТПЛЕЙС
+        </div>
+
+        <h1>
+            SMM-специалистеро,
+            ки барои бизнесатон
+            <span>мувофиқ аст,</span>
+            пайдо кунед.
+        </h1>
+
+        <p>
+            Платформа барои бизнесҳо ва
+            SMM-специалистҳо. Мутахассисро
+            пайдо кунед, проект пешниҳод кунед
+            ё профили худро созед.
+        </p>
+
+        <div class="hero-actions">
+
+            <button
+                class="btn btn-dark btn-large"
+                onclick="openClientRequest()">
+
+                Мутахассис ёфтан →
+
+            </button>
+
+            <button
+                class="btn btn-outline btn-large"
+                onclick="openAuth('specialist')">
+
+                SMM-специалист шудан
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- AI -->
+
+    <div class="ai-box">
+
+        <div class="ai-header">
+
+            <strong>
+                🤖 AI Matching
+            </strong>
+
+            <span>
+                ONLINE
+            </span>
+
+        </div>
+
+        <h2>
+            Мутахассисро бо ёрии AI пайдо кунед
+        </h2>
+
+        <label>
+            Кадом хизматрасонӣ лозим аст?
+        </label>
+
+        <select id="aiCategory">
+
+            <option value="">
+                Интихоб кунед
+            </option>
+
+            <option value="smm">
+                SMM Management
+            </option>
+
+            <option value="target">
+                Таргет
+            </option>
+
+            <option value="content">
+                Контент
+            </option>
+
+            <option value="design">
+                Дизайн
+            </option>
+
+            <option value="mobile">
+                Мобилография
+            </option>
+
+        </select>
+
+
+        <label>
+            Буҷет
+        </label>
+
+        <select id="aiBudget">
+
+            <option value="">
+                Интихоб кунед
+            </option>
+
+            <option value="1500">
+                То 1 500 сомонӣ
+            </option>
+
+            <option value="3000">
+                1 500 — 3 000 сомонӣ
+            </option>
+
+            <option value="5000">
+                3 000 — 5 000 сомонӣ
+            </option>
+
+            <option value="10000">
+                5 000+ сомонӣ
+            </option>
+
+        </select>
+
+
+        <button
+            class="btn btn-light full"
+            onclick="findWithAI()">
+
+            Пайдо кардани мутахассис →
+
+        </button>
+
+        <div id="aiResult"></div>
+
+    </div>
+
+</section>
+
+
+<!-- STATISTICS -->
+
+<section class="statistics">
+
+    <div>
+        <strong id="specialistsCount">
+            0
+        </strong>
+
+        <span>
+            SMM-специалист
+        </span>
+    </div>
+
+    <div>
+        <strong id="clientsCount">
+            0
+        </strong>
+
+        <span>
+            Клиент
+        </span>
+    </div>
+
+    <div>
+        <strong id="projectsCount">
+            0
+        </strong>
+
+        <span>
+            Проекти анҷомёфта
+        </span>
+    </div>
+
+    <div>
+        <strong id="reviewsCount">
+            0
+        </strong>
+
+        <span>
+            Отзыв
+        </span>
+    </div>
+
+</section>
+
+
+<!-- SPECIALISTS -->
+
+<section
+    class="section"
+    id="specialists">
+
+    <div class="section-heading">
+
+        <div>
+
+            <div class="eyebrow">
+                КАТАЛОГ
+            </div>
+
+            <h2>
+                SMM-специалистҳо
+            </h2>
+
+            <p>
+                Мутахассисони воқеии платформа
+                аз база нишон дода мешаванд.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="filters">
+
+        <button
+            class="filter active"
+            onclick="filterSpecialists('all', this)">
+
+            Ҳама
+
+        </button>
+
+        <button
+            class="filter"
+            onclick="filterSpecialists('smm', this)">
+
+            SMM Manager
+
+        </button>
+
+        <button
+            class="filter"
+            onclick="filterSpecialists('target', this)">
+
+            Таргетолог
+
+        </button>
+
+        <button
+            class="filter"
+            onclick="filterSpecialists('content', this)">
+
+            Контент
+
+        </button>
+
+        <button
+            class="filter"
+            onclick="filterSpecialists('design', this)">
+
+            Дизайнер
+
+        </button>
+
+        <button
+            class="filter"
+            onclick="filterSpecialists('mobile', this)">
+
+            Мобилограф
+
+        </button>
+
+    </div>
+
+
+    <div
+        id="specialistsList"
+        class="specialists-grid">
+
+        <!-- JavaScript инҷо specialist-ҳоро аз база мегузорад -->
+
+    </div>
+
+</section>
+
+
+<!-- HOW IT WORKS -->
+
+<section
+    class="section dark-section"
+    id="how">
+
+    <div class="eyebrow">
+        ЧӢ ГУНА КОР МЕКУНАД?
+    </div>
+
+    <h2>
+        Аз ҷустуҷӯ то
+        <span>лоиҳаи анҷомёфта.</span>
+    </h2>
+
+
+    <div class="steps">
+
+        <div class="step">
+
+            <small>
+                01
+            </small>
+
+            <h3>
+                Мутахассисро ёбед
+            </h3>
+
+            <p>
+                Категория, буҷет ва талаботи худро
+                интихоб кунед.
+            </p>
+
+        </div>
+
+
+        <div class="step">
+
+            <small>
+                02
+            </small>
+
+            <h3>
+                Пешниҳоди проект
+            </h3>
+
+            <p>
+                Ба SMM-специалист дархости
+                ҳамкорӣ фиристед.
+            </p>
+
+        </div>
+
+
+        <div class="step">
+
+            <small>
+                03
+            </small>
+
+            <h3>
+                Проектро анҷом диҳед
+            </h3>
+
+            <p>
+                Пас аз анҷоми проект клиент
+                метавонад отзыв гузорад.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- BUSINESS -->
+
+<section
+    class="section business"
+    id="business">
+
+    <div>
+
+        <div class="eyebrow">
+            БАРОИ БИЗНЕС
+        </div>
+
+        <h2>
+            Мутахассиси худро
+            <span>пайдо кунед.</span>
+        </h2>
+
+        <p>
+            Талаботи худро фиристед ва
+            SMM-специалистҳои мувофиқро пайдо кунед.
+        </p>
+
+        <button
+            class="btn btn-dark btn-large"
+            onclick="openClientRequest()">
+
+            Дархост фиристодан →
+
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- CTA -->
+
+<section class="cta">
+
+    <h2>
+        Шумо SMM-специалист ҳастед?
+    </h2>
+
+    <p>
+        Профили худро созед ва аз
+        бизнесҳо проект гиред.
+    </p>
 
     <button
-      class="icon-btn mobile-drawer-close"
-      aria-label="Пӯшидан"
-    >
-      <span data-icon="close"></span>
+        class="btn btn-light btn-large"
+        onclick="openAuth('specialist')">
+
+        Профил сохтан →
+
     </button>
 
+</section>
 
-    <a href="#top">
-      Асосӣ
-    </a>
-
-
-    <a href="#specialists">
-      Мутахассисон
-    </a>
+</main>
 
 
-    <a href="#ai-match">
-      AI Match
-    </a>
+<!-- FOOTER -->
+
+<footer>
+
+    <div class="footer-logo">
+        SMM.TJ
+    </div>
+
+    <p>
+        Маркетплейси SMM-специалистони Тоҷикистон.
+    </p>
+
+    <div class="footer-bottom">
+        © 2026 SMM.TJ
+    </div>
+
+</footer>
 
 
-    <a href="#categories">
-      Категорияҳо
-    </a>
+<!-- AUTH MODAL -->
+
+<div
+    class="modal"
+    id="authModal">
+
+    <div class="modal-content">
+
+        <button
+            class="modal-close"
+            onclick="closeModal()">
+
+            ×
+
+        </button>
+
+        <h2 id="authTitle">
+            Регистрация
+        </h2>
+
+        <p id="authDescription">
+            Ҳисоби худро созед.
+        </p>
 
 
-    <a href="#site-footer-mount">
-      Ман SMM-мутахассис ҳастам
-    </a>
+        <div id="registerRole">
+
+            <label>
+                Ман:
+            </label>
+
+            <div class="role-buttons">
+
+                <button
+                    onclick="selectRole('client')">
+
+                    👤 Клиент
+
+                </button>
+
+                <button
+                    onclick="selectRole('specialist')">
+
+                    👨‍💻 SMM-специалист
+
+                </button>
+
+            </div>
+
+        </div>
 
 
-    <a href="#site-footer-mount">
-      Ворид шудан
-    </a>
+        <input
+            id="authName"
+            type="text"
+            placeholder="Ном">
 
-  </div>
+        <input
+            id="authPhone"
+            type="tel"
+            placeholder="+992 ...">
+
+        <input
+            id="authEmail"
+            type="email"
+            placeholder="Email">
+
+        <input
+            id="authPassword"
+            type="password"
+            placeholder="Парол">
+
+
+        <button
+            class="btn btn-dark full"
+            onclick="submitAuth()">
+
+            Продолжить →
+
+        </button>
+
+    </div>
 
 </div>
 
 
+<!-- CLIENT REQUEST -->
 
-<!-- =========================================================
-     TOP
-========================================================= -->
+<div
+    class="modal"
+    id="requestModal">
 
-<div id="top"></div>
-
-
-
-<!-- =========================================================
-     HERO
-========================================================= -->
-
-<section class="hero">
-
-  <div class="container hero-grid">
-
-    <div>
-
-      <div class="eyebrow">
-        Premium SMM Marketplace • Тоҷикистон
-      </div>
-
-
-      <h1 class="hero-title">
-        Мутахассиси
-        <span>мувофиқ</span>-ро пайдо кун.
-      </h1>
-
-
-      <p class="hero-sub">
-        Бизнесатонро ба SMM-мутахассисони беҳтарини
-        Тоҷикистон пайваст кунед — профил, портфолио
-        ва шарҳҳои воқеӣ.
-      </p>
-
-
-      <div class="hero-cta">
-
-        <a
-          href="#specialists"
-          class="btn btn-primary"
-        >
-          Мутахассис пайдо кардан
-          <span data-icon="arrow-right"></span>
-        </a>
-
-
-        <a
-          href="#ai-match"
-          class="btn btn-ghost"
-        >
-          Бо AI интихоб кардан
-          <span data-icon="sparkles"></span>
-        </a>
-
-      </div>
-
-
-      <div class="hero-stats">
-
-        <div>
-          <div class="stat-num">
-            100+
-          </div>
-
-          <div class="stat-label">
-            Мутахассис
-          </div>
-        </div>
-
-
-        <div>
-          <div class="stat-num">
-            250+
-          </div>
-
-          <div class="stat-label">
-            Лоиҳа
-          </div>
-        </div>
-
-
-        <div>
-          <div class="stat-num">
-            4.9/5
-          </div>
-
-          <div class="stat-label">
-            Рейтинги миёна
-          </div>
-        </div>
-
-
-        <div>
-          <div class="stat-num">
-            24/7
-          </div>
-
-          <div class="stat-label">
-            Платформа фаъол
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
-
-
-    <!-- HERO CARD -->
-
-    <div class="hero-visual">
-
-      <div
-        class="glow-ambient"
-        style="top:-40px; right:-60px;"
-      ></div>
-
-
-      <div class="premium-card">
-
-        <div class="pc-top">
-
-          <div class="pc-avatar">
-            ФР
-          </div>
-
-
-          <div>
-
-            <div class="pc-name">
-
-              Фарҳод Раҳимов
-
-              <span
-                class="verified-badge"
-                data-icon="check"
-              ></span>
-
-            </div>
-
-
-            <div class="pc-role">
-              Instagram &amp; Reels мутахассис
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div class="pc-rating">
-
-          <span data-icon="star"></span>
-
-          <span>
-            4.9
-          </span>
-
-          <span class="muted">
-            (58 шарҳ)
-          </span>
-
-        </div>
-
-
-        <div class="pc-metrics">
-
-          <div class="pc-metric">
-
-            <b>
-              3.5
-            </b>
-
-            <span>
-              сол таҷриба
-            </span>
-
-          </div>
-
-
-          <div class="pc-metric">
-
-            <b>
-              47
-            </b>
-
-            <span>
-              лоиҳа
-            </span>
-
-          </div>
-
-
-          <div class="pc-metric">
-
-            <b>
-              900+
-            </b>
-
-            <span>
-              смн / моҳ
-            </span>
-
-          </div>
-
-        </div>
-
-
-        <div class="pc-growth">
-
-          <span data-icon="growth"></span>
-
-          <span>
-            +48% рушди аудитория дар 3 моҳ
-          </span>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-
-<!-- =========================================================
-     CATEGORIES
-========================================================= -->
-
-<section
-  class="section"
-  id="categories"
->
-
-  <div class="container">
-
-    <div class="section-head">
-
-      <div class="eyebrow">
-        Категорияҳо
-      </div>
-
-
-      <h2 class="section-title">
-        Хизматрасонии дақиқ барои ҳадафи шумо
-      </h2>
-
-
-      <p class="section-sub">
-        Категорияро интихоб кунед,
-        то мутахассисони мувофиқро бинед.
-      </p>
-
-    </div>
-
-
-    <div
-      class="cat-grid"
-      id="category-grid"
-    >
-      <!-- JS categories -->
-    </div>
-
-  </div>
-
-</section>
-
-
-
-<!-- =========================================================
-     AI MATCH
-========================================================= -->
-
-<section
-  class="section"
-  id="ai-match"
->
-
-  <div class="container">
-
-    <div class="section-head">
-
-      <div class="eyebrow">
-        AI MATCH
-      </div>
-
-
-      <h2 class="section-title">
-        Мутахассиси худро бо AI пайдо кун
-      </h2>
-
-
-      <p class="section-sub">
-        Категория ва мақсади худро интихоб кунед —
-        система мутахассисони мувофиқро пешниҳод мекунад.
-      </p>
-
-    </div>
-
-
-    <div class="premium-card">
-
-      <div
-        class="ai-categories"
-        id="ai-categories"
-      >
+    <div class="modal-content">
 
         <button
-          class="btn btn-outline"
-          data-ai="SMM"
-        >
-          SMM
+            class="modal-close"
+            onclick="closeRequestModal()">
+
+            ×
+
         </button>
 
-
-        <button
-          class="btn btn-outline"
-          data-ai="Instagram"
-        >
-          Instagram
-        </button>
-
-
-        <button
-          class="btn btn-outline"
-          data-ai="Reels"
-        >
-          Reels
-        </button>
-
-
-        <button
-          class="btn btn-outline"
-          data-ai="Target"
-        >
-          Target
-        </button>
-
-      </div>
-
-
-      <div
-        id="aiResult"
-        style="margin-top:25px;"
-      ></div>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-
-<!-- =========================================================
-     SPECIALISTS
-========================================================= -->
-
-<section
-  class="section"
-  id="specialists"
-  style="padding-top:0"
->
-
-  <div class="container">
-
-    <div
-      class="flex-between section-head"
-      style="align-items:flex-end;"
-    >
-
-      <div>
-
-        <div class="eyebrow">
-          Беҳтаринҳо
-        </div>
-
-
-        <h2 class="section-title">
-          Мутахассисони пешбар
+        <h2>
+            Дархости шумо
         </h2>
 
-      </div>
-
-
-      <a
-        href="#specialists"
-        class="btn btn-outline btn-sm"
-      >
-        Ҳамаро дидан
-
-        <span data-icon="arrow-right"></span>
-
-      </a>
-
-    </div>
-
-
-    <div
-      class="spec-grid"
-      id="featured-grid"
-    >
-      <!-- JS specialists -->
-    </div>
-
-
-    <!-- DATABASE SPECIALISTS -->
-
-    <div
-      class="spec-grid"
-      id="specialistsList"
-      style="margin-top:25px;"
-    ></div>
-
-  </div>
-
-</section>
-
-
-
-<!-- =========================================================
-     HOW IT WORKS
-========================================================= -->
-
-<section
-  class="section"
-  style="padding-top:0"
->
-
-  <div class="container">
-
-    <div
-      class="premium-card"
-      style="
-        animation:none;
-        padding:40px;
-        display:grid;
-        grid-template-columns:repeat(3,1fr);
-        gap:32px;
-      "
-    >
-
-      <div>
-
-        <div
-          class="cat-icon"
-          style="margin-bottom:16px"
-          data-icon="content"
-        ></div>
-
-
-        <h3
-          style="
-            font-size:17px;
-            margin-bottom:8px;
-          "
-        >
-          1. Дархостатонро нависед
-        </h3>
-
-
-        <p
-          style="
-            color:var(--text-3);
-            font-size:14px;
-          "
-        >
-          Тавсифи бизнес ва мақсадатонро гузоред
-          ё категорияро аз каталог интихоб кунед.
+        <p>
+            Талаботи бизнесро нависед.
         </p>
 
-      </div>
+
+        <input
+            id="businessName"
+            placeholder="Номи бизнес">
+
+        <select id="businessCategory">
+
+            <option value="">
+                Соҳа
+            </option>
+
+            <option>
+                Ресторан
+            </option>
+
+            <option>
+                Beauty
+            </option>
+
+            <option>
+                Мағоза
+            </option>
+
+            <option>
+                Education
+            </option>
+
+            <option>
+                Дигар
+            </option>
+
+        </select>
 
 
+        <select id="businessBudget">
 
-      <div>
+            <option value="">
+                Буҷет
+            </option>
 
-        <div
-          class="cat-icon"
-          style="margin-bottom:16px"
-          data-icon="user"
-        ></div>
+            <option>
+                То 1 500 сомонӣ
+            </option>
 
+            <option>
+                1 500 — 3 000 сомонӣ
+            </option>
 
-        <h3
-          style="
-            font-size:17px;
-            margin-bottom:8px;
-          "
-        >
-          2. Мутахассисро интихоб кунед
-        </h3>
+            <option>
+                3 000 — 5 000 сомонӣ
+            </option>
 
+            <option>
+                5 000+ сомонӣ
+            </option>
 
-        <p
-          style="
-            color:var(--text-3);
-            font-size:14px;
-          "
-        >
-          Профил, портфолио ва шарҳҳоро дида,
-          "Заказ додан"-ро пахш кунед.
-        </p>
-
-      </div>
+        </select>
 
 
-
-      <div>
-
-        <div
-          class="cat-icon"
-          style="margin-bottom:16px"
-          data-icon="growth"
-        ></div>
+        <textarea
+            id="businessDescription"
+            placeholder="Талаботи худро нависед...">
+        </textarea>
 
 
-        <h3
-          style="
-            font-size:17px;
-            margin-bottom:8px;
-          "
-        >
-          3. Натиҷаро бинед
-        </h3>
+        <button
+            class="btn btn-dark full"
+            onclick="sendClientRequest()">
 
+            Фиристодани дархост →
 
-        <p
-          style="
-            color:var(--text-3);
-            font-size:14px;
-          "
-        >
-          Дар chat муошират кунед,
-          заказро пайгирӣ намоед ва шарҳ гузоред.
-        </p>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-
-<!-- =========================================================
-     REVIEWS
-========================================================= -->
-
-<section
-  class="section"
-  id="reviews"
->
-
-  <div class="container">
-
-    <div class="section-head">
-
-      <div class="eyebrow">
-        REVIEWS
-      </div>
-
-
-      <h2 class="section-title">
-        Отзывы клиентов
-      </h2>
-
-
-      <p class="section-sub">
-        Таҷрибаи воқеии клиентҳои SMM.TJ.
-      </p>
+        </button>
 
     </div>
 
-
-    <div
-      class="spec-grid"
-      id="reviewsList"
-    ></div>
-
-  </div>
-
-</section>
+</div>
 
 
-
-<!-- =========================================================
-     FOOTER
-========================================================= -->
-
-<footer
-  class="site-footer"
-  id="site-footer-mount"
-></footer>
+<div
+    id="toast"
+    class="toast">
+</div>
 
 
-
-<!-- =========================================================
-     SCRIPTS
-========================================================= -->
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
-<script src="js/supabase-client.js"></script>
-
-<script src="js/main.js"></script>
-
-<script src="js/footer.js"></script>
-
-<script src="js/home.js"></script>
-
+<script src="script.js"></script>
 
 </body>
 </html>
