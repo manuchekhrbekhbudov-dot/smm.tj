@@ -1,70 +1,8 @@
-/* =====================================================
-   SMM.TJ — SCRIPT.JS
-   CLEAN VERSION
-===================================================== */
-
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* =================================================
-       ELEMENTS
-    ================================================= */
-
-    const nav = document.getElementById("nav");
-    const menuBtn = document.getElementById("menuBtn");
-
-    const loginBtn = document.getElementById("loginBtn");
-    const registerBtn = document.getElementById("registerBtn");
-
-    const findBtn = document.getElementById("findBtn");
-    const aiBtn = document.getElementById("aiBtn");
-
-    const smmBtn = document.getElementById("smmBtn");
-    const clientBtn = document.getElementById("clientBtn");
-
-    const startAiBtn = document.getElementById("startAiBtn");
-
-    const reviewBtn = document.getElementById("reviewBtn");
-    const adminBtn = document.getElementById("adminBtn");
-
-    /* =================================================
-       MODALS
-    ================================================= */
-
-    const authModal = document.getElementById("authModal");
-    const reviewModal = document.getElementById("reviewModal");
-    const aiModal = document.getElementById("aiModal");
-    const adminModal = document.getElementById("adminModal");
-
-    const authClose = document.getElementById("authClose");
-    const reviewClose = document.getElementById("reviewClose");
-    const aiClose = document.getElementById("aiClose");
-    const adminClose = document.getElementById("adminClose");
-
-    /* =================================================
-       FORMS
-    ================================================= */
-
-    const roleSelection =
-        document.getElementById("roleSelection");
-
-    const smmForm =
-        document.getElementById("smmForm");
-
-    const clientForm =
-        document.getElementById("clientForm");
-
-    const smmRole =
-        document.getElementById("smmRole");
-
-    const clientRole =
-        document.getElementById("clientRole");
-
-    const reviewForm =
-        document.getElementById("reviewForm");
-
-    /* =================================================
+    /* =========================================
        STORAGE
-    ================================================= */
+    ========================================= */
 
     let specialists =
         JSON.parse(
@@ -82,37 +20,33 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-    /* =================================================
-       MENU
-    ================================================= */
+    /* =========================================
+       SHORTCUTS
+    ========================================= */
 
-    if (menuBtn && nav) {
+    const $ = (selector) =>
+        document.querySelector(selector);
 
-        menuBtn.addEventListener("click", () => {
-
-            nav.classList.toggle("mobile");
-
-        });
-
-    }
+    const $$ = (selector) =>
+        document.querySelectorAll(selector);
 
 
-    document.querySelectorAll(".nav a").forEach(link => {
+    /* =========================================
+       MODALS
+    ========================================= */
 
-        link.addEventListener("click", () => {
+    const authModal =
+        $("#authModal");
 
-            if (nav) {
-                nav.classList.remove("mobile");
-            }
+    const aiModal =
+        $("#aiModal");
 
-        });
+    const reviewModal =
+        $("#reviewModal");
 
-    });
+    const adminModal =
+        $("#adminModal");
 
-
-    /* =================================================
-       MODAL FUNCTIONS
-    ================================================= */
 
     function openModal(modal) {
 
@@ -120,12 +54,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         modal.classList.add("active");
 
-        modal.setAttribute(
-            "aria-hidden",
-            "false"
-        );
-
-        document.body.style.overflow = "hidden";
+        document.body.style.overflow =
+            "hidden";
     }
 
 
@@ -135,55 +65,161 @@ document.addEventListener("DOMContentLoaded", () => {
 
         modal.classList.remove("active");
 
-        modal.setAttribute(
-            "aria-hidden",
-            "true"
-        );
-
-        document.body.style.overflow = "";
+        document.body.style.overflow =
+            "";
     }
 
 
-    /* =================================================
+    /* =========================================
+       HEADER MENU
+    ========================================= */
+
+    const menuBtn =
+        $("#menuBtn");
+
+    const nav =
+        $("#nav");
+
+
+    if (menuBtn) {
+
+        menuBtn.addEventListener(
+            "click",
+            () => {
+
+                nav.classList.toggle(
+                    "mobile"
+                );
+
+            }
+        );
+
+    }
+
+
+    $$(".nav a").forEach(link => {
+
+        link.addEventListener(
+            "click",
+            () => {
+
+                nav.classList.remove(
+                    "mobile"
+                );
+
+            }
+        );
+
+    });
+
+
+    /* =========================================
+       HEADER BUTTONS
+    ========================================= */
+
+    $("#loginBtn")?.addEventListener(
+        "click",
+        () => {
+
+            resetAuth();
+
+            openModal(
+                authModal
+            );
+
+        }
+    );
+
+
+    $("#registerBtn")?.addEventListener(
+        "click",
+        () => {
+
+            resetAuth();
+
+            openModal(
+                authModal
+            );
+
+        }
+    );
+
+
+    $("#smmBtn")?.addEventListener(
+        "click",
+        () => {
+
+            resetAuth();
+
+            openModal(
+                authModal
+            );
+
+        }
+    );
+
+
+    $("#clientBtn")?.addEventListener(
+        "click",
+        () => {
+
+            resetAuth();
+
+            openModal(
+                authModal
+            );
+
+        }
+    );
+
+
+    $("#ctaBtn")?.addEventListener(
+        "click",
+        () => {
+
+            resetAuth();
+
+            openModal(
+                authModal
+            );
+
+        }
+    );
+
+
+    /* =========================================
        CLOSE BUTTONS
-    ================================================= */
+    ========================================= */
 
-    if (authClose) {
-        authClose.addEventListener(
-            "click",
-            () => closeModal(authModal)
-        );
-    }
-
-    if (reviewClose) {
-        reviewClose.addEventListener(
-            "click",
-            () => closeModal(reviewModal)
-        );
-    }
-
-    if (aiClose) {
-        aiClose.addEventListener(
-            "click",
-            () => closeModal(aiModal)
-        );
-    }
-
-    if (adminClose) {
-        adminClose.addEventListener(
-            "click",
-            () => closeModal(adminModal)
-        );
-    }
+    $("#authClose")?.addEventListener(
+        "click",
+        () => closeModal(authModal)
+    );
 
 
-    /* =================================================
-       CLICK OUTSIDE MODAL
-    ================================================= */
+    $("#aiClose")?.addEventListener(
+        "click",
+        () => closeModal(aiModal)
+    );
 
-    document.querySelectorAll(".modal").forEach(modal => {
 
-        modal.classList.remove("active");
+    $("#reviewClose")?.addEventListener(
+        "click",
+        () => closeModal(reviewModal)
+    );
+
+
+    $("#adminClose")?.addEventListener(
+        "click",
+        () => closeModal(adminModal)
+    );
+
+
+    /* =========================================
+       CLICK OUTSIDE
+    ========================================= */
+
+    $$(".modal").forEach(modal => {
 
         modal.addEventListener(
             "click",
@@ -192,7 +228,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (
                     event.target === modal
                 ) {
+
                     closeModal(modal);
+
                 }
 
             }
@@ -201,313 +239,341 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
-    /* =================================================
+    /* =========================================
        ESC
-    ================================================= */
+    ========================================= */
 
     document.addEventListener(
         "keydown",
         event => {
 
-            if (event.key !== "Escape") {
-                return;
+            if (
+                event.key === "Escape"
+            ) {
+
+                $$(".modal.active")
+                    .forEach(modal => {
+
+                        closeModal(
+                            modal
+                        );
+
+                    });
+
             }
 
-            document
-                .querySelectorAll(".modal.active")
-                .forEach(modal => {
+        }
+    );
 
-                    closeModal(modal);
 
+    /* =========================================
+       AUTH RESET
+    ========================================= */
+
+    function resetAuth() {
+
+        const role =
+            $("#roleSelection");
+
+        const smmForm =
+            $("#smmForm");
+
+        const clientForm =
+            $("#clientForm");
+
+
+        role?.classList.remove(
+            "hidden"
+        );
+
+        smmForm?.classList.remove(
+            "active"
+        );
+
+        clientForm?.classList.remove(
+            "active"
+        );
+
+    }
+
+
+    /* =========================================
+       SMM ROLE
+    ========================================= */
+
+    $("#smmRole")?.addEventListener(
+        "click",
+        () => {
+
+            $("#roleSelection")
+                .classList.add(
+                    "hidden"
+                );
+
+            $("#smmForm")
+                .classList.add(
+                    "active"
+                );
+
+        }
+    );
+
+
+    /* =========================================
+       CLIENT ROLE
+    ========================================= */
+
+    $("#clientRole")?.addEventListener(
+        "click",
+        () => {
+
+            $("#roleSelection")
+                .classList.add(
+                    "hidden"
+                );
+
+            $("#clientForm")
+                .classList.add(
+                    "active"
+                );
+
+        }
+    );
+
+
+    /* =========================================
+       HERO FIND
+    ========================================= */
+
+    $("#findBtn")?.addEventListener(
+        "click",
+        () => {
+
+            $("#specialists")
+                ?.scrollIntoView({
+                    behavior: "smooth"
                 });
 
         }
     );
 
 
-    /* =================================================
-       AUTH
-    ================================================= */
+    $("#allSpecialistsBtn")?.addEventListener(
+        "click",
+        () => {
 
-    function openAuth() {
+            $("#specialists")
+                ?.scrollIntoView({
+                    behavior: "smooth"
+                });
 
-        if (!authModal) return;
-
-        roleSelection.style.display = "block";
-
-        smmForm.classList.remove("active");
-
-        clientForm.classList.remove("active");
-
-        openModal(authModal);
-    }
+        }
+    );
 
 
-    if (loginBtn) {
-        loginBtn.addEventListener(
-            "click",
-            openAuth
-        );
-    }
-
-
-    if (registerBtn) {
-        registerBtn.addEventListener(
-            "click",
-            openAuth
-        );
-    }
-
-
-    if (smmBtn) {
-
-        smmBtn.addEventListener(
-            "click",
-            openAuth
-        );
-
-    }
-
-
-    if (clientBtn) {
-
-        clientBtn.addEventListener(
-            "click",
-            openAuth
-        );
-
-    }
-
-
-    /* =================================================
-       SMM ROLE
-    ================================================= */
-
-    if (smmRole) {
-
-        smmRole.addEventListener(
-            "click",
-            () => {
-
-                roleSelection.style.display = "none";
-
-                smmForm.classList.add("active");
-
-                clientForm.classList.remove("active");
-
-            }
-        );
-
-    }
-
-
-    /* =================================================
-       CLIENT ROLE
-    ================================================= */
-
-    if (clientRole) {
-
-        clientRole.addEventListener(
-            "click",
-            () => {
-
-                roleSelection.style.display = "none";
-
-                clientForm.classList.add("active");
-
-                smmForm.classList.remove("active");
-
-            }
-        );
-
-    }
-
-
-    /* =================================================
+    /* =========================================
        SMM FORM
-    ================================================= */
+    ========================================= */
 
-    if (smmForm) {
+    $("#smmForm")?.addEventListener(
+        "submit",
+        event => {
 
-        smmForm.addEventListener(
-            "submit",
-            event => {
-
-                event.preventDefault();
+            event.preventDefault();
 
 
-                const specialist = {
+            const specialist = {
 
-                    id: Date.now(),
+                id:
+                    Date.now(),
 
-                    name:
-                        document.getElementById(
-                            "smmName"
-                        ).value.trim(),
+                name:
+                    $("#smmName")
+                        .value
+                        .trim(),
 
-                    phone:
-                        document.getElementById(
-                            "smmPhone"
-                        ).value.trim(),
+                phone:
+                    $("#smmPhone")
+                        .value
+                        .trim(),
 
-                    instagram:
-                        document.getElementById(
-                            "smmInstagram"
-                        ).value.trim(),
+                instagram:
+                    $("#smmInstagram")
+                        .value
+                        .trim(),
 
-                    service:
-                        document.getElementById(
-                            "smmService"
-                        ).value.trim(),
+                service:
+                    $("#smmService")
+                        .value
+                        .trim(),
 
-                    experience:
-                        document.getElementById(
-                            "smmExperience"
-                        ).value.trim(),
+                experience:
+                    $("#smmExperience")
+                        .value
+                        .trim(),
 
-                    price:
-                        document.getElementById(
-                            "smmPrice"
-                        ).value.trim(),
+                price:
+                    $("#smmPrice")
+                        .value
+                        .trim(),
 
-                    category:
-                        document.getElementById(
-                            "smmCategory"
-                        ).value.trim()
+                category:
+                    $("#smmCategory")
+                        .value
 
-                };
-
-
-                specialists.push(
-                    specialist
-                );
+            };
 
 
-                localStorage.setItem(
-                    "smm_specialists",
-                    JSON.stringify(
-                        specialists
-                    )
-                );
+            specialists.push(
+                specialist
+            );
 
 
-                alert(
-                    "✅ Маълумот қабул шуд!"
-                );
+            localStorage.setItem(
+                "smm_specialists",
+                JSON.stringify(
+                    specialists
+                )
+            );
 
 
-                smmForm.reset();
-
-                closeModal(authModal);
-
-                renderSpecialists();
-
-            }
-        );
-
-    }
+            event.target.reset();
 
 
-    /* =================================================
+            resetAuth();
+
+            closeModal(
+                authModal
+            );
+
+
+            renderSpecialists();
+
+
+            alert(
+                "✓ Профили шумо қабул шуд!"
+            );
+
+        }
+    );
+
+
+    /* =========================================
        CLIENT FORM
-    ================================================= */
+    ========================================= */
 
-    if (clientForm) {
+    $("#clientForm")?.addEventListener(
+        "submit",
+        event => {
 
-        clientForm.addEventListener(
-            "submit",
-            event => {
-
-                event.preventDefault();
+            event.preventDefault();
 
 
-                const client = {
+            const client = {
 
-                    id: Date.now(),
+                id:
+                    Date.now(),
 
-                    name:
-                        document.getElementById(
-                            "clientName"
-                        ).value.trim(),
+                name:
+                    $("#clientName")
+                        .value
+                        .trim(),
 
-                    phone:
-                        document.getElementById(
-                            "clientPhone"
-                        ).value.trim(),
+                phone:
+                    $("#clientPhone")
+                        .value
+                        .trim(),
 
-                    business:
-                        document.getElementById(
-                            "clientBusiness"
-                        ).value.trim(),
+                business:
+                    $("#clientBusiness")
+                        .value
+                        .trim(),
 
-                    category:
-                        document.getElementById(
-                            "clientCategory"
-                        ).value.trim(),
+                category:
+                    $("#clientCategory")
+                        .value,
 
-                    need:
-                        document.getElementById(
-                            "clientNeed"
-                        ).value.trim()
+                need:
+                    $("#clientNeed")
+                        .value
+                        .trim()
 
-                };
-
-
-                clients.push(client);
+            };
 
 
-                localStorage.setItem(
-                    "smm_clients",
-                    JSON.stringify(
-                        clients
-                    )
-                );
+            clients.push(
+                client
+            );
 
 
-                alert(
-                    "✅ Дархости шумо қабул шуд!"
-                );
+            localStorage.setItem(
+                "smm_clients",
+                JSON.stringify(
+                    clients
+                )
+            );
 
 
-                clientForm.reset();
-
-                closeModal(authModal);
-
-            }
-        );
-
-    }
+            event.target.reset();
 
 
-    /* =================================================
-       RENDER SPECIALISTS
-    ================================================= */
+            resetAuth();
+
+            closeModal(
+                authModal
+            );
+
+
+            alert(
+                "✓ Дархости шумо қабул шуд!"
+            );
+
+        }
+    );
+
+
+    /* =========================================
+       SPECIALISTS
+    ========================================= */
 
     function renderSpecialists() {
 
         const list =
-            document.getElementById(
-                "specialistsList"
-            );
+            $("#specialistsList");
+
 
         if (!list) return;
 
 
-        if (specialists.length === 0) {
+        if (
+            specialists.length === 0
+        ) {
 
             list.innerHTML = `
 
                 <div class="empty-state">
 
-                    <div>👨‍💻</div>
+                    <div
+                        style="
+                            font-size:36px;
+                            color:#c66aff;
+                        "
+                    >
+                        ✦
+                    </div>
 
-                    <h3>
-                        Ҳоло SMM-СПЕЦИАЛИСТ нест
+                    <h3
+                        style="
+                            color:#fff;
+                            margin:10px 0;
+                        "
+                    >
+                        Ҳоло мутахассис нест
                     </h3>
 
                     <p>
-                        Ҳоло ягон мутахассиси
-                        тасдиқшуда вуҷуд надорад.
+                        Аввалин SMM-мутахассис
+                        профили худро сохта метавонад.
                     </p>
 
                 </div>
@@ -515,124 +581,122 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
 
             return;
+
         }
 
 
         list.innerHTML =
-            specialists.map(
-                specialist => `
+            specialists
+                .map(
+                    specialist => `
 
-                <article
-                    class="specialist-card"
-                >
-
-                    <div
-                        class="specialist-top"
+                    <article
+                        class="specialist-card"
                     >
 
                         <div
-                            class="avatar"
+                            class="specialist-top"
                         >
-                            ${getInitials(
-                                specialist.name
-                            )}
-                        </div>
 
-                        <div>
-
-                            <h3>
-                                ${escapeHTML(
+                            <div
+                                class="specialist-avatar"
+                            >
+                                ${getInitials(
                                     specialist.name
                                 )}
-                            </h3>
+                            </div>
 
-                            <span
-                                class="verified"
-                            >
-                                ✓ Тасдиқшуда
-                            </span>
+                            <div>
+
+                                <h3>
+                                    ${escapeHTML(
+                                        specialist.name
+                                    )}
+                                </h3>
+
+                                <small>
+                                    ✓ VERIFIED SPECIALIST
+                                </small>
+
+                            </div>
 
                         </div>
 
-                    </div>
+
+                        <div
+                            class="specialist-info"
+                        >
+
+                            <p>
+                                ◈
+                                ${escapeHTML(
+                                    specialist.service
+                                )}
+                            </p>
+
+                            <p>
+                                ◎
+                                ${escapeHTML(
+                                    specialist.category
+                                )}
+                            </p>
+
+                            <p>
+                                ⌁ Таҷриба:
+                                ${escapeHTML(
+                                    specialist.experience
+                                )}
+                            </p>
+
+                            <p>
+                                ₽
+                                ${escapeHTML(
+                                    specialist.price
+                                )}
+                            </p>
+
+                        </div>
 
 
-                    <div
-                        class="specialist-info"
-                    >
+                        <button
+                            class="btn btn-primary"
+                            style="width:100%"
+                            data-profile="${specialist.id}"
+                        >
+                            Профилро дидан →
+                        </button>
 
-                        <p>
-                            💼
-                            ${escapeHTML(
-                                specialist.service
-                            )}
-                        </p>
+                    </article>
 
-                        <p>
-                            🎯
-                            ${escapeHTML(
-                                specialist.category
-                            )}
-                        </p>
-
-                        <p>
-                            ⏱️
-                            ${escapeHTML(
-                                specialist.experience
-                            )}
-                        </p>
-
-                        <p>
-                            💰
-                            ${escapeHTML(
-                                specialist.price
-                            )}
-                        </p>
-
-                    </div>
+                `
+                )
+                .join("");
 
 
-                    <button
-                        class="btn btn-primary profile-btn"
-                        data-profile="${specialist.id}"
-                    >
-                        Профилро дидан →
-                    </button>
-
-                </article>
-
-            `
-            ).join("");
-
-
-        document
-            .querySelectorAll(
-                "[data-profile]"
-            )
+        $$("[data-profile]")
             .forEach(button => {
 
                 button.addEventListener(
                     "click",
                     () => {
 
-                        const id =
-                            Number(
-                                button.dataset.profile
-                            );
-
                         const specialist =
                             specialists.find(
                                 item =>
-                                    item.id === id
+                                    item.id ==
+                                    button.dataset.profile
                             );
 
-                        if (!specialist) {
-                            return;
-                        }
 
-                        showProfile(
+                        if (
                             specialist
-                        );
+                        ) {
+
+                            showProfile(
+                                specialist
+                            );
+
+                        }
 
                     }
                 );
@@ -642,104 +706,84 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* =================================================
+    /* =========================================
        PROFILE
-    ================================================= */
+    ========================================= */
 
-    function showProfile(specialist) {
+    function showProfile(
+        specialist
+    ) {
 
         const modal =
             document.createElement(
                 "div"
             );
 
-        modal.className = "modal active";
+
+        modal.className =
+            "modal active";
+
 
         modal.innerHTML = `
 
-            <div class="modal-box">
+            <div
+                class="modal-box"
+            >
 
                 <button
                     class="modal-close"
-                    type="button"
                     data-close
                 >
                     ×
                 </button>
 
-                <div
-                    style="
-                        text-align:center;
-                    "
+                <span
+                    class="section-label"
                 >
+                    VERIFIED PROFILE
+                </span>
 
-                    <div
-                        class="profile-avatar"
-                        style="
-                            margin:0 auto 15px;
-                        "
-                    >
-                        ${getInitials(
-                            specialist.name
-                        )}
-                    </div>
-
-                    <span
-                        class="eyebrow"
-                    >
-                        ✓ VERIFIED SMM
-                    </span>
-
-                    <h2
-                        style="
-                            margin-top:15px;
-                        "
-                    >
-                        ${escapeHTML(
-                            specialist.name
-                        )}
-                    </h2>
-
-                </div>
+                <h2>
+                    ${escapeHTML(
+                        specialist.name
+                    )}
+                </h2>
 
 
                 <div
                     class="specialist-info"
-                    style="
-                        margin-top:25px;
-                    "
                 >
 
                     <p>
-                        💼 Хизмат:
+                        Хизмат:
                         ${escapeHTML(
                             specialist.service
                         )}
                     </p>
 
                     <p>
-                        🎯 Категория:
+                        Категория:
                         ${escapeHTML(
                             specialist.category
                         )}
                     </p>
 
                     <p>
-                        ⏱️ Таҷриба:
+                        Таҷриба:
                         ${escapeHTML(
                             specialist.experience
                         )}
                     </p>
 
                     <p>
-                        💰 Нарх:
+                        Нарх:
                         ${escapeHTML(
                             specialist.price
                         )}
                     </p>
 
                     <p>
-                        📱 Instagram:
+                        Instagram:
                         ${escapeHTML(
                             specialist.instagram ||
                             "Нест"
@@ -751,10 +795,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 <button
                     class="btn btn-primary"
-                    style="
-                        width:100%;
-                        margin-top:15px;
-                    "
+                    style="width:100%"
                     data-contact
                 >
                     📩 Тамос гирифтан
@@ -771,7 +812,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         modal
-            .querySelector("[data-close]")
+            .querySelector(
+                "[data-close]"
+            )
             .addEventListener(
                 "click",
                 () => modal.remove()
@@ -785,7 +828,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (
                     event.target === modal
                 ) {
+
                     modal.remove();
+
                 }
 
             }
@@ -793,14 +838,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         modal
-            .querySelector("[data-contact]")
+            .querySelector(
+                "[data-contact]"
+            )
             .addEventListener(
                 "click",
                 () => {
 
-                    alert(
-                        "📩 Барои тамос Instagram ё рақами мутахассисро истифода баред."
-                    );
+                    if (
+                        specialist.instagram
+                    ) {
+
+                        const username =
+                            specialist.instagram
+                                .replace(
+                                    /^@/,
+                                    ""
+                                )
+                                .trim();
+
+
+                        window.open(
+                            `https://instagram.com/${encodeURIComponent(username)}`,
+                            "_blank"
+                        );
+
+                    } else {
+
+                        alert(
+                            "Instagram-и мутахассис нишон дода нашудааст."
+                        );
+
+                    }
 
                 }
             );
@@ -808,75 +877,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* =================================================
-       FIND BUTTON
-    ================================================= */
+    /* =========================================
+       CATALOG
+    ========================================= */
 
-    if (findBtn) {
+    $$(".catalog-card")
+        .forEach(card => {
 
-        findBtn.addEventListener(
-            "click",
-            () => {
-
-                document
-                    .getElementById(
-                        "specialists"
-                    )
-                    ?.scrollIntoView({
-                        behavior: "smooth"
-                    });
-
-            }
-        );
-
-    }
-
-
-    /* =================================================
-       AI
-    ================================================= */
-
-    function openAI() {
-
-        openModal(aiModal);
-
-    }
-
-
-    if (aiBtn) {
-
-        aiBtn.addEventListener(
-            "click",
-            openAI
-        );
-
-    }
-
-
-    if (startAiBtn) {
-
-        startAiBtn.addEventListener(
-            "click",
-            openAI
-        );
-
-    }
-
-
-    document
-        .querySelectorAll(
-            ".ai-categories button"
-        )
-        .forEach(button => {
-
-            button.addEventListener(
+            card.addEventListener(
                 "click",
                 () => {
 
                     const category =
-                        button.dataset.ai;
+                        card.dataset.category;
 
-                    showAIResult(
+
+                    openModal(
+                        aiModal
+                    );
+
+
+                    showAI(
                         category
                     );
 
@@ -886,17 +907,63 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
 
-    function showAIResult(category) {
+    /* =========================================
+       AI
+    ========================================= */
+
+    $("#aiBtn")?.addEventListener(
+        "click",
+        () => {
+
+            openModal(
+                aiModal
+            );
+
+        }
+    );
+
+
+    $("#startAiBtn")?.addEventListener(
+        "click",
+        () => {
+
+            openModal(
+                aiModal
+            );
+
+        }
+    );
+
+
+    $$(".ai-categories button")
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    showAI(
+                        button.dataset.ai
+                    );
+
+                }
+            );
+
+        });
+
+
+    function showAI(
+        category
+    ) {
 
         const result =
-            document.getElementById(
-                "aiResult"
-            );
+            $("#aiResult");
+
 
         if (!result) return;
 
 
-        const matches =
+        const found =
             specialists.filter(
                 specialist =>
                     specialist.category
@@ -904,7 +971,9 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
 
-        if (matches.length === 0) {
+        if (
+            found.length === 0
+        ) {
 
             result.innerHTML = `
 
@@ -912,20 +981,33 @@ document.addEventListener("DOMContentLoaded", () => {
                     class="empty-state"
                     style="
                         margin-top:15px;
+                        padding:28px 15px;
                     "
                 >
 
-                    <div>🤖</div>
+                    <div
+                        style="
+                            font-size:28px;
+                            color:#c66aff;
+                        "
+                    >
+                        ✦
+                    </div>
 
-                    <h3>
+                    <strong
+                        style="
+                            color:#fff;
+                            display:block;
+                            margin:8px 0;
+                        "
+                    >
                         Мутахассис ёфт нашуд
-                    </h3>
+                    </strong>
 
                     <p>
-                        Барои «${escapeHTML(
-                            category
-                        )}»
-                        ҳоло SMM-щик нест.
+                        Барои
+                        ${escapeHTML(category)}
+                        ҳоло профил нест.
                     </p>
 
                 </div>
@@ -933,27 +1015,37 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
 
             return;
+
         }
 
 
         result.innerHTML = `
 
-            <div
-                class="ai-result"
+            <p
+                style="
+                    color:#938899;
+                    font-size:11px;
+                    margin:12px 0;
+                "
             >
+                Мутахассисон барои
+                <strong
+                    style="color:#fff"
+                >
+                    ${escapeHTML(category)}
+                </strong>
+            </p>
 
-                <h3>
-                    🤖 Натиҷаи AI
-                </h3>
+            ${found
+                .slice(0, 5)
+                .map(
+                    specialist => `
 
-                ${matches
-                    .slice(0, 3)
-                    .map(
-                        specialist => `
+                    <div
+                        class="ai-result-card"
+                    >
 
-                        <div
-                            class="ai-result-card"
-                        >
+                        <div>
 
                             <strong>
                                 ${escapeHTML(
@@ -961,34 +1053,31 @@ document.addEventListener("DOMContentLoaded", () => {
                                 )}
                             </strong>
 
-                            <span>
+                            <small>
                                 ${escapeHTML(
                                     specialist.price
                                 )}
-                            </span>
-
-                            <button
-                                class="btn btn-primary"
-                                data-ai-profile="${specialist.id}"
-                            >
-                                Дидан
-                            </button>
+                            </small>
 
                         </div>
 
-                    `
-                    )
-                    .join("")}
+                        <button
+                            class="btn btn-primary"
+                            data-ai-profile="${specialist.id}"
+                        >
+                            Дидан
+                        </button>
 
-            </div>
+                    </div>
+
+                `
+                )
+                .join("")}
 
         `;
 
 
-        result
-            .querySelectorAll(
-                "[data-ai-profile]"
-            )
+        $$("[data-ai-profile]")
             .forEach(button => {
 
                 button.addEventListener(
@@ -998,16 +1087,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         const specialist =
                             specialists.find(
                                 item =>
-                                    item.id ===
-                                    Number(
-                                        button.dataset
-                                            .aiProfile
-                                    )
+                                    item.id ==
+                                    button.dataset.aiProfile
                             );
 
-                        if (specialist) {
 
-                            closeModal(aiModal);
+                        closeModal(
+                            aiModal
+                        );
+
+
+                        if (
+                            specialist
+                        ) {
 
                             showProfile(
                                 specialist
@@ -1023,103 +1115,97 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* =================================================
+    /* =========================================
        REVIEWS
-    ================================================= */
+    ========================================= */
 
-    if (reviewBtn) {
+    $("#reviewBtn")?.addEventListener(
+        "click",
+        () => {
 
-        reviewBtn.addEventListener(
-            "click",
-            () => {
+            openModal(
+                reviewModal
+            );
 
-                openModal(
-                    reviewModal
-                );
-
-            }
-        );
-
-    }
+        }
+    );
 
 
-    if (reviewForm) {
+    $("#reviewForm")?.addEventListener(
+        "submit",
+        event => {
 
-        reviewForm.addEventListener(
-            "submit",
-            event => {
-
-                event.preventDefault();
+            event.preventDefault();
 
 
-                const review = {
+            const review = {
 
-                    id: Date.now(),
+                id:
+                    Date.now(),
 
-                    name:
-                        document.getElementById(
-                            "reviewName"
-                        ).value.trim(),
+                name:
+                    $("#reviewName")
+                        .value
+                        .trim(),
 
-                    rating:
-                        Number(
-                            document.getElementById(
-                                "reviewRating"
-                            ).value
-                        ),
+                rating:
+                    Number(
+                        $("#reviewRating")
+                            .value
+                    ),
 
-                    text:
-                        document.getElementById(
-                            "reviewText"
-                        ).value.trim()
+                text:
+                    $("#reviewText")
+                        .value
+                        .trim()
 
-                };
-
-
-                reviews.push(review);
+            };
 
 
-                localStorage.setItem(
-                    "smm_reviews",
-                    JSON.stringify(
-                        reviews
-                    )
-                );
+            reviews.push(
+                review
+            );
 
 
-                reviewForm.reset();
-
-                closeModal(
-                    reviewModal
-                );
-
-                renderReviews();
-
-                alert(
-                    "⭐ Отзыв илова шуд!"
-                );
-
-            }
-        );
-
-    }
+            localStorage.setItem(
+                "smm_reviews",
+                JSON.stringify(
+                    reviews
+                )
+            );
 
 
-    /* =================================================
-       RENDER REVIEWS
-    ================================================= */
+            event.target.reset();
+
+
+            closeModal(
+                reviewModal
+            );
+
+
+            renderReviews();
+
+
+            alert(
+                "★ Отзыв илова шуд!"
+            );
+
+        }
+    );
+
 
     function renderReviews() {
 
         const list =
-            document.getElementById(
-                "reviewsList"
-            );
+            $("#reviewsList");
+
 
         if (!list) return;
 
 
-        if (reviews.length === 0) {
+        if (
+            reviews.length === 0
+        ) {
 
             list.innerHTML = `
 
@@ -1127,15 +1213,26 @@ document.addEventListener("DOMContentLoaded", () => {
                     class="empty-state"
                 >
 
-                    <div>⭐</div>
+                    <div
+                        style="
+                            font-size:35px;
+                            color:#c66aff;
+                        "
+                    >
+                        ★
+                    </div>
 
-                    <h3>
+                    <h3
+                        style="
+                            color:#fff;
+                            margin:10px 0;
+                        "
+                    >
                         Ҳоло отзыв нест
                     </h3>
 
                     <p>
-                        Ҳанӯз ягон клиент
-                        отзыв нагузоштааст.
+                        Аввалин отзывро гузоред.
                     </p>
 
                 </div>
@@ -1143,6 +1240,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
 
             return;
+
         }
 
 
@@ -1178,11 +1276,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                 </strong>
 
                                 <div
-                                    class="stars"
+                                    class="review-stars"
                                 >
                                     ${"★".repeat(
                                         review.rating
                                     )}
+
                                     ${"☆".repeat(
                                         5 -
                                         review.rating
@@ -1209,190 +1308,168 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* =================================================
+    /* =========================================
        ADMIN
-    ================================================= */
+    ========================================= */
 
-    const adminLogin =
-        document.getElementById(
-            "adminLogin"
-        );
+    $("#adminBtn")?.addEventListener(
+        "click",
+        () => {
 
-    const adminDashboard =
-        document.getElementById(
-            "adminDashboard"
-        );
-
-    const adminLoginBtn =
-        document.getElementById(
-            "adminLoginBtn"
-        );
-
-    if (adminBtn) {
-
-        adminBtn.addEventListener(
-            "click",
-            () => {
-
-                openModal(
-                    adminModal
+            $("#adminLogin")
+                ?.classList.remove(
+                    "hidden"
                 );
 
-                adminLogin.style.display =
-                    "block";
+            $("#adminDashboard")
+                ?.classList.add(
+                    "hidden"
+                );
 
-                adminDashboard.style.display =
-                    "none";
+            openModal(
+                adminModal
+            );
 
-            }
-        );
-
-    }
+        }
+    );
 
 
-    if (adminLoginBtn) {
-
-        adminLoginBtn.addEventListener(
+    $("#adminLoginBtn")
+        ?.addEventListener(
             "click",
             () => {
 
                 const password =
-                    document.getElementById(
-                        "adminPassword"
-                    ).value;
+                    $("#adminPassword")
+                        .value;
 
+
+                /*
+                    TEST PASSWORD:
+                    1234
+                */
 
                 if (
                     password !== "1234"
                 ) {
 
                     alert(
-                        "❌ Парол нодуруст аст."
+                        "✕ Парол нодуруст аст."
                     );
 
                     return;
+
                 }
 
 
-                adminLogin.style.display =
-                    "none";
+                $("#adminLogin")
+                    .classList.add(
+                        "hidden"
+                    );
 
-                adminDashboard.style.display =
-                    "block";
+
+                $("#adminDashboard")
+                    .classList.remove(
+                        "hidden"
+                    );
+
 
                 renderAdmin();
 
             }
         );
 
-    }
-
-
-    /* =================================================
-       ADMIN DASHBOARD
-    ================================================= */
 
     function renderAdmin() {
 
         const smmCount =
-            document.getElementById(
-                "smmCount"
-            );
+            $("#smmCount");
 
         const clientCount =
-            document.getElementById(
-                "clientCount"
-            );
-
-        const requestCount =
-            document.getElementById(
-                "requestCount"
-            );
+            $("#clientCount");
 
         const reviewCount =
-            document.getElementById(
-                "reviewCount"
-            );
+            $("#reviewCount");
 
 
         if (smmCount) {
+
             smmCount.textContent =
                 specialists.length;
+
         }
+
 
         if (clientCount) {
+
             clientCount.textContent =
                 clients.length;
+
         }
 
-        if (requestCount) {
-            requestCount.textContent =
-                clients.length;
-        }
 
         if (reviewCount) {
+
             reviewCount.textContent =
                 reviews.length;
+
         }
 
 
-        renderAdminSMM();
+        renderAdminSpecialists();
 
         renderAdminClients();
 
     }
 
 
-    function renderAdminSMM() {
+    function renderAdminSpecialists() {
 
         const list =
-            document.getElementById(
-                "adminSmmList"
-            );
+            $("#adminSmmList");
+
 
         if (!list) return;
 
 
-        if (specialists.length === 0) {
+        if (
+            specialists.length === 0
+        ) {
 
             list.innerHTML =
-                "<p>Ҳоло маълумот нест.</p>";
+                `
+                <p
+                    style="
+                        color:#817787;
+                        font-size:10px;
+                    "
+                >
+                    Ҳоло маълумот нест.
+                </p>
+                `;
 
             return;
+
         }
 
 
         list.innerHTML =
-            specialists.map(
-                specialist => `
+            specialists
+                .map(
+                    specialist => `
 
-                <div
-                    class="admin-item"
-                >
+                    <div
+                        class="admin-item"
+                    >
 
-                    <div>
-
-                        <strong>
+                        <span>
                             ${escapeHTML(
                                 specialist.name
                             )}
-                        </strong>
-
-                        <p>
-                            ${escapeHTML(
-                                specialist.category
-                            )}
-                        </p>
-
-                    </div>
-
-
-                    <div
-                        class="admin-actions"
-                    >
+                        </span>
 
                         <button
-                            class="btn btn-danger"
+                            class="delete-btn"
                             data-delete-smm="${specialist.id}"
                         >
                             Нест кардан
@@ -1400,33 +1477,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     </div>
 
-                </div>
+                `
+                )
+                .join("");
 
-            `
-            ).join("");
 
-
-        list
-            .querySelectorAll(
-                "[data-delete-smm]"
-            )
+        $$("[data-delete-smm]")
             .forEach(button => {
 
                 button.addEventListener(
                     "click",
                     () => {
 
-                        const id =
-                            Number(
-                                button.dataset
-                                    .deleteSmm
-                            );
-
-
                         specialists =
                             specialists.filter(
-                                item =>
-                                    item.id !== id
+                                specialist =>
+                                    specialist.id !=
+                                    button.dataset.deleteSmm
                             );
 
 
@@ -1453,65 +1520,71 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderAdminClients() {
 
         const list =
-            document.getElementById(
-                "adminClientList"
-            );
+            $("#adminClientList");
+
 
         if (!list) return;
 
 
-        if (clients.length === 0) {
+        if (
+            clients.length === 0
+        ) {
 
             list.innerHTML =
-                "<p>Ҳоло маълумот нест.</p>";
+                `
+                <p
+                    style="
+                        color:#817787;
+                        font-size:10px;
+                    "
+                >
+                    Ҳоло маълумот нест.
+                </p>
+                `;
 
             return;
+
         }
 
 
         list.innerHTML =
-            clients.map(
-                client => `
+            clients
+                .map(
+                    client => `
 
-                <div
-                    class="admin-item"
-                >
+                    <div
+                        class="admin-item"
+                    >
 
-                    <div>
+                        <span>
 
-                        <strong>
                             ${escapeHTML(
                                 client.name
                             )}
-                        </strong>
 
-                        <p>
+                            —
                             ${escapeHTML(
                                 client.business
                             )}
-                        </p>
+
+                        </span>
 
                     </div>
 
-                    <small>
-                        ${escapeHTML(
-                            client.category
-                        )}
-                    </small>
-
-                </div>
-
-            `
-            ).join("");
+                `
+                )
+                .join("");
 
     }
 
 
-    /* =================================================
+    /* =========================================
        HELPERS
-    ================================================= */
+    ========================================= */
 
-    function getInitials(name) {
+    function getInitials(
+        name
+    ) {
 
         if (!name) return "?";
 
@@ -1522,7 +1595,8 @@ document.addEventListener("DOMContentLoaded", () => {
             .slice(0, 2)
             .map(
                 word =>
-                    word[0]
+                    word
+                        .charAt(0)
                         .toUpperCase()
             )
             .join("");
@@ -1530,9 +1604,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    function escapeHTML(value) {
+    function escapeHTML(
+        value
+    ) {
 
-        return String(value ?? "")
+        return String(
+            value ?? ""
+        )
             .replace(
                 /&/g,
                 "&amp;"
@@ -1557,9 +1635,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* =================================================
+    /* =========================================
        START
-    ================================================= */
+    ========================================= */
 
     renderSpecialists();
 
@@ -1567,7 +1645,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     console.log(
-        "🚀 SMM.TJ — script loaded successfully"
+        "✓ SMM.TJ PREMIUM — READY"
     );
 
 });
