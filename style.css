@@ -2546,3 +2546,213 @@ img{
     scroll-behavior:auto !important;
   }
 }
+/* =========================================
+   MOBILE FIX — CONTENT MUST BE VISIBLE
+========================================= */
+
+@media (max-width: 650px) {
+
+    html,
+    body {
+        width: 100% !important;
+        min-width: 0 !important;
+        overflow-x: hidden !important;
+        background: #050308 !important;
+    }
+
+    /* ҲАМАИ CONTENT НАМОЁН */
+
+    header,
+    main,
+    section,
+    footer,
+    .hero,
+    .hero-grid,
+    .hero-card,
+    .container,
+    .specialists-grid,
+    .specialist-card,
+    .ai-card,
+    .reviews-grid,
+    .review-card {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Агар animation онҳоро дар аввал пинҳон карда бошад */
+
+    [data-aos],
+    [data-animation],
+    .reveal,
+    .fade,
+    .animate {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+    }
+
+    /* CONTAINER */
+
+    .container {
+        width: calc(100% - 28px) !important;
+        max-width: 100% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    /* HERO */
+
+    .hero {
+        min-height: auto !important;
+        height: auto !important;
+
+        padding:
+            55px 0 70px !important;
+    }
+
+    .hero-grid {
+        width: 100% !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        gap: 35px !important;
+    }
+
+    .hero-grid > * {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .hero h1 {
+        width: 100% !important;
+
+        font-size:
+            clamp(40px, 12.5vw, 58px) !important;
+
+        line-height: .94 !important;
+
+        letter-spacing: -3px !important;
+
+        word-break: normal !important;
+        overflow-wrap: normal !important;
+    }
+
+    .hero-grid > div > p {
+        width: 100% !important;
+
+        font-size: 14px !important;
+        line-height: 1.65 !important;
+    }
+
+    .hero-buttons {
+        width: 100% !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        gap: 10px !important;
+    }
+
+    .hero-buttons .btn {
+        width: 100% !important;
+    }
+
+    /* HERO CARD */
+
+    .hero-card {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        padding: 21px !important;
+
+        transform: none !important;
+
+        border-radius: 21px !important;
+    }
+
+    /* CATALOG */
+
+    .specialists-grid {
+        width: 100% !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        gap: 14px !important;
+    }
+
+    .specialist-card {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        padding: 20px !important;
+
+        transform: none !important;
+    }
+
+    /* AI */
+
+    .ai-card {
+        width: 100% !important;
+        max-width: 100% !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        align-items: flex-start !important;
+
+        padding: 23px !important;
+
+        gap: 17px !important;
+    }
+
+    .ai-categories {
+        width: 100% !important;
+
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+    }
+
+    /* REVIEWS */
+
+    .reviews-grid {
+        width: 100% !important;
+
+        display: flex !important;
+        flex-direction: column !important;
+
+        gap: 14px !important;
+    }
+
+    .review-card {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* SECTION */
+
+    .section {
+        width: 100% !important;
+
+        padding:
+            65px 0 !important;
+    }
+
+    /* HEADER */
+
+    .header-inner {
+        min-height: 65px !important;
+    }
+
+    .nav {
+        max-width: 100vw !important;
+    }
+
+    /* MODAL */
+
+    .modal-box {
+        width: calc(100vw - 12px) !important;
+        max-width: calc(100vw - 12px) !important;
+    }
+}
