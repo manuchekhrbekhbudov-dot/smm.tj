@@ -3,7 +3,61 @@
 /* =====================================================
    SMM.TJ — SCRIPT.JS
 ===================================================== */
+/* =========================================================
+   MODAL SYSTEM — CLEAN & FIXED
+   ========================================================= */
 
+function openModal(modal) {
+    if (!modal) return;
+
+    modal.classList.add("active");
+    document.body.style.overflow = "hidden";
+}
+
+
+function closeModal(modal) {
+    if (!modal) return;
+
+    modal.classList.remove("active");
+    document.body.style.overflow = "";
+}
+
+
+/* =========================================================
+   CLOSE MODAL — CLICK OUTSIDE
+   ========================================================= */
+
+document.querySelectorAll(".modal").forEach(modal => {
+
+    // Ҳангоми оғоз ҳама modal пӯшида
+    modal.classList.remove("active");
+
+    modal.addEventListener("click", event => {
+
+        if (event.target === modal) {
+            closeModal(modal);
+        }
+
+    });
+
+});
+
+
+/* =========================================================
+   CLOSE MODAL — ESC
+   ========================================================= */
+
+document.addEventListener("keydown", event => {
+
+    if (event.key !== "Escape") return;
+
+    document
+        .querySelectorAll(".modal.active")
+        .forEach(modal => {
+            closeModal(modal);
+        });
+
+});
 
 /* =====================================================
    SUPABASE
