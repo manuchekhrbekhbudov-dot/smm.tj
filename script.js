@@ -1,555 +1,526 @@
-"use strict";
-
 /* =====================================================
    SMM.TJ — SCRIPT.JS
+   CLEAN VERSION
 ===================================================== */
-/* =========================================================
-   MODAL SYSTEM — CLEAN & FIXED
-   ========================================================= */
 
-function openModal(modal) {
-    if (!modal) return;
+document.addEventListener("DOMContentLoaded", () => {
 
-    modal.classList.add("active");
-    document.body.style.overflow = "hidden";
-}
+    /* =================================================
+       ELEMENTS
+    ================================================= */
+
+    const nav = document.getElementById("nav");
+    const menuBtn = document.getElementById("menuBtn");
+
+    const loginBtn = document.getElementById("loginBtn");
+    const registerBtn = document.getElementById("registerBtn");
+
+    const findBtn = document.getElementById("findBtn");
+    const aiBtn = document.getElementById("aiBtn");
+
+    const smmBtn = document.getElementById("smmBtn");
+    const clientBtn = document.getElementById("clientBtn");
+
+    const startAiBtn = document.getElementById("startAiBtn");
+
+    const reviewBtn = document.getElementById("reviewBtn");
+    const adminBtn = document.getElementById("adminBtn");
+
+    /* =================================================
+       MODALS
+    ================================================= */
+
+    const authModal = document.getElementById("authModal");
+    const reviewModal = document.getElementById("reviewModal");
+    const aiModal = document.getElementById("aiModal");
+    const adminModal = document.getElementById("adminModal");
+
+    const authClose = document.getElementById("authClose");
+    const reviewClose = document.getElementById("reviewClose");
+    const aiClose = document.getElementById("aiClose");
+    const adminClose = document.getElementById("adminClose");
+
+    /* =================================================
+       FORMS
+    ================================================= */
+
+    const roleSelection =
+        document.getElementById("roleSelection");
+
+    const smmForm =
+        document.getElementById("smmForm");
+
+    const clientForm =
+        document.getElementById("clientForm");
+
+    const smmRole =
+        document.getElementById("smmRole");
+
+    const clientRole =
+        document.getElementById("clientRole");
+
+    const reviewForm =
+        document.getElementById("reviewForm");
+
+    /* =================================================
+       STORAGE
+    ================================================= */
+
+    let specialists =
+        JSON.parse(
+            localStorage.getItem("smm_specialists") || "[]"
+        );
+
+    let clients =
+        JSON.parse(
+            localStorage.getItem("smm_clients") || "[]"
+        );
+
+    let reviews =
+        JSON.parse(
+            localStorage.getItem("smm_reviews") || "[]"
+        );
 
 
-function closeModal(modal) {
-    if (!modal) return;
+    /* =================================================
+       MENU
+    ================================================= */
 
-    modal.classList.remove("active");
-    document.body.style.overflow = "";
-}
+    if (menuBtn && nav) {
+
+        menuBtn.addEventListener("click", () => {
+
+            nav.classList.toggle("mobile");
+
+        });
+
+    }
 
 
-/* =========================================================
-   CLOSE MODAL — CLICK OUTSIDE
-   ========================================================= */
+    document.querySelectorAll(".nav a").forEach(link => {
 
-document.querySelectorAll(".modal").forEach(modal => {
+        link.addEventListener("click", () => {
 
-    // Ҳангоми оғоз ҳама modal пӯшида
-    modal.classList.remove("active");
+            if (nav) {
+                nav.classList.remove("mobile");
+            }
 
-    modal.addEventListener("click", event => {
-
-        if (event.target === modal) {
-            closeModal(modal);
-        }
+        });
 
     });
 
-});
 
+    /* =================================================
+       MODAL FUNCTIONS
+    ================================================= */
 
-/* =========================================================
-   CLOSE MODAL — ESC
-   ========================================================= */
+    function openModal(modal) {
 
-document.addEventListener("keydown", event => {
+        if (!modal) return;
 
-    if (event.key !== "Escape") return;
+        modal.classList.add("active");
 
-    document
-        .querySelectorAll(".modal.active")
-        .forEach(modal => {
-            closeModal(modal);
-        });
-
-});
-
-/* =====================================================
-   SUPABASE
-===================================================== */
-
-const SUPABASE_URL =
-    "https://lcldaingzicxbottlznq.supabase.co";
-
-const SUPABASE_KEY =
-    "sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
-
-const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
-
-
-/* =====================================================
-   HELPERS
-===================================================== */
-
-const $ = id =>
-    document.getElementById(id);
-
-
-function openModal(id) {
-
-    const element = $(id);
-
-    if (element) {
-        element.classList.add("active");
-    }
-}
-
-
-function closeModal(id) {
-
-    const element = $(id);
-
-    if (element) {
-        element.classList.remove("active");
-    }
-}
-
-
-function escapeHTML(value) {
-
-    return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-
-/* =====================================================
-   DATA
-===================================================== */
-
-let smmProfiles = [];
-let clients = [];
-let requests = [];
-let reviews = [];
-
-
-/* =====================================================
-   LANGUAGE
-===================================================== */
-
-const translations = {
-
-    tg: {
-        home: "Асосӣ",
-        specialists: "SMM-щикҳо",
-        ai: "AI",
-        reviews: "Отзывҳо",
-        login: "Даромадан",
-        register: "Сабти ном"
-    },
-
-    ru: {
-        home: "Главная",
-        specialists: "SMM-специалисты",
-        ai: "AI",
-        reviews: "Отзывы",
-        login: "Войти",
-        register: "Регистрация"
-    },
-
-    en: {
-        home: "Home",
-        specialists: "SMM Specialists",
-        ai: "AI",
-        reviews: "Reviews",
-        login: "Login",
-        register: "Sign Up"
-    }
-
-};
-
-
-function setLanguage(language) {
-
-    if (!translations[language]) {
-        language = "tg";
-    }
-
-
-    localStorage.setItem(
-        "smm_language",
-        language
-    );
-
-
-    const t =
-        translations[language];
-
-
-    const nav =
-        document.querySelectorAll(".nav a");
-
-
-    if (nav[0])
-        nav[0].textContent = t.home;
-
-
-    if (nav[1])
-        nav[1].textContent = t.specialists;
-
-
-    if (nav[2])
-        nav[2].textContent = t.ai;
-
-
-    if (nav[3])
-        nav[3].textContent = t.reviews;
-
-
-    const login =
-        $("loginBtn");
-
-    const register =
-        $("registerBtn");
-
-
-    if (login)
-        login.textContent = t.login;
-
-
-    if (register)
-        register.textContent = t.register;
-
-
-    const languageBtn =
-        $("languageBtn");
-
-
-    if (languageBtn) {
-
-        const flags = {
-            tg: "🇹🇯 TJ",
-            ru: "🇷🇺 RU",
-            en: "🇬🇧 EN"
-        };
-
-        languageBtn.textContent =
-            flags[language];
-    }
-
-}
-
-
-function setupLanguage() {
-
-    const button =
-        $("languageBtn");
-
-    const menu =
-        $("languageMenu");
-
-
-    if (!button || !menu)
-        return;
-
-
-    button.addEventListener(
-        "click",
-        event => {
-
-            event.stopPropagation();
-
-            menu.classList.toggle(
-                "active"
-            );
-
-        }
-    );
-
-
-    menu
-        .querySelectorAll(
-            "[data-lang]"
-        )
-        .forEach(item => {
-
-            item.addEventListener(
-                "click",
-                () => {
-
-                    setLanguage(
-                        item.dataset.lang
-                    );
-
-                    menu.classList.remove(
-                        "active"
-                    );
-
-                }
-            );
-
-        });
-
-
-    document.addEventListener(
-        "click",
-        () => {
-
-            menu.classList.remove(
-                "active"
-            );
-
-        }
-    );
-
-
-    setLanguage(
-        localStorage.getItem(
-            "smm_language"
-        ) || "tg"
-    );
-}
-
-
-/* =====================================================
-   MOBILE MENU
-===================================================== */
-
-function setupMobileMenu() {
-
-    const button =
-        $("menuBtn");
-
-    const nav =
-        $("nav");
-
-
-    if (!button || !nav)
-        return;
-
-
-    button.addEventListener(
-        "click",
-        () => {
-
-            nav.classList.toggle(
-                "mobile"
-            );
-
-        }
-    );
-
-
-    nav
-        .querySelectorAll("a")
-        .forEach(link => {
-
-            link.addEventListener(
-                "click",
-                () => {
-
-                    nav.classList.remove(
-                        "mobile"
-                    );
-
-                }
-            );
-
-        });
-}
-
-
-/* =====================================================
-   AUTH MODAL
-===================================================== */
-
-function showAuth() {
-
-    openModal("authModal");
-
-
-    const roles =
-        $("roleSelection");
-
-    const smm =
-        $("smmForm");
-
-    const client =
-        $("clientForm");
-
-
-    if (roles)
-        roles.style.display = "block";
-
-
-    if (smm)
-        smm.classList.remove("active");
-
-
-    if (client)
-        client.classList.remove("active");
-}
-
-
-function showSmmForm() {
-
-    openModal("authModal");
-
-
-    if ($("roleSelection"))
-        $("roleSelection").style.display =
-            "none";
-
-
-    $("smmForm")
-        ?.classList.add("active");
-
-
-    $("clientForm")
-        ?.classList.remove("active");
-}
-
-
-function showClientForm() {
-
-    openModal("authModal");
-
-
-    if ($("roleSelection"))
-        $("roleSelection").style.display =
-            "none";
-
-
-    $("clientForm")
-        ?.classList.add("active");
-
-
-    $("smmForm")
-        ?.classList.remove("active");
-}
-
-
-$("loginBtn")
-    ?.addEventListener(
-        "click",
-        showAuth
-    );
-
-
-$("registerBtn")
-    ?.addEventListener(
-        "click",
-        showAuth
-    );
-
-
-$("smmRole")
-    ?.addEventListener(
-        "click",
-        showSmmForm
-    );
-
-
-$("clientRole")
-    ?.addEventListener(
-        "click",
-        showClientForm
-    );
-
-
-$("smmBtn")
-    ?.addEventListener(
-        "click",
-        showSmmForm
-    );
-
-
-$("clientBtn")
-    ?.addEventListener(
-        "click",
-        showClientForm
-    );
-
-
-$("authClose")
-    ?.addEventListener(
-        "click",
-        () => closeModal("authModal")
-    );
-
-
-/* =====================================================
-   LOAD SMM
-===================================================== */
-
-async function loadSmm() {
-
-    const result =
-        await supabaseClient
-            .from("smm_profiles")
-            .select("*")
-            .eq("status", "approved")
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            );
-
-
-    if (result.error) {
-
-        console.error(
-            "SMM ERROR:",
-            result.error
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
         );
 
-        return;
+        document.body.style.overflow = "hidden";
     }
 
 
-    smmProfiles =
-        result.data || [];
+    function closeModal(modal) {
 
+        if (!modal) return;
 
-    renderSmm();
-}
+        modal.classList.remove("active");
 
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
 
-/* =====================================================
-   RENDER SMM
-===================================================== */
-
-function renderSmm() {
-
-    const box =
-        $("specialistsList");
-
-
-    if (!box)
-        return;
-
-
-    if (!smmProfiles.length) {
-
-        box.innerHTML = `
-
-            <div class="empty-state">
-
-                <div>👨‍💻</div>
-
-                <h3>
-                    Ҳоло SMM-щик нест
-                </h3>
-
-                <p>
-                    Ҳоло ягон мутахассиси
-                    тасдиқшуда вуҷуд надорад.
-                </p>
-
-            </div>
-
-        `;
-
-        return;
+        document.body.style.overflow = "";
     }
 
 
-    box.innerHTML =
-        smmProfiles
-            .map(person => `
+    /* =================================================
+       CLOSE BUTTONS
+    ================================================= */
+
+    if (authClose) {
+        authClose.addEventListener(
+            "click",
+            () => closeModal(authModal)
+        );
+    }
+
+    if (reviewClose) {
+        reviewClose.addEventListener(
+            "click",
+            () => closeModal(reviewModal)
+        );
+    }
+
+    if (aiClose) {
+        aiClose.addEventListener(
+            "click",
+            () => closeModal(aiModal)
+        );
+    }
+
+    if (adminClose) {
+        adminClose.addEventListener(
+            "click",
+            () => closeModal(adminModal)
+        );
+    }
+
+
+    /* =================================================
+       CLICK OUTSIDE MODAL
+    ================================================= */
+
+    document.querySelectorAll(".modal").forEach(modal => {
+
+        modal.classList.remove("active");
+
+        modal.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target === modal
+                ) {
+                    closeModal(modal);
+                }
+
+            }
+        );
+
+    });
+
+
+    /* =================================================
+       ESC
+    ================================================= */
+
+    document.addEventListener(
+        "keydown",
+        event => {
+
+            if (event.key !== "Escape") {
+                return;
+            }
+
+            document
+                .querySelectorAll(".modal.active")
+                .forEach(modal => {
+
+                    closeModal(modal);
+
+                });
+
+        }
+    );
+
+
+    /* =================================================
+       AUTH
+    ================================================= */
+
+    function openAuth() {
+
+        if (!authModal) return;
+
+        roleSelection.style.display = "block";
+
+        smmForm.classList.remove("active");
+
+        clientForm.classList.remove("active");
+
+        openModal(authModal);
+    }
+
+
+    if (loginBtn) {
+        loginBtn.addEventListener(
+            "click",
+            openAuth
+        );
+    }
+
+
+    if (registerBtn) {
+        registerBtn.addEventListener(
+            "click",
+            openAuth
+        );
+    }
+
+
+    if (smmBtn) {
+
+        smmBtn.addEventListener(
+            "click",
+            openAuth
+        );
+
+    }
+
+
+    if (clientBtn) {
+
+        clientBtn.addEventListener(
+            "click",
+            openAuth
+        );
+
+    }
+
+
+    /* =================================================
+       SMM ROLE
+    ================================================= */
+
+    if (smmRole) {
+
+        smmRole.addEventListener(
+            "click",
+            () => {
+
+                roleSelection.style.display = "none";
+
+                smmForm.classList.add("active");
+
+                clientForm.classList.remove("active");
+
+            }
+        );
+
+    }
+
+
+    /* =================================================
+       CLIENT ROLE
+    ================================================= */
+
+    if (clientRole) {
+
+        clientRole.addEventListener(
+            "click",
+            () => {
+
+                roleSelection.style.display = "none";
+
+                clientForm.classList.add("active");
+
+                smmForm.classList.remove("active");
+
+            }
+        );
+
+    }
+
+
+    /* =================================================
+       SMM FORM
+    ================================================= */
+
+    if (smmForm) {
+
+        smmForm.addEventListener(
+            "submit",
+            event => {
+
+                event.preventDefault();
+
+
+                const specialist = {
+
+                    id: Date.now(),
+
+                    name:
+                        document.getElementById(
+                            "smmName"
+                        ).value.trim(),
+
+                    phone:
+                        document.getElementById(
+                            "smmPhone"
+                        ).value.trim(),
+
+                    instagram:
+                        document.getElementById(
+                            "smmInstagram"
+                        ).value.trim(),
+
+                    service:
+                        document.getElementById(
+                            "smmService"
+                        ).value.trim(),
+
+                    experience:
+                        document.getElementById(
+                            "smmExperience"
+                        ).value.trim(),
+
+                    price:
+                        document.getElementById(
+                            "smmPrice"
+                        ).value.trim(),
+
+                    category:
+                        document.getElementById(
+                            "smmCategory"
+                        ).value.trim()
+
+                };
+
+
+                specialists.push(
+                    specialist
+                );
+
+
+                localStorage.setItem(
+                    "smm_specialists",
+                    JSON.stringify(
+                        specialists
+                    )
+                );
+
+
+                alert(
+                    "✅ Маълумот қабул шуд!"
+                );
+
+
+                smmForm.reset();
+
+                closeModal(authModal);
+
+                renderSpecialists();
+
+            }
+        );
+
+    }
+
+
+    /* =================================================
+       CLIENT FORM
+    ================================================= */
+
+    if (clientForm) {
+
+        clientForm.addEventListener(
+            "submit",
+            event => {
+
+                event.preventDefault();
+
+
+                const client = {
+
+                    id: Date.now(),
+
+                    name:
+                        document.getElementById(
+                            "clientName"
+                        ).value.trim(),
+
+                    phone:
+                        document.getElementById(
+                            "clientPhone"
+                        ).value.trim(),
+
+                    business:
+                        document.getElementById(
+                            "clientBusiness"
+                        ).value.trim(),
+
+                    category:
+                        document.getElementById(
+                            "clientCategory"
+                        ).value.trim(),
+
+                    need:
+                        document.getElementById(
+                            "clientNeed"
+                        ).value.trim()
+
+                };
+
+
+                clients.push(client);
+
+
+                localStorage.setItem(
+                    "smm_clients",
+                    JSON.stringify(
+                        clients
+                    )
+                );
+
+
+                alert(
+                    "✅ Дархости шумо қабул шуд!"
+                );
+
+
+                clientForm.reset();
+
+                closeModal(authModal);
+
+            }
+        );
+
+    }
+
+
+    /* =================================================
+       RENDER SPECIALISTS
+    ================================================= */
+
+    function renderSpecialists() {
+
+        const list =
+            document.getElementById(
+                "specialistsList"
+            );
+
+        if (!list) return;
+
+
+        if (specialists.length === 0) {
+
+            list.innerHTML = `
+
+                <div class="empty-state">
+
+                    <div>👨‍💻</div>
+
+                    <h3>
+                        Ҳоло SMM-СПЕЦИАЛИСТ нест
+                    </h3>
+
+                    <p>
+                        Ҳоло ягон мутахассиси
+                        тасдиқшуда вуҷуд надорад.
+                    </p>
+
+                </div>
+
+            `;
+
+            return;
+        }
+
+
+        list.innerHTML =
+            specialists.map(
+                specialist => `
 
                 <article
                     class="specialist-card"
@@ -559,25 +530,19 @@ function renderSmm() {
                         class="specialist-top"
                     >
 
-                        <div class="avatar">
-
-                            ${escapeHTML(
-                                (
-                                    person.name ||
-                                    "S"
-                                )
-                                .charAt(0)
-                                .toUpperCase()
+                        <div
+                            class="avatar"
+                        >
+                            ${getInitials(
+                                specialist.name
                             )}
-
                         </div>
-
 
                         <div>
 
                             <h3>
                                 ${escapeHTML(
-                                    person.name
+                                    specialist.name
                                 )}
                             </h3>
 
@@ -596,69 +561,311 @@ function renderSmm() {
                         class="specialist-info"
                     >
 
-                        ${
-                            person.service
-                            ? `
-                                <p>
-                                    💼
-                                    ${escapeHTML(
-                                        person.service
-                                    )}
-                                </p>
-                              `
-                            : ""
-                        }
+                        <p>
+                            💼
+                            ${escapeHTML(
+                                specialist.service
+                            )}
+                        </p>
 
+                        <p>
+                            🎯
+                            ${escapeHTML(
+                                specialist.category
+                            )}
+                        </p>
 
-                        ${
-                            person.experience
-                            ? `
-                                <p>
-                                    ⏳
-                                    ${escapeHTML(
-                                        person.experience
-                                    )}
-                                </p>
-                              `
-                            : ""
-                        }
+                        <p>
+                            ⏱️
+                            ${escapeHTML(
+                                specialist.experience
+                            )}
+                        </p>
 
-
-                        ${
-                            person.price
-                            ? `
-                                <p>
-                                    💰
-                                    ${escapeHTML(
-                                        person.price
-                                    )}
-                                </p>
-                              `
-                            : ""
-                        }
+                        <p>
+                            💰
+                            ${escapeHTML(
+                                specialist.price
+                            )}
+                        </p>
 
                     </div>
 
 
                     <button
                         class="btn btn-primary profile-btn"
-                        type="button"
-                        data-profile-id="${escapeHTML(
-                            person.id
-                        )}"
+                        data-profile="${specialist.id}"
                     >
-                        Профил →
+                        Профилро дидан →
                     </button>
 
                 </article>
 
-            `)
-            .join("");
+            `
+            ).join("");
 
 
-    box
+        document
+            .querySelectorAll(
+                "[data-profile]"
+            )
+            .forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        const id =
+                            Number(
+                                button.dataset.profile
+                            );
+
+                        const specialist =
+                            specialists.find(
+                                item =>
+                                    item.id === id
+                            );
+
+                        if (!specialist) {
+                            return;
+                        }
+
+                        showProfile(
+                            specialist
+                        );
+
+                    }
+                );
+
+            });
+
+    }
+
+
+    /* =================================================
+       PROFILE
+    ================================================= */
+
+    function showProfile(specialist) {
+
+        const modal =
+            document.createElement(
+                "div"
+            );
+
+        modal.className = "modal active";
+
+        modal.innerHTML = `
+
+            <div class="modal-box">
+
+                <button
+                    class="modal-close"
+                    type="button"
+                    data-close
+                >
+                    ×
+                </button>
+
+                <div
+                    style="
+                        text-align:center;
+                    "
+                >
+
+                    <div
+                        class="profile-avatar"
+                        style="
+                            margin:0 auto 15px;
+                        "
+                    >
+                        ${getInitials(
+                            specialist.name
+                        )}
+                    </div>
+
+                    <span
+                        class="eyebrow"
+                    >
+                        ✓ VERIFIED SMM
+                    </span>
+
+                    <h2
+                        style="
+                            margin-top:15px;
+                        "
+                    >
+                        ${escapeHTML(
+                            specialist.name
+                        )}
+                    </h2>
+
+                </div>
+
+
+                <div
+                    class="specialist-info"
+                    style="
+                        margin-top:25px;
+                    "
+                >
+
+                    <p>
+                        💼 Хизмат:
+                        ${escapeHTML(
+                            specialist.service
+                        )}
+                    </p>
+
+                    <p>
+                        🎯 Категория:
+                        ${escapeHTML(
+                            specialist.category
+                        )}
+                    </p>
+
+                    <p>
+                        ⏱️ Таҷриба:
+                        ${escapeHTML(
+                            specialist.experience
+                        )}
+                    </p>
+
+                    <p>
+                        💰 Нарх:
+                        ${escapeHTML(
+                            specialist.price
+                        )}
+                    </p>
+
+                    <p>
+                        📱 Instagram:
+                        ${escapeHTML(
+                            specialist.instagram ||
+                            "Нест"
+                        )}
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="btn btn-primary"
+                    style="
+                        width:100%;
+                        margin-top:15px;
+                    "
+                    data-contact
+                >
+                    📩 Тамос гирифтан
+                </button>
+
+            </div>
+
+        `;
+
+
+        document.body.appendChild(
+            modal
+        );
+
+
+        modal
+            .querySelector("[data-close]")
+            .addEventListener(
+                "click",
+                () => modal.remove()
+            );
+
+
+        modal.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target === modal
+                ) {
+                    modal.remove();
+                }
+
+            }
+        );
+
+
+        modal
+            .querySelector("[data-contact]")
+            .addEventListener(
+                "click",
+                () => {
+
+                    alert(
+                        "📩 Барои тамос Instagram ё рақами мутахассисро истифода баред."
+                    );
+
+                }
+            );
+
+    }
+
+
+    /* =================================================
+       FIND BUTTON
+    ================================================= */
+
+    if (findBtn) {
+
+        findBtn.addEventListener(
+            "click",
+            () => {
+
+                document
+                    .getElementById(
+                        "specialists"
+                    )
+                    ?.scrollIntoView({
+                        behavior: "smooth"
+                    });
+
+            }
+        );
+
+    }
+
+
+    /* =================================================
+       AI
+    ================================================= */
+
+    function openAI() {
+
+        openModal(aiModal);
+
+    }
+
+
+    if (aiBtn) {
+
+        aiBtn.addEventListener(
+            "click",
+            openAI
+        );
+
+    }
+
+
+    if (startAiBtn) {
+
+        startAiBtn.addEventListener(
+            "click",
+            openAI
+        );
+
+    }
+
+
+    document
         .querySelectorAll(
-            "[data-profile-id]"
+            ".ai-categories button"
         )
         .forEach(button => {
 
@@ -666,1010 +873,498 @@ function renderSmm() {
                 "click",
                 () => {
 
-                    openProfile(
-                        button.dataset.profileId
+                    const category =
+                        button.dataset.ai;
+
+                    showAIResult(
+                        category
                     );
 
                 }
             );
 
         });
-}
 
 
-/* =====================================================
-   PROFILE
-===================================================== */
+    function showAIResult(category) {
 
-function openProfile(id) {
+        const result =
+            document.getElementById(
+                "aiResult"
+            );
 
-    const person =
-        smmProfiles.find(
-            item =>
-                String(item.id) ===
-                String(id)
-        );
+        if (!result) return;
 
 
-    if (!person)
-        return;
-
-
-    const box =
-        $("profileContent");
-
-
-    if (!box)
-        return;
-
-
-    box.innerHTML = `
-
-        <div class="profile-avatar">
-
-            ${escapeHTML(
-                (
-                    person.name ||
-                    "S"
-                )
-                .charAt(0)
-                .toUpperCase()
-            )}
-
-        </div>
-
-
-        <h2>
-            ${escapeHTML(
-                person.name
-            )}
-        </h2>
-
-
-        <span class="verified">
-            ✓ Тасдиқшуда
-        </span>
-
-
-        <div
-            class="profile-details"
-        >
-
-            <p>
-                💼
-                ${escapeHTML(
-                    person.service ||
-                    "SMM"
-                )}
-            </p>
-
-            <p>
-                ⏳
-                ${escapeHTML(
-                    person.experience ||
-                    "—"
-                )}
-            </p>
-
-            <p>
-                💰
-                ${escapeHTML(
-                    person.price ||
-                    "—"
-                )}
-            </p>
-
-            <p>
-                📸
-                ${escapeHTML(
-                    person.instagram ||
-                    "—"
-                )}
-            </p>
-
-        </div>
-
-    `;
-
-
-    openModal("profileModal");
-}
-
-
-$("profileClose")
-    ?.addEventListener(
-        "click",
-        () => closeModal("profileModal")
-    );
-
-
-/* =====================================================
-   SMM FORM
-===================================================== */
-
-$("smmForm")
-    ?.addEventListener(
-        "submit",
-        async event => {
-
-            event.preventDefault();
-
-
-            const data = {
-
-                name:
-                    $("smmName")
-                        ?.value
-                        .trim(),
-
-                phone:
-                    $("smmPhone")
-                        ?.value
-                        .trim(),
-
-                instagram:
-                    $("smmInstagram")
-                        ?.value
-                        .trim(),
-
-                service:
-                    $("smmService")
-                        ?.value
-                        .trim(),
-
-                experience:
-                    $("smmExperience")
-                        ?.value
-                        .trim(),
-
-                price:
-                    $("smmPrice")
-                        ?.value
-                        .trim(),
-
-                category:
-                    $("smmCategory")
-                        ?.value,
-
-                status:
-                    "pending"
-            };
-
-
-            if (
-                !data.name ||
-                !data.phone ||
-                !data.service ||
-                !data.category
-            ) {
-
-                alert(
-                    "Лутфан ҳамаи майдонҳои заруриро пур кунед."
-                );
-
-                return;
-            }
-
-
-            const result =
-                await supabaseClient
-                    .from("smm_profiles")
-                    .insert(data);
-
-
-            if (result.error) {
-
-                console.error(
-                    result.error
-                );
-
-                alert(
-                    "❌ Хато ҳангоми сабти ном."
-                );
-
-                return;
-            }
-
-
-            alert(
-                "✅ Маълумоти шумо қабул шуд."
+        const matches =
+            specialists.filter(
+                specialist =>
+                    specialist.category
+                    === category
             );
 
 
-            event.target.reset();
+        if (matches.length === 0) {
 
-            closeModal(
-                "authModal"
-            );
+            result.innerHTML = `
 
-        }
-    );
+                <div
+                    class="empty-state"
+                    style="
+                        margin-top:15px;
+                    "
+                >
 
+                    <div>🤖</div>
 
-/* =====================================================
-   CLIENT FORM
-===================================================== */
+                    <h3>
+                        Мутахассис ёфт нашуд
+                    </h3>
 
-$("clientForm")
-    ?.addEventListener(
-        "submit",
-        async event => {
-
-            event.preventDefault();
-
-
-            const data = {
-
-                name:
-                    $("clientName")
-                        ?.value
-                        .trim(),
-
-                phone:
-                    $("clientPhone")
-                        ?.value
-                        .trim(),
-
-                business:
-                    $("clientBusiness")
-                        ?.value
-                        .trim(),
-
-                category:
-                    $("clientCategory")
-                        ?.value,
-
-                need:
-                    $("clientNeed")
-                        ?.value
-                        .trim()
-            };
-
-
-            if (
-                !data.name ||
-                !data.phone ||
-                !data.business ||
-                !data.category ||
-                !data.need
-            ) {
-
-                alert(
-                    "Лутфан ҳамаи майдонҳоро пур кунед."
-                );
-
-                return;
-            }
-
-
-            const clientResult =
-                await supabaseClient
-                    .from("clients")
-                    .insert(data)
-                    .select()
-                    .single();
-
-
-            if (clientResult.error) {
-
-                console.error(
-                    clientResult.error
-                );
-
-                alert(
-                    "❌ Клиент сабт нашуд."
-                );
-
-                return;
-            }
-
-
-            const request = {
-
-                client_id:
-                    clientResult.data?.id ||
-                    null,
-
-                client_name:
-                    data.name,
-
-                phone:
-                    data.phone,
-
-                message:
-                    data.need,
-
-                status:
-                    "new"
-            };
-
-
-            const requestResult =
-                await supabaseClient
-                    .from("requests")
-                    .insert(request);
-
-
-            if (requestResult.error) {
-
-                console.error(
-                    requestResult.error
-                );
-
-                alert(
-                    "⚠️ Клиент сабт шуд, вале дархост хато дод."
-                );
-
-            } else {
-
-                alert(
-                    "✅ Дархости шумо қабул шуд."
-                );
-
-            }
-
-
-            event.target.reset();
-
-            closeModal(
-                "authModal"
-            );
-
-        }
-    );
-
-
-/* =====================================================
-   FIND BUTTON
-===================================================== */
-
-$("findBtn")
-    ?.addEventListener(
-        "click",
-        () => {
-
-            $("specialists")
-                ?.scrollIntoView({
-                    behavior: "smooth"
-                });
-
-        }
-    );
-
-
-/* =====================================================
-   AI
-===================================================== */
-
-function openAI() {
-
-    openModal("aiModal");
-
-}
-
-
-$("aiBtn")
-    ?.addEventListener(
-        "click",
-        openAI
-    );
-
-
-$("startAiBtn")
-    ?.addEventListener(
-        "click",
-        openAI
-    );
-
-
-$("aiClose")
-    ?.addEventListener(
-        "click",
-        () => closeModal("aiModal")
-    );
-
-
-document
-    .querySelectorAll(
-        "[data-ai]"
-    )
-    .forEach(button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                const category =
-                    button.dataset.ai;
-
-
-                const results =
-                    smmProfiles.filter(
-                        person =>
-                            person.category ===
+                    <p>
+                        Барои «${escapeHTML(
                             category
-                    );
+                        )}»
+                        ҳоло SMM-щик нест.
+                    </p>
+
+                </div>
+
+            `;
+
+            return;
+        }
 
 
-                const box =
-                    $("aiResult");
+        result.innerHTML = `
 
+            <div
+                class="ai-result"
+            >
 
-                if (!box)
-                    return;
+                <h3>
+                    🤖 Натиҷаи AI
+                </h3>
 
-
-                if (!results.length) {
-
-                    box.innerHTML = `
+                ${matches
+                    .slice(0, 3)
+                    .map(
+                        specialist => `
 
                         <div
-                            class="empty-state"
+                            class="ai-result-card"
                         >
 
-                            <div>🤖</div>
+                            <strong>
+                                ${escapeHTML(
+                                    specialist.name
+                                )}
+                            </strong>
 
-                            <h3>
-                                Мутахассис ёфт нашуд
-                            </h3>
+                            <span>
+                                ${escapeHTML(
+                                    specialist.price
+                                )}
+                            </span>
 
-                            <p>
-                                Барои ин категория
-                                ҳоло SMM-щик нест.
-                            </p>
+                            <button
+                                class="btn btn-primary"
+                                data-ai-profile="${specialist.id}"
+                            >
+                                Дидан
+                            </button>
 
                         </div>
 
-                    `;
-
-                    return;
-                }
-
-
-                box.innerHTML = `
-
-                    <h3>
-                        Мутахассисони мувофиқ:
-                    </h3>
-
-                    ${results
-                        .map(person => `
-
-                            <div
-                                class="ai-result-card"
-                            >
-
-                                <strong>
-                                    ${escapeHTML(
-                                        person.name
-                                    )}
-                                </strong>
-
-                                <span>
-                                    💼
-                                    ${escapeHTML(
-                                        person.service ||
-                                        ""
-                                    )}
-                                </span>
-
-                                <button
-                                    class="
-                                        btn
-                                        btn-primary
-                                    "
-                                    type="button"
-                                    data-ai-profile="${escapeHTML(
-                                        person.id
-                                    )}"
-                                >
-                                    Профил →
-                                </button>
-
-                            </div>
-
-                        `)
-                        .join("")}
-
-                `;
-
-
-                box
-                    .querySelectorAll(
-                        "[data-ai-profile]"
+                    `
                     )
-                    .forEach(item => {
-
-                        item.addEventListener(
-                            "click",
-                            () => {
-
-                                closeModal(
-                                    "aiModal"
-                                );
-
-                                openProfile(
-                                    item.dataset.aiProfile
-                                );
-
-                            }
-                        );
-
-                    });
-
-            }
-        );
-
-    });
-
-
-/* =====================================================
-   REVIEWS
-===================================================== */
-
-async function loadReviews() {
-
-    const result =
-        await supabaseClient
-            .from("reviews")
-            .select("*")
-            .eq(
-                "status",
-                "approved"
-            )
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            );
-
-
-    if (result.error) {
-
-        console.error(
-            "REVIEWS ERROR:",
-            result.error
-        );
-
-        return;
-    }
-
-
-    reviews =
-        result.data || [];
-
-
-    renderReviews();
-}
-
-
-function renderReviews() {
-
-    const box =
-        $("reviewsList");
-
-
-    if (!box)
-        return;
-
-
-    if (!reviews.length) {
-
-        box.innerHTML = `
-
-            <div class="empty-state">
-
-                <div>💬</div>
-
-                <h3>
-                    Ҳоло отзыв нест
-                </h3>
-
-                <p>
-                    Ҳанӯз ягон клиент
-                    отзыв нагузоштааст.
-                </p>
+                    .join("")}
 
             </div>
 
         `;
 
-        return;
+
+        result
+            .querySelectorAll(
+                "[data-ai-profile]"
+            )
+            .forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        const specialist =
+                            specialists.find(
+                                item =>
+                                    item.id ===
+                                    Number(
+                                        button.dataset
+                                            .aiProfile
+                                    )
+                            );
+
+                        if (specialist) {
+
+                            closeModal(aiModal);
+
+                            showProfile(
+                                specialist
+                            );
+
+                        }
+
+                    }
+                );
+
+            });
+
     }
 
 
-    box.innerHTML =
-        reviews
-            .map(review => `
+    /* =================================================
+       REVIEWS
+    ================================================= */
 
-                <article
-                    class="review-card"
+    if (reviewBtn) {
+
+        reviewBtn.addEventListener(
+            "click",
+            () => {
+
+                openModal(
+                    reviewModal
+                );
+
+            }
+        );
+
+    }
+
+
+    if (reviewForm) {
+
+        reviewForm.addEventListener(
+            "submit",
+            event => {
+
+                event.preventDefault();
+
+
+                const review = {
+
+                    id: Date.now(),
+
+                    name:
+                        document.getElementById(
+                            "reviewName"
+                        ).value.trim(),
+
+                    rating:
+                        Number(
+                            document.getElementById(
+                                "reviewRating"
+                            ).value
+                        ),
+
+                    text:
+                        document.getElementById(
+                            "reviewText"
+                        ).value.trim()
+
+                };
+
+
+                reviews.push(review);
+
+
+                localStorage.setItem(
+                    "smm_reviews",
+                    JSON.stringify(
+                        reviews
+                    )
+                );
+
+
+                reviewForm.reset();
+
+                closeModal(
+                    reviewModal
+                );
+
+                renderReviews();
+
+                alert(
+                    "⭐ Отзыв илова шуд!"
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =================================================
+       RENDER REVIEWS
+    ================================================= */
+
+    function renderReviews() {
+
+        const list =
+            document.getElementById(
+                "reviewsList"
+            );
+
+        if (!list) return;
+
+
+        if (reviews.length === 0) {
+
+            list.innerHTML = `
+
+                <div
+                    class="empty-state"
                 >
 
-                    <div
-                        class="review-top"
+                    <div>⭐</div>
+
+                    <h3>
+                        Ҳоло отзыв нест
+                    </h3>
+
+                    <p>
+                        Ҳанӯз ягон клиент
+                        отзыв нагузоштааст.
+                    </p>
+
+                </div>
+
+            `;
+
+            return;
+        }
+
+
+        list.innerHTML =
+            reviews
+                .slice()
+                .reverse()
+                .map(
+                    review => `
+
+                    <article
+                        class="review-card"
                     >
 
                         <div
-                            class="review-avatar"
+                            class="review-top"
                         >
-                            ${escapeHTML(
-                                (
-                                    review.client_name ||
-                                    "C"
-                                )
-                                .charAt(0)
-                                .toUpperCase()
-                            )}
-                        </div>
-
-                        <div>
-
-                            <strong>
-                                ${escapeHTML(
-                                    review.client_name ||
-                                    "Client"
-                                )}
-                            </strong>
 
                             <div
-                                class="stars"
+                                class="review-avatar"
                             >
-                                ${
-                                    "★".repeat(
-                                        Number(
-                                            review.rating ||
-                                            5
-                                        )
-                                    )
-                                }
+                                ${getInitials(
+                                    review.name
+                                )}
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    ${escapeHTML(
+                                        review.name
+                                    )}
+                                </strong>
+
+                                <div
+                                    class="stars"
+                                >
+                                    ${"★".repeat(
+                                        review.rating
+                                    )}
+                                    ${"☆".repeat(
+                                        5 -
+                                        review.rating
+                                    )}
+                                </div>
+
                             </div>
 
                         </div>
 
-                    </div>
 
+                        <p>
+                            ${escapeHTML(
+                                review.text
+                            )}
+                        </p>
 
-                    <p>
-                        ${escapeHTML(
-                            review.text ||
-                            ""
-                        )}
-                    </p>
+                    </article>
 
-                </article>
+                `
+                )
+                .join("");
 
-            `)
-            .join("");
-}
-
-
-/* =====================================================
-   REVIEW FORM
-===================================================== */
-
-$("reviewBtn")
-    ?.addEventListener(
-        "click",
-        () => openModal("reviewModal")
-    );
-
-
-$("reviewClose")
-    ?.addEventListener(
-        "click",
-        () => closeModal("reviewModal")
-    );
-
-
-$("reviewForm")
-    ?.addEventListener(
-        "submit",
-        async event => {
-
-            event.preventDefault();
-
-
-            const data = {
-
-                client_name:
-                    $("reviewName")
-                        ?.value
-                        .trim(),
-
-                rating:
-                    Number(
-                        $("reviewRating")
-                            ?.value || 5
-                    ),
-
-                text:
-                    $("reviewText")
-                        ?.value
-                        .trim(),
-
-                status:
-                    "approved"
-            };
-
-
-            if (
-                !data.client_name ||
-                !data.text
-            ) {
-
-                alert(
-                    "Лутфан отзывро пур кунед."
-                );
-
-                return;
-            }
-
-
-            const result =
-                await supabaseClient
-                    .from("reviews")
-                    .insert(data);
-
-
-            if (result.error) {
-
-                console.error(
-                    result.error
-                );
-
-                alert(
-                    "❌ Отзыв сабт нашуд."
-                );
-
-                return;
-            }
-
-
-            alert(
-                "⭐ Отзыв қабул шуд."
-            );
-
-
-            event.target.reset();
-
-            closeModal(
-                "reviewModal"
-            );
-
-
-            await loadReviews();
-
-        }
-    );
-
-
-/* =====================================================
-   ADMIN
-===================================================== */
-
-const ADMIN_PASSWORD =
-    "admin123";
-
-
-$("adminBtn")
-    ?.addEventListener(
-        "click",
-        () => openModal("adminModal")
-    );
-
-
-$("adminClose")
-    ?.addEventListener(
-        "click",
-        () => closeModal("adminModal")
-    );
-
-
-$("adminLoginBtn")
-    ?.addEventListener(
-        "click",
-        async () => {
-
-            const password =
-                $("adminPassword")
-                    ?.value;
-
-
-            if (
-                password !==
-                ADMIN_PASSWORD
-            ) {
-
-                alert(
-                    "❌ Парол нодуруст."
-                );
-
-                return;
-            }
-
-
-            closeModal(
-                "adminModal"
-            );
-
-
-            const dashboard =
-                $("adminDashboard");
-
-
-            if (dashboard) {
-
-                dashboard.classList.remove(
-                    "hidden"
-                );
-
-
-                dashboard.scrollIntoView({
-                    behavior: "smooth"
-                });
-
-            }
-
-
-            await loadAdmin();
-
-        }
-    );
-
-
-/* =====================================================
-   ADMIN LOAD
-===================================================== */
-
-async function loadAdmin() {
-
-    const [
-        smmResult,
-        clientResult,
-        requestResult,
-        reviewResult
-    ] = await Promise.all([
-
-        supabaseClient
-            .from("smm_profiles")
-            .select("*")
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            ),
-
-        supabaseClient
-            .from("clients")
-            .select("*")
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            ),
-
-        supabaseClient
-            .from("requests")
-            .select("*")
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            ),
-
-        supabaseClient
-            .from("reviews")
-            .select("*")
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            )
-
-    ]);
-
-
-    smmProfiles =
-        smmResult.data || [];
-
-
-    clients =
-        clientResult.data || [];
-
-
-    requests =
-        requestResult.data || [];
-
-
-    reviews =
-        reviewResult.data || [];
-
-
-    renderAdmin();
-}
-
-
-/* =====================================================
-   ADMIN RENDER
-===================================================== */
-
-function renderAdmin() {
-
-    const smmCount =
-        $("adminSmmCount");
-
-    const clientCount =
-        $("adminClientCount");
-
-    const requestCount =
-        $("adminRequestCount");
-
-    const reviewCount =
-        $("adminReviewCount");
-
-
-    if (smmCount)
-        smmCount.textContent =
-            smmProfiles.length;
-
-
-    if (clientCount)
-        clientCount.textContent =
-            clients.length;
-
-
-    if (requestCount)
-        requestCount.textContent =
-            requests.length;
-
-
-    if (reviewCount)
-        reviewCount.textContent =
-            reviews.length;
-
-
-    renderAdminSmm();
-
-    renderAdminClients();
-
-    renderAdminRequests();
-
-    renderAdminReviews();
-}
-
-
-/* =====================================================
-   ADMIN SMM
-===================================================== */
-
-function renderAdminSmm() {
-
-    const box =
-        $("adminSmmList");
-
-
-    if (!box)
-        return;
-
-
-    if (!smmProfiles.length) {
-
-        box.innerHTML =
-            "<p>Ҳоло SMM-щик нест.</p>";
-
-        return;
     }
 
 
-    box.innerHTML =
-        smmProfiles
-            .map(person => `
+    /* =================================================
+       ADMIN
+    ================================================= */
+
+    const adminLogin =
+        document.getElementById(
+            "adminLogin"
+        );
+
+    const adminDashboard =
+        document.getElementById(
+            "adminDashboard"
+        );
+
+    const adminLoginBtn =
+        document.getElementById(
+            "adminLoginBtn"
+        );
+
+    if (adminBtn) {
+
+        adminBtn.addEventListener(
+            "click",
+            () => {
+
+                openModal(
+                    adminModal
+                );
+
+                adminLogin.style.display =
+                    "block";
+
+                adminDashboard.style.display =
+                    "none";
+
+            }
+        );
+
+    }
+
+
+    if (adminLoginBtn) {
+
+        adminLoginBtn.addEventListener(
+            "click",
+            () => {
+
+                const password =
+                    document.getElementById(
+                        "adminPassword"
+                    ).value;
+
+
+                if (
+                    password !== "1234"
+                ) {
+
+                    alert(
+                        "❌ Парол нодуруст аст."
+                    );
+
+                    return;
+                }
+
+
+                adminLogin.style.display =
+                    "none";
+
+                adminDashboard.style.display =
+                    "block";
+
+                renderAdmin();
+
+            }
+        );
+
+    }
+
+
+    /* =================================================
+       ADMIN DASHBOARD
+    ================================================= */
+
+    function renderAdmin() {
+
+        const smmCount =
+            document.getElementById(
+                "smmCount"
+            );
+
+        const clientCount =
+            document.getElementById(
+                "clientCount"
+            );
+
+        const requestCount =
+            document.getElementById(
+                "requestCount"
+            );
+
+        const reviewCount =
+            document.getElementById(
+                "reviewCount"
+            );
+
+
+        if (smmCount) {
+            smmCount.textContent =
+                specialists.length;
+        }
+
+        if (clientCount) {
+            clientCount.textContent =
+                clients.length;
+        }
+
+        if (requestCount) {
+            requestCount.textContent =
+                clients.length;
+        }
+
+        if (reviewCount) {
+            reviewCount.textContent =
+                reviews.length;
+        }
+
+
+        renderAdminSMM();
+
+        renderAdminClients();
+
+    }
+
+
+    function renderAdminSMM() {
+
+        const list =
+            document.getElementById(
+                "adminSmmList"
+            );
+
+        if (!list) return;
+
+
+        if (specialists.length === 0) {
+
+            list.innerHTML =
+                "<p>Ҳоло маълумот нест.</p>";
+
+            return;
+        }
+
+
+        list.innerHTML =
+            specialists.map(
+                specialist => `
 
                 <div
                     class="admin-item"
@@ -1679,24 +1374,15 @@ function renderAdminSmm() {
 
                         <strong>
                             ${escapeHTML(
-                                person.name
+                                specialist.name
                             )}
                         </strong>
 
                         <p>
-                            📞
                             ${escapeHTML(
-                                person.phone ||
-                                ""
+                                specialist.category
                             )}
                         </p>
-
-                        <small>
-                            ${escapeHTML(
-                                person.status ||
-                                ""
-                            )}
-                        </small>
 
                     </div>
 
@@ -1705,36 +1391,9 @@ function renderAdminSmm() {
                         class="admin-actions"
                     >
 
-                        ${
-                            person.status !==
-                            "approved"
-                            ? `
-                                <button
-                                    class="
-                                        btn
-                                        btn-primary
-                                    "
-                                    type="button"
-                                    data-approve="${escapeHTML(
-                                        person.id
-                                    )}"
-                                >
-                                    Тасдиқ
-                                </button>
-                              `
-                            : ""
-                        }
-
-
                         <button
-                            class="
-                                btn
-                                btn-danger
-                            "
-                            type="button"
-                            data-delete-smm="${escapeHTML(
-                                person.id
-                            )}"
+                            class="btn btn-danger"
+                            data-delete-smm="${specialist.id}"
                         >
                             Нест кардан
                         </button>
@@ -1743,131 +1402,76 @@ function renderAdminSmm() {
 
                 </div>
 
-            `)
-            .join("");
+            `
+            ).join("");
 
 
-    box
-        .querySelectorAll(
-            "[data-approve]"
-        )
-        .forEach(button => {
+        list
+            .querySelectorAll(
+                "[data-delete-smm]"
+            )
+            .forEach(button => {
 
-            button.addEventListener(
-                "click",
-                () =>
-                    approveSmm(
-                        button.dataset.approve
-                    )
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        const id =
+                            Number(
+                                button.dataset
+                                    .deleteSmm
+                            );
+
+
+                        specialists =
+                            specialists.filter(
+                                item =>
+                                    item.id !== id
+                            );
+
+
+                        localStorage.setItem(
+                            "smm_specialists",
+                            JSON.stringify(
+                                specialists
+                            )
+                        );
+
+
+                        renderAdmin();
+
+                        renderSpecialists();
+
+                    }
+                );
+
+            });
+
+    }
+
+
+    function renderAdminClients() {
+
+        const list =
+            document.getElementById(
+                "adminClientList"
             );
 
-        });
+        if (!list) return;
 
 
-    box
-        .querySelectorAll(
-            "[data-delete-smm]"
-        )
-        .forEach(button => {
+        if (clients.length === 0) {
 
-            button.addEventListener(
-                "click",
-                () =>
-                    deleteSmm(
-                        button.dataset.deleteSmm
-                    )
-            );
+            list.innerHTML =
+                "<p>Ҳоло маълумот нест.</p>";
 
-        });
-}
+            return;
+        }
 
 
-async function approveSmm(id) {
-
-    const result =
-        await supabaseClient
-            .from("smm_profiles")
-            .update({
-                status: "approved"
-            })
-            .eq("id", id);
-
-
-    if (result.error) {
-
-        alert(
-            "❌ Тасдиқ нашуд."
-        );
-
-        return;
-    }
-
-
-    await loadSmm();
-
-    await loadAdmin();
-}
-
-
-async function deleteSmm(id) {
-
-    if (
-        !confirm(
-            "Ин SMM-щикро нест кунем?"
-        )
-    )
-        return;
-
-
-    const result =
-        await supabaseClient
-            .from("smm_profiles")
-            .delete()
-            .eq("id", id);
-
-
-    if (result.error) {
-
-        alert(
-            "❌ Нест кардан нашуд."
-        );
-
-        return;
-    }
-
-
-    await loadSmm();
-
-    await loadAdmin();
-}
-
-
-/* =====================================================
-   ADMIN CLIENTS
-===================================================== */
-
-function renderAdminClients() {
-
-    const box =
-        $("adminClientsList");
-
-
-    if (!box)
-        return;
-
-
-    if (!clients.length) {
-
-        box.innerHTML =
-            "<p>Клиент нест.</p>";
-
-        return;
-    }
-
-
-    box.innerHTML =
-        clients
-            .map(client => `
+        list.innerHTML =
+            clients.map(
+                client => `
 
                 <div
                     class="admin-item"
@@ -1882,463 +1486,88 @@ function renderAdminClients() {
                         </strong>
 
                         <p>
-                            📞
                             ${escapeHTML(
-                                client.phone ||
-                                ""
-                            )}
-                        </p>
-
-                        <p>
-                            🏢
-                            ${escapeHTML(
-                                client.business ||
-                                ""
+                                client.business
                             )}
                         </p>
 
                     </div>
 
-
-                    <button
-                        class="
-                            btn
-                            btn-danger
-                        "
-                        type="button"
-                        data-delete-client="${escapeHTML(
-                            client.id
-                        )}"
-                    >
-                        Нест кардан
-                    </button>
+                    <small>
+                        ${escapeHTML(
+                            client.category
+                        )}
+                    </small>
 
                 </div>
 
-            `)
-            .join("");
+            `
+            ).join("");
 
-
-    box
-        .querySelectorAll(
-            "[data-delete-client]"
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                async () => {
-
-                    if (
-                        !confirm(
-                            "Ин клиентро нест кунем?"
-                        )
-                    )
-                        return;
-
-
-                    const result =
-                        await supabaseClient
-                            .from("clients")
-                            .delete()
-                            .eq(
-                                "id",
-                                button.dataset.deleteClient
-                            );
-
-
-                    if (result.error) {
-
-                        alert(
-                            "❌ Нест кардан нашуд."
-                        );
-
-                        return;
-                    }
-
-
-                    await loadAdmin();
-
-                }
-            );
-
-        });
-}
-
-
-/* =====================================================
-   ADMIN REQUESTS
-===================================================== */
-
-function renderAdminRequests() {
-
-    const box =
-        $("adminRequestsList");
-
-
-    if (!box)
-        return;
-
-
-    if (!requests.length) {
-
-        box.innerHTML =
-            "<p>Дархост нест.</p>";
-
-        return;
     }
 
 
-    box.innerHTML =
-        requests
-            .map(request => `
+    /* =================================================
+       HELPERS
+    ================================================= */
 
-                <div
-                    class="admin-item"
-                >
+    function getInitials(name) {
 
-                    <div>
-
-                        <strong>
-                            ${escapeHTML(
-                                request.client_name ||
-                                "Client"
-                            )}
-                        </strong>
-
-                        <p>
-                            📞
-                            ${escapeHTML(
-                                request.phone ||
-                                ""
-                            )}
-                        </p>
-
-                        <p>
-                            📝
-                            ${escapeHTML(
-                                request.message ||
-                                ""
-                            )}
-                        </p>
-
-                        <small>
-                            ${escapeHTML(
-                                request.status ||
-                                "new"
-                            )}
-                        </small>
-
-                    </div>
+        if (!name) return "?";
 
 
-                    <div
-                        class="admin-actions"
-                    >
-
-                        <button
-                            class="
-                                btn
-                                btn-primary
-                            "
-                            type="button"
-                            data-accept="${escapeHTML(
-                                request.id
-                            )}"
-                        >
-                            Қабул
-                        </button>
-
-
-                        <button
-                            class="
-                                btn
-                                btn-danger
-                            "
-                            type="button"
-                            data-delete-request="${escapeHTML(
-                                request.id
-                            )}"
-                        >
-                            Нест кардан
-                        </button>
-
-                    </div>
-
-                </div>
-
-            `)
+        return name
+            .split(" ")
+            .filter(Boolean)
+            .slice(0, 2)
+            .map(
+                word =>
+                    word[0]
+                        .toUpperCase()
+            )
             .join("");
 
-
-    box
-        .querySelectorAll(
-            "[data-accept]"
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                async () => {
-
-                    await supabaseClient
-                        .from("requests")
-                        .update({
-                            status: "accepted"
-                        })
-                        .eq(
-                            "id",
-                            button.dataset.accept
-                        );
-
-
-                    await loadAdmin();
-
-                }
-            );
-
-        });
-
-
-    box
-        .querySelectorAll(
-            "[data-delete-request]"
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                async () => {
-
-                    if (
-                        !confirm(
-                            "Ин дархостро нест кунем?"
-                        )
-                    )
-                        return;
-
-
-                    await supabaseClient
-                        .from("requests")
-                        .delete()
-                        .eq(
-                            "id",
-                            button.dataset.deleteRequest
-                        );
-
-
-                    await loadAdmin();
-
-                }
-            );
-
-        });
-}
-
-
-/* =====================================================
-   ADMIN REVIEWS
-===================================================== */
-
-function renderAdminReviews() {
-
-    const box =
-        $("adminReviewsList");
-
-
-    if (!box)
-        return;
-
-
-    if (!reviews.length) {
-
-        box.innerHTML =
-            "<p>Отзыв нест.</p>";
-
-        return;
     }
 
 
-    box.innerHTML =
-        reviews
-            .map(review => `
+    function escapeHTML(value) {
 
-                <div
-                    class="admin-item"
-                >
-
-                    <div>
-
-                        <strong>
-                            ${escapeHTML(
-                                review.client_name ||
-                                ""
-                            )}
-                        </strong>
-
-                        <p>
-                            ${"★".repeat(
-                                Number(
-                                    review.rating ||
-                                    5
-                                )
-                            )}
-                        </p>
-
-                        <p>
-                            ${escapeHTML(
-                                review.text ||
-                                ""
-                            )}
-                        </p>
-
-                    </div>
-
-
-                    <button
-                        class="
-                            btn
-                            btn-danger
-                        "
-                        type="button"
-                        data-delete-review="${escapeHTML(
-                            review.id
-                        )}"
-                    >
-                        Нест кардан
-                    </button>
-
-                </div>
-
-            `)
-            .join("");
-
-
-    box
-        .querySelectorAll(
-            "[data-delete-review]"
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                async () => {
-
-                    if (
-                        !confirm(
-                            "Ин отзывро нест кунем?"
-                        )
-                    )
-                        return;
-
-
-                    await supabaseClient
-                        .from("reviews")
-                        .delete()
-                        .eq(
-                            "id",
-                            button.dataset.deleteReview
-                        );
-
-
-                    await loadAdmin();
-
-                }
+        return String(value ?? "")
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
             );
 
-        });
-}
-
-
-/* =====================================================
-   CLOSE MODALS
-===================================================== */
-
-document
-    .querySelectorAll(".modal")
-    .forEach(modal => {
-
-        modal.addEventListener(
-            "click",
-            event => {
-
-                if (
-                    event.target === modal
-                ) {
-
-                    modal.classList.remove(
-                        "active"
-                    );
-
-                }
-
-            }
-        );
-
-    });
-
-
-document.addEventListener(
-    "keydown",
-    event => {
-
-        if (
-            event.key === "Escape"
-        ) {
-
-            document
-                .querySelectorAll(
-                    ".modal.active"
-                )
-                .forEach(modal => {
-
-                    modal.classList.remove(
-                        "active"
-                    );
-
-                });
-
-        }
-
     }
-);
 
 
-/* =====================================================
-   START
-===================================================== */
+    /* =================================================
+       START
+    ================================================= */
 
-async function startApp() {
+    renderSpecialists();
+
+    renderReviews();
+
 
     console.log(
-        "SMM.TJ — JavaScript started"
+        "🚀 SMM.TJ — script loaded successfully"
     );
 
-
-    setupLanguage();
-
-    setupMobileMenu();
-
-
-    await loadSmm();
-
-    await loadReviews();
-
-}
-
-
-if (
-    document.readyState ===
-    "loading"
-) {
-
-    document.addEventListener(
-        "DOMContentLoaded",
-        startApp
-    );
-
-} else {
-
-    startApp();
-
-}
+});
