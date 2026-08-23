@@ -1,1531 +1,896 @@
-const SUPABASE_URL = "https://lcldaingzicxbottlznq.supabase.co";
-const SUPABASE_KEY = "sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
+(() => {
+  "use strict";
 
-const API = `${SUPABASE_URL}/rest/v1`;
+  /* =========================
+     SUPABASE
+  ========================= */
 
-const headers = {
-    apikey: SUPABASE_KEY,
-    Authorization: `Bearer ${SUPABASE_KEY}`,
-    "Content-Type": "application/json"
-};
+  const SUPABASE_URL =
+    "https://lcldaingzicxbottlznq.supabase.co";
 
-const $ = (s) => document.querySelector(s);
-const $$ = (s) => document.querySelectorAll(s);
+  const SUPABASE_KEY =
+    "sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
 
-let specialists = [];
-let reviews = [];
-
-
-/* ================================
-   DATABASE
-================================ */
-
-async function dbGet(table, query = "") {
-
-    const response = await fetch(
-        `${API}/${table}${query}`,
-        {
-            headers: {
-                ...headers,
-                Accept: "application/json"
-            }
-        }
+  const supabase =
+    window.supabase?.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
     );
 
-    if (!response.ok) {
-        throw new Error(await response.text());
-    }
 
-    return await response.json();
-}
+  /* =========================
+     HELPERS
+  ========================= */
+
+  const $ = (selector) =>
+    document.querySelector(selector);
+
+  const $$ = (selector) =>
+    [...document.querySelectorAll(selector)];
 
 
-async function dbInsert(table, data) {
+  function escapeHTML(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 
-    const response = await fetch(
-        `${API}/${table}`,
-        {
-            method: "POST",
-            headers: {
-                ...headers,
-                Prefer: "return=representation"
-            },
-            body: JSON.stringify(data)
-        }
+
+  function initials(name) {
+    return String(name || "?")
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map(word => word[0])
+      .join("")
+      .toUpperCase();
+  }
+
+
+  /* =========================
+     ICONS
+  ========================= */
+
+  const icons = {
+
+    menu: `
+      <svg viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2">
+        <path d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    `,
+
+    close: `
+      <svg viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2">
+        <path d="M6 6l12 12M18 6L6 18"/>
+      </svg>
+    `,
+
+    arrow: `
+      <svg viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2">
+        <path d="M5 12h14"/>
+        <path d="m13 6 6 6-6 6"/>
+      </svg>
+    `,
+
+    star: `
+      <svg viewBox="0 0 24 24"
+        fill="currentColor">
+        <path d="m12 2.8 2.8 5.7 6.3.9-4.55 4.45
+        1.08 6.28L12 17.15l-5.63 2.98
+        1.08-6.28L2.9 9.4l6.3-.9L12 2.8Z"/>
+      </svg>
+    `,
+
+    check: `
+      <svg viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5">
+        <path d="m5 12 4 4L19 6"/>
+      </svg>
+    `,
+
+    sparkles: `
+      <svg viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8">
+        <path d="m12 3 1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5L12 3Z"/>
+      </svg>
+    `
+
+  };
+
+
+  /* =========================
+     ICON RENDER
+  ========================= */
+
+  function renderIcons() {
+
+    $$("[data-icon]").forEach(element => {
+
+      const name =
+        element.dataset.icon;
+
+      if (icons[name]) {
+
+        element.innerHTML =
+          icons[name];
+
+      }
+
+    });
+
+  }
+
+
+  /* =========================
+     MOBILE MENU
+  ========================= */
+
+  function initMenu() {
+
+    const menu =
+      $(".menu-toggle");
+
+    const drawer =
+      $(".mobile-drawer");
+
+    const close =
+      $(".mobile-drawer-close");
+
+
+    if (!menu || !drawer)
+      return;
+
+
+    menu.addEventListener(
+      "click",
+      () => {
+
+        drawer.classList.add("open");
+
+        document.body.classList.add(
+          "drawer-open"
+        );
+
+      }
     );
 
-    if (!response.ok) {
-        throw new Error(await response.text());
-    }
 
-    return await response.json();
-}
-
-
-/* ================================
-   MODALS
-================================ */
-
-const authModal = $("#authModal");
-const aiModal = $("#aiModal");
-const reviewModal = $("#reviewModal");
-const adminModal = $("#adminModal");
-
-
-function openModal(modal) {
-
-    if (!modal) return;
-
-    modal.classList.add("active");
-
-    document.body.style.overflow = "hidden";
-}
-
-
-function closeModal(modal) {
-
-    if (!modal) return;
-
-    modal.classList.remove("active");
-
-    document.body.style.overflow = "";
-}
-
-
-function resetAuth() {
-
-    $("#roleSelection")?.classList.remove("hidden");
-
-    $("#smmForm")?.classList.remove("active");
-
-    $("#clientForm")?.classList.remove("active");
-}
-
-
-/* ================================
-   MENU
-================================ */
-
-$("#menuBtn")?.addEventListener(
-    "click",
-    () => {
-
-        $("#nav")?.classList.toggle("mobile");
-
-    }
-);
-
-
-$$(".nav a").forEach(link => {
-
-    link.addEventListener(
-        "click",
-        () => {
-
-            $("#nav")?.classList.remove("mobile");
-
-        }
+    close?.addEventListener(
+      "click",
+      closeMenu
     );
 
-});
 
+    drawer.addEventListener(
+      "click",
+      event => {
 
-/* ================================
-   AUTH
-================================ */
+        if (
+          event.target === drawer
+        ) {
 
-$("#loginBtn")?.addEventListener(
-    "click",
-    () => {
-
-        resetAuth();
-
-        openModal(authModal);
-
-    }
-);
-
-
-$("#registerBtn")?.addEventListener(
-    "click",
-    () => {
-
-        resetAuth();
-
-        openModal(authModal);
-
-    }
-);
-
-
-$("#ctaBtn")?.addEventListener(
-    "click",
-    () => {
-
-        resetAuth();
-
-        openModal(authModal);
-
-    }
-);
-
-
-$("#authClose")?.addEventListener(
-    "click",
-    () => closeModal(authModal)
-);
-
-
-$("#aiClose")?.addEventListener(
-    "click",
-    () => closeModal(aiModal)
-);
-
-
-$("#reviewClose")?.addEventListener(
-    "click",
-    () => closeModal(reviewModal)
-);
-
-
-$("#adminClose")?.addEventListener(
-    "click",
-    () => closeModal(adminModal)
-);
-
-
-$$(".modal").forEach(modal => {
-
-    modal.addEventListener(
-        "click",
-        event => {
-
-            if (event.target === modal) {
-
-                closeModal(modal);
-
-            }
+          closeMenu();
 
         }
+
+      }
     );
 
-});
+
+    $$(".mobile-drawer-panel a")
+      .forEach(link => {
+
+        link.addEventListener(
+          "click",
+          closeMenu
+        );
+
+      });
 
 
-document.addEventListener(
-    "keydown",
-    event => {
+    function closeMenu() {
 
-        if (event.key === "Escape") {
+      drawer.classList.remove(
+        "open"
+      );
 
-            $$(".modal.active").forEach(
-                modal => closeModal(modal)
-            );
-
-        }
-
-    }
-);
-
-
-/* ================================
-   ROLE
-================================ */
-
-$("#smmRole")?.addEventListener(
-    "click",
-    () => {
-
-        $("#roleSelection")
-            .classList.add("hidden");
-
-        $("#smmForm")
-            .classList.add("active");
+      document.body.classList.remove(
+        "drawer-open"
+      );
 
     }
-);
+
+  }
 
 
-$("#clientRole")?.addEventListener(
-    "click",
-    () => {
+  /* =========================
+     DATABASE GET
+  ========================= */
 
-        $("#roleSelection")
-            .classList.add("hidden");
+  async function getData(
+    table,
+    limit = 20
+  ) {
 
-        $("#clientForm")
-            .classList.add("active");
+    if (!supabase) {
 
-    }
-);
-
-
-/* ================================
-   FIND SPECIALIST
-================================ */
-
-$("#findBtn")?.addEventListener(
-    "click",
-    () => {
-
-        $("#specialists")
-            ?.scrollIntoView({
-                behavior: "smooth"
-            });
+      throw new Error(
+        "Supabase library not found."
+      );
 
     }
-);
 
 
-$("#allSpecialistsBtn")?.addEventListener(
-    "click",
-    () => {
+    const {
+      data,
+      error
+    } = await supabase
+      .from(table)
+      .select("*")
+      .limit(limit);
 
-        $("#specialists")
-            ?.scrollIntoView({
-                behavior: "smooth"
-            });
 
+    if (error)
+      throw error;
+
+
+    return data || [];
+
+  }
+
+
+  /* =========================
+     CATEGORIES
+  ========================= */
+
+  const defaultCategories = [
+
+    {
+      name: "Instagram",
+      description:
+        "Идоракунӣ ва рушди Instagram",
+      icon: "◎"
+    },
+
+    {
+      name: "Reels",
+      description:
+        "Видеоҳои кӯтоҳ ва контент",
+      icon: "▶"
+    },
+
+    {
+      name: "Target",
+      description:
+        "Реклама ва ҷалби аудитория",
+      icon: "⌁"
+    },
+
+    {
+      name: "Content",
+      description:
+        "Контент-план ва стратегия",
+      icon: "◈"
+    },
+
+    {
+      name: "Design",
+      description:
+        "Дизайн барои social media",
+      icon: "✦"
+    },
+
+    {
+      name: "Marketing",
+      description:
+        "Стратегияи маркетинг",
+      icon: "↗"
     }
-);
 
+  ];
 
-/* ================================
-   SMM → DATABASE
-================================ */
 
-$("#smmForm")?.addEventListener(
-    "submit",
-    async event => {
+  async function loadCategories() {
 
-        event.preventDefault();
+    const grid =
+      $("#category-grid");
 
-        const button = event.submitter;
 
-        if (button) {
+    if (!grid)
+      return;
 
-            button.disabled = true;
 
-            button.textContent =
-                "Сабт шуда истодааст...";
+    let categories =
+      defaultCategories;
 
-        }
-
-
-        const data = {
-
-            name:
-                $("#smmName")
-                    .value
-                    .trim(),
-
-            phone:
-                $("#smmPhone")
-                    .value
-                    .trim(),
-
-            instagram:
-                $("#smmInstagram")
-                    .value
-                    .trim(),
-
-            service:
-                $("#smmService")
-                    .value
-                    .trim(),
-
-            experience:
-                $("#smmExperience")
-                    .value
-                    .trim(),
-
-            price:
-                $("#smmPrice")
-                    .value
-                    .trim(),
-
-            category:
-                $("#smmCategory")
-                    .value
-
-        };
-
-
-        try {
-
-            await dbInsert(
-                "specialists",
-                data
-            );
-
-
-            event.target.reset();
-
-            resetAuth();
-
-            closeModal(authModal);
-
-            await loadSpecialists();
-
-
-            alert(
-                "✓ Профили шумо ба Database сабт шуд!"
-            );
-
-
-        } catch (error) {
-
-            console.error(error);
-
-            alert(
-                "✕ Хато шуд. Database ё RLS-ро санҷ."
-            );
-
-
-        } finally {
-
-            if (button) {
-
-                button.disabled = false;
-
-                button.textContent =
-                    "Профил сохтан →";
-
-            }
-
-        }
-
-    }
-);
-
-
-/* ================================
-   CLIENT → DATABASE
-================================ */
-
-$("#clientForm")?.addEventListener(
-    "submit",
-    async event => {
-
-        event.preventDefault();
-
-        const button = event.submitter;
-
-        if (button) {
-
-            button.disabled = true;
-
-            button.textContent =
-                "Фиристода истодааст...";
-
-        }
-
-
-        const data = {
-
-            name:
-                $("#clientName")
-                    .value
-                    .trim(),
-
-            phone:
-                $("#clientPhone")
-                    .value
-                    .trim(),
-
-            business:
-                $("#clientBusiness")
-                    .value
-                    .trim(),
-
-            category:
-                $("#clientCategory")
-                    .value,
-
-            need:
-                $("#clientNeed")
-                    .value
-                    .trim()
-
-        };
-
-
-        try {
-
-            await dbInsert(
-                "clients",
-                data
-            );
-
-
-            event.target.reset();
-
-            resetAuth();
-
-            closeModal(authModal);
-
-
-            alert(
-                "✓ Дархости шумо ба Database фиристода шуд!"
-            );
-
-
-        } catch (error) {
-
-            console.error(error);
-
-            alert(
-                "✕ Хато ҳангоми фиристодани дархост."
-            );
-
-
-        } finally {
-
-            if (button) {
-
-                button.disabled = false;
-
-                button.textContent =
-                    "Дархост фиристодан →";
-
-            }
-
-        }
-
-    }
-);
-
-
-/* ================================
-   LOAD SPECIALISTS
-================================ */
-
-async function loadSpecialists() {
 
     try {
 
-        specialists =
-            await dbGet(
-                "specialists",
-                "?select=*&order=created_at.desc"
-            );
+      const databaseCategories =
+        await getData(
+          "categories",
+          12
+        );
 
 
-        renderSpecialists();
+      if (
+        databaseCategories.length
+      ) {
 
+        categories =
+          databaseCategories.map(
+            (item, index) => ({
+
+              name:
+                item.name ||
+                item.title ||
+                defaultCategories[
+                  index %
+                  defaultCategories.length
+                ].name,
+
+              description:
+                item.description ||
+                defaultCategories[
+                  index %
+                  defaultCategories.length
+                ].description,
+
+              icon:
+                item.icon ||
+                defaultCategories[
+                  index %
+                  defaultCategories.length
+                ].icon
+
+            })
+          );
+
+      }
 
     } catch (error) {
 
-        console.error(error);
-
-        const list =
-            $("#specialistsList");
-
-
-        if (list) {
-
-            list.innerHTML = `
-
-                <div class="empty-state">
-
-                    <div
-                        style="
-                            font-size:36px;
-                            color:#c66aff;
-                        "
-                    >
-                        !
-                    </div>
-
-                    <h3
-                        style="
-                            color:#fff;
-                            margin:10px 0;
-                        "
-                    >
-                        Database пайваст нашуд
-                    </h3>
-
-                    <p>
-                        URL, Key ё RLS-ро санҷ.
-                    </p>
-
-                </div>
-
-            `;
-
-        }
+      console.warn(
+        "Categories:",
+        error.message
+      );
 
     }
 
-}
+
+    grid.innerHTML =
+      categories.map(
+        category => `
+
+        <a
+          class="category-card"
+          href="specialists.html?category=${encodeURIComponent(
+            category.name
+          )}"
+        >
+
+          <div class="cat-icon">
+            ${escapeHTML(
+              category.icon
+            )}
+          </div>
+
+          <div class="category-content">
+
+            <h3>
+              ${escapeHTML(
+                category.name
+              )}
+            </h3>
+
+            <p>
+              ${escapeHTML(
+                category.description
+              )}
+            </p>
+
+          </div>
+
+          <span class="category-arrow">
+            ${icons.arrow}
+          </span>
+
+        </a>
+
+      `
+      ).join("");
+
+  }
 
 
-/* ================================
-   HELPERS
-================================ */
+  /* =========================
+     SPECIALISTS
+  ========================= */
 
-function getInitials(name) {
+  async function loadSpecialists() {
 
-    return (name || "?")
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map(
-            word =>
-                word
-                    .charAt(0)
-                    .toUpperCase()
-        )
-        .join("");
-
-}
+    const grid =
+      $("#featured-grid");
 
 
-function escapeHTML(value) {
-
-    return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-}
+    if (!grid)
+      return;
 
 
-/* ================================
-   RENDER SPECIALISTS
-================================ */
+    try {
 
-function renderSpecialists() {
-
-    const list =
-        $("#specialistsList");
-
-
-    if (!list) return;
+      const specialists =
+        await getData(
+          "specialists",
+          6
+        );
 
 
-    if (!specialists.length) {
+      if (
+        !specialists.length
+      ) {
 
-        list.innerHTML = `
+        grid.innerHTML = `
 
-            <div class="empty-state">
+          <div class="empty-state">
 
-                <div
-                    style="
-                        font-size:36px;
-                        color:#c66aff;
-                    "
-                >
-                    ✦
-                </div>
-
-                <h3
-                    style="
-                        color:#fff;
-                        margin:10px 0;
-                    "
-                >
-                    Ҳоло мутахассис нест
-                </h3>
-
-                <p>
-                    Аввалин SMM-мутахассис
-                    профили худро сохта метавонад.
-                </p>
-
+            <div class="cat-icon">
+              ${icons.sparkles}
             </div>
+
+            <h3>
+              Ҳоло мутахассис нест
+            </h3>
+
+            <p>
+              Аввалин SMM-мутахассис
+              бошед.
+            </p>
+
+            <a
+              href="register-specialist.html"
+              class="btn btn-primary"
+            >
+              Профил сохтан
+              ${icons.arrow}
+            </a>
+
+          </div>
 
         `;
 
         return;
 
-    }
+      }
 
 
-    list.innerHTML =
-        specialists
-            .map(
-                item => `
+      grid.innerHTML =
+        specialists.map(
+          specialist => `
 
-                <article
-                    class="specialist-card"
-                >
-
-                    <div
-                        class="specialist-top"
-                    >
-
-                        <div
-                            class="specialist-avatar"
-                        >
-                            ${getInitials(
-                                item.name
-                            )}
-                        </div>
-
-                        <div>
-
-                            <h3>
-                                ${escapeHTML(
-                                    item.name
-                                )}
-                            </h3>
-
-                            <small>
-                                ✓ VERIFIED SPECIALIST
-                            </small>
-
-                        </div>
-
-                    </div>
-
-
-                    <div
-                        class="specialist-info"
-                    >
-
-                        <p>
-                            ◈
-                            ${escapeHTML(
-                                item.service
-                            )}
-                        </p>
-
-                        <p>
-                            ◎
-                            ${escapeHTML(
-                                item.category
-                            )}
-                        </p>
-
-                        <p>
-                            ⌁ Таҷриба:
-                            ${escapeHTML(
-                                item.experience
-                            )}
-                        </p>
-
-                        <p>
-                            ₽
-                            ${escapeHTML(
-                                item.price
-                            )}
-                        </p>
-
-                    </div>
-
-
-                    <button
-                        class="btn btn-primary"
-                        style="width:100%"
-                        data-profile="${item.id}"
-                    >
-                        Профилро дидан →
-                    </button>
-
-                </article>
-
-            `
-            )
-            .join("");
-
-
-    $$("[data-profile]")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    const item =
-                        specialists.find(
-                            specialist =>
-                                specialist.id ==
-                                button.dataset.profile
-                        );
-
-
-                    if (item) {
-
-                        showProfile(item);
-
-                    }
-
-                }
-            );
-
-        });
-
-}
-
-
-/* ================================
-   PROFILE
-================================ */
-
-function showProfile(item) {
-
-    const modal =
-        document.createElement("div");
-
-
-    modal.className =
-        "modal active";
-
-
-    modal.innerHTML = `
-
-        <div class="modal-box">
-
-            <button
-                class="modal-close"
-                data-close
-            >
-                ×
-            </button>
-
-            <span class="section-label">
-                VERIFIED PROFILE
-            </span>
-
-            <h2>
-                ${escapeHTML(
-                    item.name
-                )}
-            </h2>
+          <article
+            class="specialist-card"
+          >
 
             <div
-                class="specialist-info"
+              class="specialist-card-top"
             >
 
-                <p>
-                    Хизмат:
-                    ${escapeHTML(
-                        item.service
-                    )}
-                </p>
+              <div
+                class="specialist-avatar"
+              >
+                ${escapeHTML(
+                  initials(
+                    specialist.name
+                  )
+                )}
+              </div>
+
+              <div
+                class="specialist-card-title"
+              >
+
+                <h3>
+                  ${escapeHTML(
+                    specialist.name
+                  )}
+                </h3>
+
+                <span
+                  class="verified-badge"
+                >
+                  ${icons.check}
+                </span>
 
                 <p>
-                    Категория:
-                    ${escapeHTML(
-                        item.category
-                    )}
+                  ${escapeHTML(
+                    specialist.service ||
+                    "SMM Specialist"
+                  )}
                 </p>
 
-                <p>
-                    Таҷриба:
-                    ${escapeHTML(
-                        item.experience
-                    )}
-                </p>
-
-                <p>
-                    Нарх:
-                    ${escapeHTML(
-                        item.price
-                    )}
-                </p>
-
-                <p>
-                    Instagram:
-                    ${escapeHTML(
-                        item.instagram ||
-                        "Нест"
-                    )}
-                </p>
+              </div>
 
             </div>
 
 
-            <button
-                class="btn btn-primary"
-                style="width:100%"
-                data-contact
+            <div
+              class="specialist-tags"
             >
-                📩 Тамос гирифтан
-            </button>
+
+              <span>
+                ${escapeHTML(
+                  specialist.category ||
+                  "SMM"
+                )}
+              </span>
+
+              <span>
+                ${escapeHTML(
+                  specialist.experience ||
+                  "—"
+                )}
+                таҷриба
+              </span>
+
+            </div>
+
+
+            <div
+              class="specialist-meta"
+            >
+
+              <span class="rating">
+
+                ${icons.star}
+
+                ${escapeHTML(
+                  specialist.rating ||
+                  "5.0"
+                )}
+
+              </span>
+
+              <span>
+
+                ${escapeHTML(
+                  specialist.price ||
+                  "Бо мувофиқа"
+                )}
+
+              </span>
+
+            </div>
+
+
+            <a
+              href="specialists.html"
+              class="btn btn-outline"
+            >
+
+              Профилро дидан
+
+              ${icons.arrow}
+
+            </a>
+
+          </article>
+
+        `
+        ).join("");
+
+
+    } catch (error) {
+
+      console.error(
+        "SPECIALISTS ERROR:",
+        error
+      );
+
+
+      grid.innerHTML = `
+
+        <div class="empty-state">
+
+          <div class="cat-icon">
+            ${icons.close}
+          </div>
+
+          <h3>
+            Хатогӣ пайдо шуд
+          </h3>
+
+          <p>
+            Database пайваст нашуд.
+          </p>
 
         </div>
 
-    `;
-
-
-    document.body.appendChild(
-        modal
-    );
-
-
-    modal
-        .querySelector(
-            "[data-close]"
-        )
-        .onclick = () => {
-
-            modal.remove();
-
-        };
-
-
-    modal.onclick = event => {
-
-        if (
-            event.target === modal
-        ) {
-
-            modal.remove();
-
-        }
-
-    };
-
-
-    modal
-        .querySelector(
-            "[data-contact]"
-        )
-        .onclick = () => {
-
-            if (!item.instagram) {
-
-                alert(
-                    "Instagram-и мутахассис нишон дода нашудааст."
-                );
-
-                return;
-
-            }
-
-
-            const username =
-                item.instagram
-                    .replace(
-                        /^@/,
-                        ""
-                    )
-                    .trim();
-
-
-            window.open(
-                `https://instagram.com/${encodeURIComponent(
-                    username
-                )}`,
-                "_blank"
-            );
-
-        };
-
-}
-
-
-/* ================================
-   CATALOG + AI
-================================ */
-
-$$(".catalog-card")
-    .forEach(card => {
-
-        card.addEventListener(
-            "click",
-            () => {
-
-                openModal(aiModal);
-
-                showAI(
-                    card.dataset.category
-                );
-
-            }
-        );
-
-    });
-
-
-$("#aiBtn")?.addEventListener(
-    "click",
-    () => openModal(aiModal)
-);
-
-
-$("#startAiBtn")?.addEventListener(
-    "click",
-    () => openModal(aiModal)
-);
-
-
-$$(".ai-categories button")
-    .forEach(button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                showAI(
-                    button.dataset.ai
-                );
-
-            }
-        );
-
-    });
-
-
-function showAI(category) {
-
-    const result =
-        $("#aiResult");
-
-
-    if (!result) return;
-
-
-    const found =
-        specialists.filter(
-            item =>
-                item.category ===
-                category
-        );
-
-
-    if (!found.length) {
-
-        result.innerHTML = `
-
-            <div
-                class="empty-state"
-                style="
-                    margin-top:15px;
-                    padding:28px 15px;
-                "
-            >
-
-                <div
-                    style="
-                        font-size:28px;
-                        color:#c66aff;
-                    "
-                >
-                    ✦
-                </div>
-
-                <strong
-                    style="
-                        color:#fff;
-                        display:block;
-                        margin:8px 0;
-                    "
-                >
-                    Мутахассис ёфт нашуд
-                </strong>
-
-                <p>
-                    Барои
-                    ${escapeHTML(category)}
-                    ҳоло профил нест.
-                </p>
-
-            </div>
-
-        `;
-
-        return;
+      `;
 
     }
 
+  }
 
-    result.innerHTML = `
 
-        <p
-            style="
-                color:#938899;
-                font-size:11px;
-                margin:12px 0;
-            "
+  /* =========================
+     AUTH
+  ========================= */
+
+  async function loadAuth() {
+
+    const slot =
+      $("[data-auth-slot]");
+
+
+    if (!slot)
+      return;
+
+
+    if (!supabase) {
+
+      slot.innerHTML = `
+
+        <a
+          href="login.html"
+          class="btn btn-outline btn-sm"
         >
+          Ворид шудан
+        </a>
 
-            Мутахассисон барои
+      `;
 
-            <strong style="color:#fff">
-
-                ${escapeHTML(category)}
-
-            </strong>
-
-        </p>
-
-
-        ${found
-            .slice(0, 5)
-            .map(
-                item => `
-
-                <div
-                    class="ai-result-card"
-                >
-
-                    <div>
-
-                        <strong>
-                            ${escapeHTML(
-                                item.name
-                            )}
-                        </strong>
-
-                        <small>
-                            ${escapeHTML(
-                                item.price
-                            )}
-                        </small>
-
-                    </div>
-
-
-                    <button
-                        class="btn btn-primary"
-                        data-ai-profile="${item.id}"
-                    >
-                        Дидан
-                    </button>
-
-                </div>
-
-            `
-            )
-            .join("")}
-
-    `;
-
-
-    $$("[data-ai-profile]")
-        .forEach(button => {
-
-            button.onclick = () => {
-
-                const item =
-                    specialists.find(
-                        specialist =>
-                            specialist.id ==
-                            button.dataset.aiProfile
-                    );
-
-
-                closeModal(aiModal);
-
-
-                if (item) {
-
-                    showProfile(item);
-
-                }
-
-            };
-
-        });
-
-}
-
-
-/* ================================
-   REVIEWS → DATABASE
-================================ */
-
-$("#reviewBtn")?.addEventListener(
-    "click",
-    () => openModal(reviewModal)
-);
-
-
-$("#reviewForm")?.addEventListener(
-    "submit",
-    async event => {
-
-        event.preventDefault();
-
-
-        const button =
-            event.submitter;
-
-
-        if (button) {
-
-            button.disabled = true;
-
-            button.textContent =
-                "Фиристода истодааст...";
-
-        }
-
-
-        const data = {
-
-            name:
-                $("#reviewName")
-                    .value
-                    .trim(),
-
-            rating:
-                Number(
-                    $("#reviewRating")
-                        .value
-                ),
-
-            text:
-                $("#reviewText")
-                    .value
-                    .trim()
-
-        };
-
-
-        try {
-
-            await dbInsert(
-                "reviews",
-                data
-            );
-
-
-            event.target.reset();
-
-            closeModal(
-                reviewModal
-            );
-
-
-            await loadReviews();
-
-
-            alert(
-                "★ Отзыв ба Database илова шуд!"
-            );
-
-
-        } catch (error) {
-
-            console.error(error);
-
-            alert(
-                "✕ Хато ҳангоми илова кардани отзыв."
-            );
-
-        } finally {
-
-            if (button) {
-
-                button.disabled = false;
-
-                button.textContent =
-                    "Фиристодан →";
-
-            }
-
-        }
+      return;
 
     }
-);
 
-
-async function loadReviews() {
 
     try {
 
-        reviews =
-            await dbGet(
-                "reviews",
-                "?select=*&order=created_at.desc"
-            );
+      const {
+        data
+      } =
+        await supabase.auth
+          .getUser();
 
 
-        renderReviews();
+      const user =
+        data?.user;
 
 
-    } catch (error) {
+      if (!user) {
 
-        console.error(error);
+        slot.innerHTML = `
 
-    }
+          <a
+            href="login.html"
+            class="btn btn-outline btn-sm"
+          >
+            Ворид шудан
+          </a>
 
-}
-
-
-function renderReviews() {
-
-    const list =
-        $("#reviewsList");
-
-
-    if (!list) return;
-
-
-    if (!reviews.length) {
-
-        list.innerHTML = `
-
-            <div class="empty-state">
-
-                <div
-                    style="
-                        font-size:35px;
-                        color:#c66aff;
-                    "
-                >
-                    ★
-                </div>
-
-                <h3
-                    style="
-                        color:#fff;
-                        margin:10px 0;
-                    "
-                >
-                    Ҳоло отзыв нест
-                </h3>
-
-                <p>
-                    Аввалин отзывро гузоред.
-                </p>
-
-            </div>
+          <a
+            href="register-specialist.html"
+            class="btn btn-primary btn-sm"
+          >
+            Ман SMM-мутахассис ҳастам
+          </a>
 
         `;
 
         return;
 
-    }
+      }
 
 
-    list.innerHTML =
-        reviews
-            .map(
-                item => `
-
-                <article
-                    class="review-card"
-                >
-
-                    <div
-                        class="review-top"
-                    >
-
-                        <div
-                            class="review-avatar"
-                        >
-                            ${getInitials(
-                                item.name
-                            )}
-                        </div>
-
-                        <div>
-
-                            <strong>
-                                ${escapeHTML(
-                                    item.name
-                                )}
-                            </strong>
-
-                            <div
-                                class="review-stars"
-                            >
-                                ${"★".repeat(
-                                    item.rating
-                                )}
-
-                                ${"☆".repeat(
-                                    5 -
-                                    item.rating
-                                )}
-                            </div>
-
-                        </div>
-
-                    </div>
+      const name =
+        user.user_metadata
+          ?.full_name ||
+        user.email
+          ?.split("@")[0] ||
+        "Профил";
 
 
-                    <p>
-                        ${escapeHTML(
-                            item.text
-                        )}
-                    </p>
+      slot.innerHTML = `
 
-                </article>
+        <a
+          href="profile.html"
+          class="btn btn-outline btn-sm"
+        >
+          ${escapeHTML(name)}
+        </a>
 
-            `
-            )
-            .join("");
+        <button
+          id="logoutBtn"
+          class="btn btn-primary btn-sm"
+        >
+          Баромадан
+        </button>
 
-}
-
-
-/* ================================
-   ADMIN
-================================ */
-
-$("#adminBtn")?.addEventListener(
-    "click",
-    () => {
-
-        openModal(adminModal);
-
-        $("#adminLogin")
-            ?.classList.remove(
-                "hidden"
-            );
-
-        $("#adminDashboard")
-            ?.classList.add(
-                "hidden"
-            );
-
-    }
-);
+      `;
 
 
-$("#adminLoginBtn")
-    ?.addEventListener(
-        "click",
-        async () => {
+      $("#logoutBtn")
+        ?.addEventListener(
+          "click",
+          async () => {
 
-            if (
-                $("#adminPassword")
-                    .value !== "1234"
-            ) {
+            await supabase
+              .auth
+              .signOut();
 
-                alert(
-                    "✕ Парол нодуруст аст."
-                );
+            location.reload();
 
-                return;
-
-            }
-
-
-            $("#adminLogin")
-                .classList.add(
-                    "hidden"
-                );
-
-            $("#adminDashboard")
-                .classList.remove(
-                    "hidden"
-                );
-
-
-            await renderAdmin();
-
-        }
-    );
-
-
-async function renderAdmin() {
-
-    try {
-
-        const data =
-            await dbGet(
-                "specialists",
-                "?select=*&order=created_at.desc"
-            );
-
-
-        const reviewData =
-            await dbGet(
-                "reviews",
-                "?select=*&order=created_at.desc"
-            );
-
-
-        $("#smmCount")
-            .textContent =
-            data.length;
-
-
-        $("#reviewCount")
-            .textContent =
-            reviewData.length;
-
-
-        $("#clientCount")
-            .textContent =
-            "—";
-
-
-        $("#adminSmmList")
-            .innerHTML =
-            data
-                .map(
-                    item => `
-
-                    <div
-                        class="admin-item"
-                    >
-
-                        <span>
-                            ${escapeHTML(
-                                item.name
-                            )}
-                        </span>
-
-                    </div>
-
-                `
-                )
-                .join("");
-
-
-        $("#adminClientList")
-            .innerHTML = `
-
-            <p
-                style="
-                    color:#817787;
-                    font-size:10px;
-                "
-            >
-                Client data барои Admin
-                баъд аз authentication
-                кушода мешавад.
-            </p>
-
-        `;
+          }
+        );
 
 
     } catch (error) {
 
-        console.error(error);
-
-        alert(
-            "✕ Admin database access error."
-        );
+      console.error(
+        "AUTH ERROR:",
+        error
+      );
 
     }
 
-}
+  }
 
 
-/* ================================
-   START
-================================ */
+  /* =========================
+     REALTIME
+  ========================= */
 
-async function startApp() {
+  function realtime() {
+
+    if (!supabase)
+      return;
+
+
+    supabase
+      .channel(
+        "smm-tj-specialists"
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "specialists"
+        },
+        () => {
+
+          loadSpecialists();
+
+        }
+      )
+      .subscribe();
+
+
+    supabase.auth
+      .onAuthStateChange(
+        () => {
+
+          loadAuth();
+
+        }
+      );
+
+  }
+
+
+  /* =========================
+     DEBUG
+  ========================= */
+
+  window.addEventListener(
+    "error",
+    event => {
+
+      console.error(
+        "SMM.TJ ERROR:",
+        event.message,
+        event.filename,
+        event.lineno
+      );
+
+    }
+  );
+
+
+  window.addEventListener(
+    "unhandledrejection",
+    event => {
+
+      console.error(
+        "SMM.TJ PROMISE ERROR:",
+        event.reason
+      );
+
+    }
+  );
+
+
+  /* =========================
+     START
+  ========================= */
+
+  async function start() {
 
     console.log(
-        "SMM.TJ — Supabase starting..."
+      "SMM.TJ starting..."
     );
 
 
-    await Promise.all([
-        loadSpecialists(),
-        loadReviews()
+    renderIcons();
+
+    initMenu();
+
+
+    await Promise.allSettled([
+
+      loadCategories(),
+
+      loadSpecialists(),
+
+      loadAuth()
+
     ]);
 
 
+    realtime();
+
+
     console.log(
-        "✓ SMM.TJ — SUPABASE CONNECTED"
+      "✓ SMM.TJ READY"
     );
 
-}
+  }
 
 
-startApp();
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      start
+    );
+
+  } else {
+
+    start();
+
+  }
+
+
+  window.SMMTJ = {
+
+    supabase,
+
+    loadCategories,
+
+    loadSpecialists,
+
+    loadAuth
+
+  };
+
+})();
