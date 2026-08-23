@@ -1981,3 +1981,486 @@ a {
         grid-template-columns: 1fr;
     }
 }
+/* =========================
+   📱 MOBILE ONLY
+========================= */
+
+@media (max-width: 650px) {
+
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .container {
+        width: calc(100% - 28px);
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    /* HEADER */
+
+    .header {
+        width: 100%;
+    }
+
+    .header-inner {
+        min-height: 65px;
+        gap: 8px;
+    }
+
+    .logo {
+        font-size: 21px;
+        letter-spacing: -1px;
+    }
+
+    .nav {
+        position: absolute;
+
+        top: 65px;
+        left: 0;
+        right: 0;
+
+        width: 100%;
+
+        padding: 10px 14px 15px;
+
+        display: none;
+        flex-direction: column;
+        gap: 3px;
+
+        background: rgba(7,5,10,.98);
+
+        border-bottom:
+            1px solid rgba(255,255,255,.08);
+
+        backdrop-filter: blur(20px);
+    }
+
+    .nav.mobile {
+        display: flex;
+    }
+
+    .nav a {
+        width: 100%;
+
+        padding: 13px;
+
+        border-radius: 10px;
+
+        font-size: 13px;
+    }
+
+    .nav a:hover {
+        background:
+            rgba(145,65,255,.1);
+    }
+
+    .header-buttons {
+        display: none;
+    }
+
+    .menu-btn {
+        display: flex;
+        margin-left: auto;
+    }
+
+
+    /* HERO */
+
+    .hero {
+        min-height: auto;
+
+        padding:
+            55px 0 65px;
+
+        display: block;
+    }
+
+    .hero-grid {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+
+        gap: 38px;
+    }
+
+    .hero-grid > div {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .eyebrow {
+        margin-bottom: 17px;
+
+        font-size: 9px;
+    }
+
+    .hero h1 {
+        width: 100%;
+
+        font-size:
+            clamp(40px, 13vw, 57px);
+
+        line-height: .94;
+
+        letter-spacing: -3px;
+
+        overflow-wrap: anywhere;
+    }
+
+    .hero-grid > div > p {
+        width: 100%;
+
+        margin-top: 20px;
+
+        font-size: 14px;
+
+        line-height: 1.65;
+    }
+
+    .hero-buttons {
+        width: 100%;
+
+        margin-top: 25px;
+
+        display: flex;
+        flex-direction: column;
+
+        gap: 9px;
+    }
+
+    .hero-buttons .btn {
+        width: 100%;
+    }
+
+
+    /* HERO CARD */
+
+    .hero-card {
+        width: 100%;
+        max-width: 100%;
+
+        padding: 21px;
+
+        border-radius: 21px;
+
+        transform: none;
+    }
+
+    .hero-card h2 {
+        font-size: 25px;
+    }
+
+    .hero-card > p {
+        font-size: 12px;
+    }
+
+    .role-buttons {
+        width: 100%;
+    }
+
+    .role-card {
+        width: 100%;
+
+        min-height: 62px;
+
+        padding: 10px;
+    }
+
+
+    /* SECTIONS */
+
+    .section {
+        width: 100%;
+
+        padding: 65px 0;
+    }
+
+    .section-heading {
+        margin-bottom: 28px;
+    }
+
+    .section-heading h2 {
+        width: 100%;
+
+        font-size: 34px;
+
+        line-height: 1;
+
+        letter-spacing: -2px;
+    }
+
+    .section-heading p {
+        width: 100%;
+
+        font-size: 13px;
+
+        line-height: 1.65;
+    }
+
+
+    /* SMM CATALOG */
+
+    .specialists-grid {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+
+        gap: 13px;
+    }
+
+    .specialist-card {
+        width: 100%;
+        min-width: 0;
+
+        padding: 20px;
+
+        border-radius: 20px;
+
+        transform: none !important;
+    }
+
+    .specialist-top {
+        width: 100%;
+
+        min-width: 0;
+    }
+
+    .avatar {
+        width: 51px;
+        height: 51px;
+
+        flex-shrink: 0;
+
+        border-radius: 15px;
+    }
+
+    .specialist-card h3 {
+        max-width: 180px;
+
+        font-size: 16px;
+
+        overflow-wrap: anywhere;
+    }
+
+    .specialist-info {
+        width: 100%;
+    }
+
+    .specialist-info p {
+        width: 100%;
+
+        font-size: 11px;
+
+        overflow-wrap: anywhere;
+    }
+
+    .profile-btn {
+        width: 100%;
+    }
+
+
+    /* AI */
+
+    .ai-card {
+        width: 100%;
+
+        padding: 23px;
+
+        display: flex;
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 17px;
+
+        border-radius: 21px;
+    }
+
+    .ai-icon {
+        width: 58px;
+        height: 58px;
+
+        border-radius: 16px;
+    }
+
+    .ai-card h2 {
+        width: 100%;
+
+        font-size: 32px;
+
+        letter-spacing: -1.8px;
+    }
+
+    .ai-card p {
+        width: 100%;
+
+        font-size: 13px;
+    }
+
+    .ai-categories {
+        width: 100%;
+
+        grid-template-columns: 1fr;
+
+        gap: 8px;
+    }
+
+    .ai-categories button {
+        width: 100%;
+    }
+
+
+    /* REVIEWS */
+
+    .reviews-grid {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+
+        gap: 13px;
+    }
+
+    .review-card {
+        width: 100%;
+
+        padding: 20px;
+
+        border-radius: 19px;
+    }
+
+    .review-card p {
+        font-size: 12px;
+    }
+
+
+    /* MODAL */
+
+    .modal {
+        padding: 6px;
+
+        align-items: flex-end;
+    }
+
+    .modal-box {
+        width: 100%;
+        max-width: 100%;
+
+        max-height: 94vh;
+
+        padding: 25px 17px;
+
+        border-radius:
+            22px 22px 0 0;
+    }
+
+
+    /* FORM */
+
+    .form,
+    #reviewForm {
+        width: 100%;
+    }
+
+    .form input,
+    .form textarea,
+    .form select,
+    #reviewForm input,
+    #reviewForm textarea,
+    #reviewForm select {
+        width: 100%;
+
+        font-size: 14px;
+    }
+
+
+    /* ROLE */
+
+    .role-selection {
+        width: 100%;
+
+        grid-template-columns: 1fr;
+
+        gap: 9px;
+    }
+
+    .role-selection button {
+        width: 100%;
+
+        min-height: 82px;
+    }
+
+
+    /* PROFILE */
+
+    .profile-content {
+        width: 100%;
+    }
+
+    .profile-details {
+        width: 100%;
+    }
+
+    .profile-details p {
+        width: 100%;
+
+        overflow-wrap: anywhere;
+    }
+
+
+    /* FOOTER */
+
+    .footer {
+        width: 100%;
+    }
+
+    .footer-inner {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 15px;
+    }
+}
+
+
+/* =========================
+   📱 VERY SMALL PHONES
+========================= */
+
+@media (max-width: 380px) {
+
+    .container {
+        width: calc(100% - 22px);
+    }
+
+    .hero h1 {
+        font-size: 39px;
+        letter-spacing: -2.5px;
+    }
+
+    .section-heading h2 {
+        font-size: 31px;
+    }
+
+    .hero-card {
+        padding: 18px;
+    }
+
+    .specialist-card {
+        padding: 17px;
+    }
+
+    .ai-card {
+        padding: 19px;
+    }
+}
