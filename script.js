@@ -1,1098 +1,1271 @@
-/* =====================================================
-   SMM.TJ — SCRIPT
-   Логикаи асосии платформа
-===================================================== */
+"use strict";
 
+/* =========================================================
+   ELEMENTS
+========================================================= */
 
-/* =====================================================
-   VARIABLES
-===================================================== */
+const searchForm = document.getElementById("searchForm");
+const searchInput = document.getElementById("searchInput");
+const specialistsGrid = document.getElementById("specialistsGrid");
 
-let authMode = "register";
+const notificationBtn = document.getElementById("notificationBtn");
+const notificationPanel = document.getElementById("notificationPanel");
 
-let selectedRole = "";
+const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+const mainNav = document.getElementById("mainNav");
 
-let selectedCategory = "all";
+const loginForm = document.getElementById("loginForm");
+const registerForm = document.getElementById("registerForm");
+const orderForm = document.getElementById("orderForm");
 
-let currentUser = null;
+const chatWidget = document.getElementById("chatWidget");
+const floatingChat = document.getElementById("floatingChat");
+const chatForm = document.getElementById("chatForm");
+const chatInput = document.getElementById("chatInput");
+const chatMessages = document.getElementById("chatMessages");
 
+const accountTypeInput = document.getElementById("accountType");
+const accountTypeButtons = document.querySelectorAll(".account-type");
 
-/* =====================================================
-   LOADER
-===================================================== */
+const sortSelect = document.getElementById("sortSelect");
 
-window.addEventListener("load", function () {
 
-    const loader = document.getElementById("loader");
+/* =========================================================
+   REAL DATA
+========================================================= */
 
-    const progress =
-        document.getElementById("loaderProgress");
+/*
+    Ҳоло платформа нав аст.
+    Барои ҳамин маълумоти сохта вуҷуд надорад.
 
-    let value = 0;
+    Баъдтар ҳамин массив аз Backend/API гирифта мешавад:
 
-    const loading = setInterval(function () {
+    GET /api/specialists
 
-        value += Math.floor(Math.random() * 12) + 5;
+    Масалан:
 
-        if (value >= 100) {
+    const specialists = await fetch("/api/specialists")
+        .then(response => response.json());
+*/
 
-            value = 100;
+let specialists = [];
 
-            clearInterval(loading);
 
-            if (progress) {
-                progress.style.width = "100%";
-            }
+/* =========================================================
+   MODAL
+========================================================= */
 
-            setTimeout(function () {
+function openModal(modalId) {
 
-                if (loader) {
-                    loader.classList.add("hide");
-                }
+    const modal = document.getElementById(modalId);
 
-            }, 500);
-
-        }
-
-        if (progress) {
-            progress.style.width = value + "%";
-        }
-
-    }, 100);
-
-});
-
-
-/* =====================================================
-   PAGE INITIALIZATION
-===================================================== */
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    loadPlatform();
-
-    checkSavedUser();
-
-});
-
-
-async function loadPlatform() {
-
-    /*
-        Баъд аз пайваст кардани Supabase
-        ин функсия автоматӣ:
-
-        - specialistҳоро мегирад
-        - clientҳоро ҳисоб мекунад
-        - projectҳоро ҳисоб мекунад
-        - reviewҳоро ҳисоб мекунад
-    */
-
-    await loadStatistics();
-
-    await loadSpecialists();
-
-}
-
-
-/* =====================================================
-   STATISTICS
-===================================================== */
-
-async function loadStatistics() {
-
-    /*
-        Ҳоло база ҳанӯз пайваст нест.
-
-        Барои ҳамин рақамҳо 0 мемонанд.
-
-        Баъд аз Supabase инҷо:
-
-        specialists → COUNT
-        clients → COUNT
-        projects → completed COUNT
-        reviews → COUNT
-    */
-
-
-    setNumber("specialistsCount", 0);
-
-    setNumber("clientsCount", 0);
-
-    setNumber("projectsCount", 0);
-
-    setNumber("reviewsCount", 0);
-
-}
-
-
-function setNumber(id, number) {
-
-    const element =
-        document.getElementById(id);
-
-    if (!element) return;
-
-    element.textContent =
-        Number(number).toLocaleString("tg-TJ");
-
-}
-
-
-/* =====================================================
-   SPECIALISTS
-===================================================== */
-
-let allSpecialists = [];
-
-
-async function loadSpecialists() {
-
-    /*
-        Вақте Supabase пайваст мешавад:
-
-        allSpecialists =
-            маълумоти specialists table
-
-        Ҳоло array холӣ аст.
-
-        Ягон specialist сохта нашудааст.
-    */
-
-    allSpecialists = [];
-
-    renderSpecialists(allSpecialists);
-
-}
-
-
-function renderSpecialists(list) {
-
-    const container =
-        document.getElementById("specialistsList");
-
-    if (!container) return;
-
-
-    if (!list || list.length === 0) {
-
-        container.innerHTML = `
-
-            <div class="empty-state">
-
-                <div class="empty-icon">
-                    ✦
-                </div>
-
-                <h3>
-                    Ҳоло мутахассис нест
-                </h3>
-
-                <p>
-                    Вақте аввалин
-                    SMM-специалист сабтином мешавад,
-                    профили ӯ автоматӣ дар ин ҷо пайдо мешавад.
-                </p>
-
-                <button
-                    class="btn btn-purple"
-                    onclick="openAuth('specialist')">
-
-                    Профил сохтан
-
-                </button>
-
-            </div>
-
-        `;
-
+    if (!modal) {
         return;
     }
 
+    modal.classList.add("active");
 
-    container.innerHTML = "";
+    document.body.classList.add("modal-open");
+
+    modal.setAttribute("aria-hidden", "false");
+
+    const firstInput = modal.querySelector(
+        "input:not([type='hidden']), textarea, select, button"
+    );
+
+    if (firstInput) {
+        setTimeout(() => {
+            firstInput.focus();
+        }, 100);
+    }
+}
 
 
-    list.forEach(function (specialist) {
+function closeModal(modalId) {
 
-        const card =
-            createSpecialistCard(specialist);
+    const modal = document.getElementById(modalId);
 
-        container.appendChild(card);
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("active");
+
+    modal.setAttribute("aria-hidden", "true");
+
+    const activeModal = document.querySelector(".modal.active");
+
+    if (!activeModal) {
+        document.body.classList.remove("modal-open");
+    }
+}
+
+
+function switchModal(currentModal, nextModal) {
+
+    closeModal(currentModal);
+
+    setTimeout(() => {
+        openModal(nextModal);
+    }, 100);
+}
+
+
+/* =========================================================
+   CLOSE MODAL BY BACKDROP
+========================================================= */
+
+document.querySelectorAll(".modal").forEach(modal => {
+
+    modal.addEventListener("click", event => {
+
+        if (event.target === modal) {
+            closeModal(modal.id);
+        }
+
+    });
+
+});
+
+
+/* =========================================================
+   ESC KEY
+========================================================= */
+
+document.addEventListener("keydown", event => {
+
+    if (event.key !== "Escape") {
+        return;
+    }
+
+    const activeModal = document.querySelector(".modal.active");
+
+    if (activeModal) {
+        closeModal(activeModal.id);
+    }
+
+    closeNotifications();
+
+});
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+if (searchForm) {
+
+    searchForm.addEventListener("submit", event => {
+
+        event.preventDefault();
+
+        searchSpecialists();
 
     });
 
 }
 
 
-function createSpecialistCard(specialist) {
+function searchSpecialists() {
 
-    const article =
-        document.createElement("article");
+    const query = searchInput
+        ? searchInput.value.trim().toLowerCase()
+        : "";
 
-    article.className =
-        "specialist-card";
+    if (!query) {
 
+        renderSpecialists([]);
 
-    const name =
-        specialist.name || "SMM-специалист";
+        scrollToSpecialists();
 
-
-    const category =
-        specialist.category || "SMM";
-
-
-    const rating =
-        specialist.rating || 0;
+        return;
+    }
 
 
-    const reviews =
-        specialist.reviews_count || 0;
+    const filtered = specialists.filter(specialist => {
+
+        const name =
+            String(specialist.name || "").toLowerCase();
+
+        const city =
+            String(specialist.city || "").toLowerCase();
+
+        const category =
+            String(specialist.category || "").toLowerCase();
+
+        const services =
+            Array.isArray(specialist.services)
+                ? specialist.services.join(" ").toLowerCase()
+                : "";
+
+        return (
+            name.includes(query) ||
+            city.includes(query) ||
+            category.includes(query) ||
+            services.includes(query)
+        );
+
+    });
 
 
-    const experience =
-        specialist.experience || 0;
+    renderSpecialists(filtered);
 
-
-    const projects =
-        specialist.projects_count || 0;
-
-
-    const verified =
-        specialist.verified === true;
-
-
-    const premium =
-        specialist.premium === true;
-
-
-    const firstLetter =
-        name.charAt(0).toUpperCase();
-
-
-    article.innerHTML = `
-
-        ${
-            verified
-            ?
-            `
-            <div class="verified-badge">
-                ✓ Тасдиқшуда
-            </div>
-            `
-            :
-            ""
-        }
-
-
-        ${
-            premium
-            ?
-            `
-            <div class="premium-badge">
-                ◆ ПРЕМИУМ
-            </div>
-            `
-            :
-            ""
-        }
-
-
-        <div class="specialist-avatar">
-
-            ${firstLetter}
-
-        </div>
-
-
-        <h3>
-            ${escapeHTML(name)}
-        </h3>
-
-
-        <div class="specialist-role">
-
-            ${escapeHTML(category)}
-
-        </div>
-
-
-        <div class="specialist-rating">
-
-            ★ ${rating}
-
-            <span>
-                (${reviews} отзыв)
-            </span>
-
-        </div>
-
-
-        <div class="specialist-info">
-
-
-            <div>
-
-                <strong>
-                    ${experience}
-                </strong>
-
-                <small>
-                    сол таҷриба
-                </small>
-
-            </div>
-
-
-            <div>
-
-                <strong>
-                    ${projects}
-                </strong>
-
-                <small>
-                    лоиҳа
-                </small>
-
-            </div>
-
-
-        </div>
-
-
-        <button
-            class="btn btn-purple full profile-button"
-            onclick="openSpecialistProfile('${specialist.id}')">
-
-            Дидани профил →
-
-        </button>
-
-    `;
-
-
-    return article;
+    scrollToSpecialists();
 
 }
 
 
-/* =====================================================
-   FILTER
-===================================================== */
+/* =========================================================
+   CATEGORY FILTER
+========================================================= */
 
-function filterSpecialists(category, button) {
+function filterCategory(category) {
 
-    selectedCategory = category;
+    if (!category) {
+        return;
+    }
 
 
-    document
-        .querySelectorAll(".filter")
-        .forEach(function (item) {
+    const filtered = specialists.filter(specialist => {
+
+        return String(specialist.category || "")
+            .toLowerCase() === category.toLowerCase();
+
+    });
+
+
+    if (searchInput) {
+        searchInput.value = category;
+    }
+
+
+    renderSpecialists(filtered);
+
+    scrollToSpecialists();
+
+}
+
+
+/* =========================================================
+   SORT
+========================================================= */
+
+if (sortSelect) {
+
+    sortSelect.addEventListener("change", () => {
+
+        sortSpecialists();
+
+    });
+
+}
+
+
+function sortSpecialists() {
+
+    const type = sortSelect
+        ? sortSelect.value
+        : "rating";
+
+
+    const sorted = [...specialists];
+
+
+    if (type === "rating") {
+
+        sorted.sort((a, b) => {
+
+            return Number(b.rating || 0) -
+                Number(a.rating || 0);
+
+        });
+
+    }
+
+
+    if (type === "reviews") {
+
+        sorted.sort((a, b) => {
+
+            return Number(b.reviews || 0) -
+                Number(a.reviews || 0);
+
+        });
+
+    }
+
+
+    if (type === "experience") {
+
+        sorted.sort((a, b) => {
+
+            return Number(b.experience || 0) -
+                Number(a.experience || 0);
+
+        });
+
+    }
+
+
+    renderSpecialists(sorted);
+
+}
+
+
+/* =========================================================
+   RENDER SPECIALISTS
+========================================================= */
+
+function renderSpecialists(data) {
+
+    if (!specialistsGrid) {
+        return;
+    }
+
+
+    /*
+        Дар версияи ҳозира data аз backend намеояд.
+        Аз ин рӯ ҳеҷ profile-и сохта нишон дода намешавад.
+    */
+
+    if (!Array.isArray(data) || data.length === 0) {
+
+        specialistsGrid.innerHTML = `
+            <div class="empty-state">
+
+                <div class="empty-state-icon">
+                    👤
+                </div>
+
+                <h3>
+                    Ҳоло мутахассисон нестанд
+                </h3>
+
+                <p>
+                    SMM.TJ нав оғоз шудааст.
+                    Шумо метавонед аввалин мутахассис бошед.
+                </p>
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    onclick="openModal('registerModal')"
+                >
+                    Профили худро созед
+                </button>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    specialistsGrid.innerHTML = data.map(specialist => {
+
+        return createSpecialistCard(specialist);
+
+    }).join("");
+
+}
+
+
+/* =========================================================
+   SPECIALIST CARD
+========================================================= */
+
+function createSpecialistCard(specialist) {
+
+    const name = escapeHTML(
+        specialist.name || "Мутахассис"
+    );
+
+    const city = escapeHTML(
+        specialist.city || "—"
+    );
+
+    const category = escapeHTML(
+        specialist.category || "SMM"
+    );
+
+    const experience = Number(
+        specialist.experience || 0
+    );
+
+    const rating = Number(
+        specialist.rating || 0
+    );
+
+    const reviews = Number(
+        specialist.reviews || 0
+    );
+
+    const price = escapeHTML(
+        specialist.price || "—"
+    );
+
+    const initial = escapeHTML(
+        String(specialist.name || "М").charAt(0).toUpperCase()
+    );
+
+
+    const verified = specialist.verified
+        ? `
+            <span class="verified">
+                ✓ Verified
+            </span>
+        `
+        : "";
+
+
+    const services = Array.isArray(specialist.services)
+        ? specialist.services
+        : [];
+
+
+    const serviceHTML = services
+        .slice(0, 4)
+        .map(service => {
+
+            return `
+                <span class="service-tag">
+                    ${escapeHTML(service)}
+                </span>
+            `;
+
+        })
+        .join("");
+
+
+    return `
+        <article class="specialist-card">
+
+            <div class="specialist-top">
+
+                <div class="specialist-avatar">
+                    ${initial}
+                </div>
+
+                <div class="specialist-info">
+
+                    <h3>
+                        ${name}
+                        ${verified}
+                    </h3>
+
+                    <div class="specialist-location">
+                        📍 ${city}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="rating-row">
+
+                <span class="stars">
+                    ${createStars(rating)}
+                </span>
+
+                <strong>
+                    ${rating > 0 ? rating.toFixed(1) : "—"}
+                </strong>
+
+                <span>
+                    (${reviews} отзыв)
+                </span>
+
+            </div>
+
+
+            <div class="service-tags">
+
+                <span class="service-tag">
+                    ${category}
+                </span>
+
+                ${serviceHTML}
+
+            </div>
+
+
+            <p class="specialist-experience">
+                Таҷриба:
+                <strong>
+                    ${experience} сол
+                </strong>
+            </p>
+
+
+            <div class="specialist-bottom">
+
+                <div class="price">
+                    ${price}
+                    <small>
+                        / моҳ
+                    </small>
+                </div>
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    onclick="openSpecialistProfile('${escapeAttribute(
+                        specialist.id || ""
+                    )}')"
+                >
+                    Профил
+                </button>
+
+            </div>
+
+        </article>
+    `;
+
+}
+
+
+/* =========================================================
+   STARS
+========================================================= */
+
+function createStars(rating) {
+
+    const numericRating = Number(rating);
+
+    if (!numericRating || numericRating <= 0) {
+        return "☆☆☆☆☆";
+    }
+
+
+    const rounded = Math.round(numericRating);
+
+    return "★".repeat(
+        Math.min(5, Math.max(0, rounded))
+    ) + "☆".repeat(
+        Math.max(0, 5 - rounded)
+    );
+
+}
+
+
+/* =========================================================
+   SPECIALIST PROFILE
+========================================================= */
+
+function openSpecialistProfile(id) {
+
+    if (!id) {
+        return;
+    }
+
+
+    const specialist = specialists.find(
+        item => String(item.id) === String(id)
+    );
+
+
+    if (!specialist) {
+        return;
+    }
+
+
+    /*
+        Баъдтар ин ҷо:
+
+        window.location.href =
+            `/specialist/${specialist.id}`;
+
+        мешавад.
+
+        Ҳоло profile-и алоҳида ҳанӯз сохта нашудааст.
+    */
+
+    console.log(
+        "Specialist profile:",
+        specialist
+    );
+
+}
+
+
+/* =========================================================
+   REGISTER ACCOUNT TYPE
+========================================================= */
+
+accountTypeButtons.forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        accountTypeButtons.forEach(item => {
 
             item.classList.remove("active");
 
         });
 
 
-    if (button) {
         button.classList.add("active");
-    }
 
 
-    if (category === "all") {
-
-        renderSpecialists(allSpecialists);
-
-        return;
-
-    }
+        const selectedType =
+            button.dataset.accountType || "smm";
 
 
-    const filtered =
-        allSpecialists.filter(function (specialist) {
+        if (accountTypeInput) {
 
-            return specialist.category === category;
-
-        });
-
-
-    renderSpecialists(filtered);
-
-}
-
-
-/* =====================================================
-   AI MATCHING
-===================================================== */
-
-async function runAI() {
-
-    const category =
-        document.getElementById("aiCategory").value;
-
-
-    const budget =
-        document.getElementById("aiBudget").value;
-
-
-    const result =
-        document.getElementById("aiResult");
-
-
-    if (!category) {
-
-        showToast(
-            "Аввал самти корро интихоб кунед."
-        );
-
-        return;
-
-    }
-
-
-    if (!budget) {
-
-        showToast(
-            "Аввал буҷетро интихоб кунед."
-        );
-
-        return;
-
-    }
-
-
-    if (result) {
-
-        result.innerHTML = `
-
-            <div class="ai-loading">
-
-                Мутахассисони мувофиқ
-                ҷустуҷӯ шуда истодаанд...
-
-            </div>
-
-        `;
-
-    }
-
-
-    await delay(700);
-
-
-    /*
-        Баъд аз Supabase:
-
-        AI аз база specialistҳоро
-        мувофиқи category ва budget
-        интихоб мекунад.
-    */
-
-
-    const matches =
-        allSpecialists.filter(function (specialist) {
-
-            return specialist.category === category;
-
-        });
-
-
-    if (!matches.length) {
-
-        if (result) {
-
-            result.innerHTML = `
-
-                <strong>
-                    Мутахассиси мувофиқ ёфт нашуд.
-                </strong>
-
-                <br><br>
-
-                Ҳоло дар ин самт мутахассис
-                сабтином нашудааст.
-
-            `;
+            accountTypeInput.value =
+                selectedType;
 
         }
 
-        return;
+    });
 
-    }
-
-
-    if (result) {
-
-        result.innerHTML = `
-
-            <strong>
-                ${matches.length}
-                мутахассиси мувофиқ ёфт шуд.
-            </strong>
-
-            <br><br>
-
-            Барои дидани онҳо ба каталоги
-            мутахассисон гузаред.
-
-        `;
-
-    }
+});
 
 
-    document
-        .getElementById("specialists")
-        ?.scrollIntoView({
-            behavior: "smooth"
-        });
+/* =========================================================
+   LOGIN
+========================================================= */
+
+if (loginForm) {
+
+    loginForm.addEventListener("submit", async event => {
+
+        event.preventDefault();
 
 
-}
+        const submitButton =
+            loginForm.querySelector(
+                "button[type='submit']"
+            );
 
 
-/* =====================================================
-   AUTH
-===================================================== */
-
-function openAuth(mode) {
-
-    authMode = mode;
+        const originalText =
+            submitButton
+                ? submitButton.textContent
+                : "";
 
 
-    const modal =
-        document.getElementById("authModal");
+        setButtonLoading(
+            submitButton,
+            "Даромада истодааст..."
+        );
 
 
-    const title =
-        document.getElementById("authTitle");
+        /*
+            Дар production:
+
+            const response = await fetch(
+                "/api/auth/login",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(...)
+                }
+            );
+        */
 
 
-    const description =
-        document.getElementById("authDescription");
+        await wait(600);
 
 
-    const roleSelector =
-        document.getElementById("roleSelector");
+        setButtonLoading(
+            submitButton,
+            originalText
+        );
 
 
-    if (!modal) return;
+        closeModal("loginModal");
 
 
-    modal.classList.add("show");
+        showToast(
+            "Backend ҳоло пайваст нашудааст.",
+            "info"
+        );
 
-
-    if (mode === "login") {
-
-        title.textContent =
-            "Даромадан";
-
-        description.textContent =
-            "Ба аккаунти худ ворид шавед.";
-
-        roleSelector.style.display =
-            "none";
-
-    }
-
-
-    else {
-
-        title.textContent =
-            "Регистрация";
-
-        description.textContent =
-            "Нақши худро интихоб кунед.";
-
-        roleSelector.style.display =
-            "grid";
-
-    }
+    });
 
 }
 
 
-function closeAuth() {
+/* =========================================================
+   REGISTER
+========================================================= */
 
-    const modal =
-        document.getElementById("authModal");
+if (registerForm) {
 
-    if (modal) {
+    registerForm.addEventListener("submit", async event => {
 
-        modal.classList.remove("show");
-
-    }
-
-}
+        event.preventDefault();
 
 
-/* =====================================================
-   ROLE
-===================================================== */
-
-function selectRole(role) {
-
-    selectedRole = role;
+        const submitButton =
+            registerForm.querySelector(
+                "button[type='submit']"
+            );
 
 
-    const client =
-        document.getElementById("clientRole");
+        const originalText =
+            submitButton
+                ? submitButton.textContent
+                : "";
 
 
-    const specialist =
-        document.getElementById("specialistRole");
+        const formData =
+            new FormData(registerForm);
 
 
-    if (client) {
-
-        client.classList.remove("selected");
-
-    }
+        const accountType =
+            formData.get("accountType");
 
 
-    if (specialist) {
-
-        specialist.classList.remove("selected");
-
-    }
-
-
-    if (role === "client" && client) {
-
-        client.classList.add("selected");
-
-    }
-
-
-    if (
-        role === "specialist" &&
-        specialist
-    ) {
-
-        specialist.classList.add("selected");
-
-    }
-
-}
-
-
-/* =====================================================
-   AUTH SUBMIT
-===================================================== */
-
-async function submitAuth() {
-
-    const name =
-        getValue("authName");
-
-
-    const phone =
-        getValue("authPhone");
-
-
-    const email =
-        getValue("authEmail");
-
-
-    const password =
-        getValue("authPassword");
-
-
-    if (authMode === "register") {
-
-        if (!selectedRole) {
+        if (
+            accountType !== "smm" &&
+            accountType !== "business"
+        ) {
 
             showToast(
-                "Аввал нақши худро интихоб кунед."
+                "Навъи аккаунтро интихоб кунед.",
+                "error"
             );
 
             return;
-
         }
 
-    }
+
+        setButtonLoading(
+            submitButton,
+            "Сохта истодааст..."
+        );
 
 
-    if (!name || !email || !password) {
+        /*
+            Production API:
+
+            POST /api/auth/register
+        */
+
+
+        await wait(700);
+
+
+        setButtonLoading(
+            submitButton,
+            originalText
+        );
+
+
+        closeModal("registerModal");
+
 
         showToast(
-            "Маълумоти заруриро пур кунед."
+            "Регистрация баъд аз пайваст шудани backend фаъол мешавад.",
+            "info"
         );
 
-        return;
-
-    }
-
-
-    /*
-        Инҷо Supabase Authentication
-        пайваст мешавад.
-
-        Барои register:
-
-        supabase.auth.signUp()
-
-        Барои login:
-
-        supabase.auth.signInWithPassword()
-
-    */
-
-
-    showToast(
-        "Пайвастшавӣ ба система омода мешавад..."
-    );
+    });
 
 }
 
 
-/* =====================================================
-   SWITCH LOGIN / REGISTER
-===================================================== */
+/* =========================================================
+   ORDER
+========================================================= */
 
-function switchAuthMode() {
+if (orderForm) {
 
-    if (authMode === "register") {
+    orderForm.addEventListener("submit", async event => {
 
-        openAuth("login");
+        event.preventDefault();
 
-    }
 
-    else {
-
-        openAuth("register");
-
-    }
-
-}
-
-
-/* =====================================================
-   CLIENT REQUEST
-===================================================== */
-
-function openClientRequest() {
-
-    const modal =
-        document.getElementById("requestModal");
-
-
-    if (!modal) return;
-
-
-    modal.classList.add("show");
-
-}
-
-
-function closeRequest() {
-
-    const modal =
-        document.getElementById("requestModal");
-
-
-    if (modal) {
-
-        modal.classList.remove("show");
-
-    }
-
-}
-
-
-async function submitRequest() {
-
-    const business =
-        getValue("requestBusiness");
-
-
-    const category =
-        getValue("requestCategory");
-
-
-    const budget =
-        getValue("requestBudget");
-
-
-    const description =
-        getValue("requestDescription");
-
-
-    if (
-        !business ||
-        !category ||
-        !budget ||
-        !description
-    ) {
-
-        showToast(
-            "Ҳамаи майдонҳоро пур кунед."
-        );
-
-        return;
-
-    }
-
-
-    /*
-        Баъд аз Supabase:
-
-        requests INSERT
-
-        client_id
-        business
-        category
-        budget
-        description
-        status = "new"
-    */
-
-
-    closeRequest();
-
-
-    showToast(
-        "Дархости шумо омодаи фиристодан аст."
-    );
-
-}
-
-
-/* =====================================================
-   SPECIALIST PROFILE
-===================================================== */
-
-function openSpecialistProfile(id) {
-
-    if (!id) {
-
-        showToast(
-            "Профил ёфт нашуд."
-        );
-
-        return;
-
-    }
-
-
-    /*
-        Баъд аз сохтани profile page:
-
-        window.location.href =
-            "profile.html?id=" + id;
-
-    */
-
-
-    showToast(
-        "Профил кушода мешавад..."
-    );
-
-}
-
-
-/* =====================================================
-   SAVED USER
-===================================================== */
-
-function checkSavedUser() {
-
-    const saved =
-        localStorage.getItem("smm_tj_user");
-
-
-    if (!saved) {
-
-        return;
-
-    }
-
-
-    try {
-
-        currentUser =
-            JSON.parse(saved);
-
-        updateHeader();
-
-    }
-
-    catch (error) {
-
-        localStorage.removeItem(
-            "smm_tj_user"
-        );
-
-    }
-
-}
-
-
-function updateHeader() {
-
-    const header =
-        document.getElementById(
-            "headerActions"
-        );
-
-
-    if (!header || !currentUser) {
-
-        return;
-
-    }
-
-
-    const name =
-        currentUser.name ||
-        "Аккаунт";
-
-
-    header.innerHTML = `
-
-        <button
-            class="btn btn-outline"
-            onclick="openDashboard()">
-
-            ${escapeHTML(name)}
-
-        </button>
-
-
-        <button
-            class="btn btn-purple"
-            onclick="logout()">
-
-            Баромадан
-
-        </button>
-
-    `;
-
-}
-
-
-/* =====================================================
-   DASHBOARD
-===================================================== */
-
-function openDashboard() {
-
-    if (!currentUser) {
-
-        openAuth("login");
-
-        return;
-
-    }
-
-
-    if (currentUser.role === "client") {
-
-        window.location.href =
-            "client.html";
-
-        return;
-
-    }
-
-
-    if (
-        currentUser.role ===
-        "specialist"
-    ) {
-
-        window.location.href =
-            "specialist.html";
-
-        return;
-
-    }
-
-}
-
-
-/* =====================================================
-   LOGOUT
-===================================================== */
-
-function logout() {
-
-    localStorage.removeItem(
-        "smm_tj_user"
-    );
-
-
-    currentUser = null;
-
-
-    location.reload();
-
-}
-
-
-/* =====================================================
-   TOAST
-===================================================== */
-
-function showToast(message) {
-
-    const toast =
-        document.getElementById("toast");
-
-
-    if (!toast) return;
-
-
-    toast.textContent = message;
-
-
-    toast.classList.add("show");
-
-
-    clearTimeout(
-        window.toastTimer
-    );
-
-
-    window.toastTimer =
-        setTimeout(function () {
-
-            toast.classList.remove(
-                "show"
+        const submitButton =
+            orderForm.querySelector(
+                "button[type='submit']"
             );
 
-        }, 3000);
+
+        const originalText =
+            submitButton
+                ? submitButton.textContent
+                : "";
+
+
+        setButtonLoading(
+            submitButton,
+            "Ирсол шуда истодааст..."
+        );
+
+
+        /*
+            Production:
+
+            POST /api/orders
+
+            Бо:
+            - businessCategory
+            - service
+            - budget
+            - deadline
+            - instagram
+            - website
+            - description
+        */
+
+
+        await wait(700);
+
+
+        setButtonLoading(
+            submitButton,
+            originalText
+        );
+
+
+        closeModal("orderModal");
+
+
+        showToast(
+            "Заказ баъд аз пайваст шудани backend сохта мешавад.",
+            "info"
+        );
+
+    });
 
 }
 
 
-/* =====================================================
-   HELPERS
-===================================================== */
+/* =========================================================
+   NOTIFICATIONS
+========================================================= */
 
-function getValue(id) {
+if (notificationBtn) {
 
-    const element =
-        document.getElementById(id);
+    notificationBtn.addEventListener("click", event => {
+
+        event.stopPropagation();
+
+        toggleNotifications();
+
+    });
+
+}
 
 
-    if (!element) {
+function toggleNotifications() {
 
-        return "";
+    if (!notificationPanel) {
+        return;
+    }
+
+
+    notificationPanel.classList.toggle("active");
+
+
+    const isOpen =
+        notificationPanel.classList.contains("active");
+
+
+    notificationPanel.setAttribute(
+        "aria-hidden",
+        String(!isOpen)
+    );
+
+}
+
+
+function closeNotifications() {
+
+    if (!notificationPanel) {
+        return;
+    }
+
+
+    notificationPanel.classList.remove("active");
+
+    notificationPanel.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+}
+
+
+document.addEventListener("click", event => {
+
+    if (!notificationPanel) {
+        return;
+    }
+
+
+    if (
+        !notificationPanel.contains(event.target) &&
+        !notificationBtn?.contains(event.target)
+    ) {
+
+        closeNotifications();
+
+    }
+
+});
+
+
+/* =========================================================
+   CHAT
+========================================================= */
+
+function toggleChat() {
+
+    if (!chatWidget) {
+        return;
+    }
+
+
+    chatWidget.classList.toggle("active");
+
+
+    const isOpen =
+        chatWidget.classList.contains("active");
+
+
+    chatWidget.setAttribute(
+        "aria-hidden",
+        String(!isOpen)
+    );
+
+
+    if (floatingChat) {
+
+        floatingChat.style.display =
+            isOpen ? "none" : "grid";
 
     }
 
 
-    return element.value.trim();
+    if (isOpen && chatInput) {
+
+        setTimeout(() => {
+            chatInput.focus();
+        }, 100);
+
+    }
 
 }
 
 
-function delay(ms) {
+/* =========================================================
+   CHAT SEND
+========================================================= */
 
-    return new Promise(function (resolve) {
+if (chatForm) {
 
-        setTimeout(resolve, ms);
+    chatForm.addEventListener("submit", event => {
+
+        event.preventDefault();
+
+        sendMessage();
+
+    });
+
+}
+
+
+function sendMessage() {
+
+    if (!chatInput || !chatMessages) {
+        return;
+    }
+
+
+    const text =
+        chatInput.value.trim();
+
+
+    if (!text) {
+        return;
+    }
+
+
+    const emptyMessage =
+        chatMessages.querySelector(
+            ".chat-empty"
+        );
+
+
+    if (emptyMessage) {
+        emptyMessage.remove();
+    }
+
+
+    const message =
+        document.createElement("div");
+
+
+    message.className =
+        "message sent";
+
+
+    const textNode =
+        document.createTextNode(text);
+
+
+    const time =
+        document.createElement("small");
+
+
+    time.textContent =
+        "ҳозир";
+
+
+    message.appendChild(textNode);
+
+    message.appendChild(time);
+
+
+    chatMessages.appendChild(message);
+
+
+    chatInput.value = "";
+
+
+    chatMessages.scrollTop =
+        chatMessages.scrollHeight;
+
+
+    /*
+        Production:
+
+        POST /api/messages
+
+        WebSocket / Socket.IO
+        барои real-time chat.
+    */
+
+}
+
+
+/* =========================================================
+   MOBILE MENU
+========================================================= */
+
+if (mobileMenuBtn) {
+
+    mobileMenuBtn.addEventListener("click", () => {
+
+        const isOpen =
+            mainNav?.classList.toggle("mobile-open");
+
+
+        mobileMenuBtn.setAttribute(
+            "aria-expanded",
+            String(Boolean(isOpen))
+        );
+
+    });
+
+}
+
+
+if (mainNav) {
+
+    mainNav.querySelectorAll("a").forEach(link => {
+
+        link.addEventListener("click", () => {
+
+            mainNav.classList.remove(
+                "mobile-open"
+            );
+
+
+            if (mobileMenuBtn) {
+
+                mobileMenuBtn.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
+
+            }
+
+        });
+
+    });
+
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function showToast(message, type = "info") {
+
+    let container =
+        document.getElementById("toastContainer");
+
+
+    if (!container) {
+
+        container =
+            document.createElement("div");
+
+        container.id =
+            "toastContainer";
+
+
+        container.style.position =
+            "fixed";
+
+        container.style.right =
+            "20px";
+
+        container.style.bottom =
+            "20px";
+
+        container.style.zIndex =
+            "5000";
+
+        container.style.display =
+            "flex";
+
+        container.style.flexDirection =
+            "column";
+
+        container.style.gap =
+            "10px";
+
+
+        document.body.appendChild(
+            container
+        );
+
+    }
+
+
+    const toast =
+        document.createElement("div");
+
+
+    toast.textContent =
+        message;
+
+
+    toast.style.padding =
+        "13px 16px";
+
+    toast.style.borderRadius =
+        "12px";
+
+    toast.style.background =
+        "#111827";
+
+    toast.style.color =
+        "#ffffff";
+
+    toast.style.fontSize =
+        "13px";
+
+    toast.style.fontWeight =
+        "600";
+
+    toast.style.maxWidth =
+        "340px";
+
+    toast.style.boxShadow =
+        "0 15px 40px rgba(0,0,0,.15)";
+
+
+    if (type === "error") {
+
+        toast.style.background =
+            "#dc2626";
+
+    }
+
+
+    if (type === "success") {
+
+        toast.style.background =
+            "#16a34a";
+
+    }
+
+
+    container.appendChild(toast);
+
+
+    setTimeout(() => {
+
+        toast.remove();
+
+    }, 3500);
+
+}
+
+
+/* =========================================================
+   BUTTON LOADING
+========================================================= */
+
+function setButtonLoading(button, text) {
+
+    if (!button) {
+        return;
+    }
+
+
+    button.textContent =
+        text;
+
+
+    button.disabled =
+        text.includes("...");
+
+
+    button.style.opacity =
+        button.disabled ? "0.7" : "1";
+
+}
+
+
+/* =========================================================
+   SCROLL
+========================================================= */
+
+function scrollToSpecialists() {
+
+    const section =
+        document.getElementById(
+            "specialists"
+        );
+
+
+    if (!section) {
+        return;
+    }
+
+
+    section.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+
+}
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function wait(milliseconds) {
+
+    return new Promise(resolve => {
+
+        setTimeout(
+            resolve,
+            milliseconds
+        );
 
     });
 
@@ -1102,79 +1275,81 @@ function delay(ms) {
 function escapeHTML(value) {
 
     return String(value)
-
         .replaceAll("&", "&amp;")
-
         .replaceAll("<", "&lt;")
-
         .replaceAll(">", "&gt;")
-
         .replaceAll('"', "&quot;")
-
         .replaceAll("'", "&#039;");
 
 }
 
 
-/* =====================================================
-   CLOSE MODALS BY CLICKING OUTSIDE
-===================================================== */
+function escapeAttribute(value) {
 
-document.addEventListener(
-    "click",
-    function (event) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
 
-        const authModal =
-            document.getElementById(
-                "authModal"
-            );
+}
 
 
-        const requestModal =
-            document.getElementById(
-                "requestModal"
-            );
+/* =========================================================
+   INITIALIZATION
+========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    /*
+        Дар launch-и аввал:
+        маълумоти сохта нишон намедиҳем.
+    */
+
+    renderSpecialists([]);
 
 
-        if (
-            event.target === authModal
-        ) {
+    if (notificationPanel) {
 
-            closeAuth();
-
-        }
-
-
-        if (
-            event.target === requestModal
-        ) {
-
-            closeRequest();
-
-        }
+        notificationPanel.setAttribute(
+            "aria-hidden",
+            "true"
+        );
 
     }
-);
 
 
-/* =====================================================
-   ESC KEY
-===================================================== */
+    if (chatWidget) {
 
-document.addEventListener(
-    "keydown",
-    function (event) {
-
-        if (event.key !== "Escape") {
-
-            return;
-
-        }
-
-
-        closeAuth();
-
-        closeRequest();
+        chatWidget.setAttribute(
+            "aria-hidden",
+            "true"
+        );
 
     }
-);
+
+
+    document.querySelectorAll(".account-type")
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const type =
+                        button.dataset.accountType;
+
+                    if (accountTypeInput && type) {
+
+                        accountTypeInput.value =
+                            type;
+
+                    }
+
+                }
+            );
+
+        });
+
+});
