@@ -1,982 +1,901 @@
 <!DOCTYPE html>
 <html lang="tg">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMM.TJ — Admin Panel</title>
 
-    <title>SMM.TJ — Admin Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
 
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+body{
+    font-family:Arial, sans-serif;
+    background:#08080d;
+    color:#fff;
+}
 
-        body {
-            font-family: Inter, Arial, sans-serif;
-            background: #08080d;
-            color: #fff;
-        }
+.app{
+    min-height:100vh;
+    display:flex;
+}
 
-        .app {
-            display: flex;
-            min-height: 100vh;
-        }
+/* SIDEBAR */
 
-        /* SIDEBAR */
+.sidebar{
+    width:250px;
+    position:fixed;
+    left:0;
+    top:0;
+    bottom:0;
+    background:#101017;
+    border-right:1px solid #292934;
+    padding:25px 16px;
+}
 
-        .sidebar {
-            width: 250px;
-            background: #101016;
-            border-right: 1px solid #242431;
-            padding: 25px 18px;
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-        }
+.logo{
+    display:block;
+    text-decoration:none;
+    color:#fff;
+    font-size:28px;
+    font-weight:900;
+    margin:0 10px 45px;
+}
 
-        .logo {
-            font-size: 28px;
-            font-weight: 800;
-            text-decoration: none;
-            color: white;
-            display: block;
-            margin-bottom: 45px;
-        }
+.logo span{
+    color:#9b5cff;
+}
 
-        .logo span {
-            color: white;
-        }
+.admin-label{
+    color:#77778a;
+    font-size:11px;
+    letter-spacing:2px;
+    margin:0 10px 15px;
+}
 
-        .logo b {
-            color: #8b5cf6;
-        }
+.menu{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
 
-        .admin-title {
-            color: #77778a;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            margin-bottom: 12px;
-        }
+.menu button{
+    border:0;
+    background:transparent;
+    color:#aaaaba;
+    padding:14px;
+    border-radius:12px;
+    text-align:left;
+    cursor:pointer;
+    font-size:15px;
+}
 
-        .menu {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-        }
+.menu button:hover,
+.menu button.active{
+    background:#241742;
+    color:#fff;
+}
 
-        .menu button {
-            width: 100%;
-            border: 0;
-            background: transparent;
-            color: #a9a9b7;
-            padding: 13px 14px;
-            border-radius: 12px;
-            text-align: left;
-            font-size: 15px;
-            cursor: pointer;
-            transition: .2s;
-        }
+.bottom{
+    position:absolute;
+    left:16px;
+    right:16px;
+    bottom:20px;
+}
 
-        .menu button:hover,
-        .menu button.active {
-            background: #21183b;
-            color: white;
-        }
+.site{
+    display:block;
+    text-align:center;
+    text-decoration:none;
+    color:#aaa;
+    background:#191920;
+    padding:12px;
+    border-radius:11px;
+}
 
-        .back-site {
-            position: absolute;
-            bottom: 25px;
-            left: 18px;
-            right: 18px;
-            padding: 12px;
-            border-radius: 12px;
-            text-align: center;
-            text-decoration: none;
-            color: #aaa;
-            background: #191920;
-        }
+/* MAIN */
 
-        /* MAIN */
+.main{
+    margin-left:250px;
+    width:calc(100% - 250px);
+    padding:30px;
+}
 
-        .main {
-            margin-left: 250px;
-            width: calc(100% - 250px);
-            padding: 30px;
-        }
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
 
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
+.topbar h1{
+    font-size:30px;
+}
 
-        .topbar h1 {
-            font-size: 30px;
-        }
+.topbar p{
+    color:#77778a;
+    margin-top:5px;
+}
 
-        .topbar p {
-            color: #77778a;
-            margin-top: 5px;
-        }
+.refresh,
+.logout{
+    border:1px solid #333341;
+    background:#17171f;
+    color:#fff;
+    padding:11px 16px;
+    border-radius:10px;
+    cursor:pointer;
+}
 
-        .logout {
-            background: #24151a;
-            color: #ff7777;
-            border: 1px solid #482126;
-            padding: 10px 16px;
-            border-radius: 10px;
-            cursor: pointer;
-        }
+.logout{
+    background:#32171c;
+    color:#ff858f;
+}
 
-        /* LOGIN */
+/* LOGIN */
 
-        #loginScreen {
-            max-width: 450px;
-            margin: 100px auto;
-            background: #111117;
-            border: 1px solid #292938;
-            padding: 35px;
-            border-radius: 22px;
-            box-shadow: 0 20px 60px rgba(0,0,0,.4);
-        }
+.login-box{
+    max-width:440px;
+    margin:100px auto;
+    background:#111117;
+    border:1px solid #2b2b38;
+    border-radius:22px;
+    padding:35px;
+}
 
-        #loginScreen h2 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
+.login-box h2{
+    font-size:28px;
+    margin-bottom:10px;
+}
 
-        #loginScreen p {
-            color: #858595;
-            margin-bottom: 25px;
-            line-height: 1.5;
-        }
+.login-box p{
+    color:#858595;
+    line-height:1.5;
+    margin-bottom:25px;
+}
 
-        label {
-            display: block;
-            color: #aaaaba;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
+label{
+    display:block;
+    color:#aaaaba;
+    font-size:13px;
+    margin-bottom:16px;
+}
 
-        input {
-            width: 100%;
-            margin-top: 7px;
-            background: #0b0b10;
-            color: white;
-            border: 1px solid #30303d;
-            padding: 13px;
-            border-radius: 10px;
-            outline: none;
-        }
+input{
+    width:100%;
+    margin-top:7px;
+    padding:14px;
+    border-radius:10px;
+    border:1px solid #333341;
+    background:#09090e;
+    color:#fff;
+    outline:none;
+}
 
-        input:focus {
-            border-color: #8b5cf6;
-        }
+input:focus{
+    border-color:#9b5cff;
+}
 
-        .login-btn {
-            width: 100%;
-            border: 0;
-            background: linear-gradient(90deg,#6d28d9,#a855f7);
-            color: white;
-            padding: 14px;
-            border-radius: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 5px;
-        }
+.login-btn{
+    width:100%;
+    border:0;
+    padding:14px;
+    border-radius:11px;
+    background:linear-gradient(90deg,#7028dc,#a855f7);
+    color:#fff;
+    font-weight:800;
+    cursor:pointer;
+}
 
-        .error {
-            color: #ff7777;
-            margin-top: 15px;
-            font-size: 14px;
-        }
+.error{
+    color:#ff737d;
+    margin-top:15px;
+    font-size:13px;
+}
 
-        /* DASHBOARD */
+/* DASHBOARD */
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 18px;
-            margin-bottom: 25px;
-        }
+.stats{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:16px;
+    margin-bottom:25px;
+}
 
-        .stat {
-            background: #111117;
-            border: 1px solid #272734;
-            border-radius: 18px;
-            padding: 22px;
-        }
+.stat{
+    background:#111117;
+    border:1px solid #292934;
+    border-radius:17px;
+    padding:22px;
+}
 
-        .stat-title {
-            color: #858595;
-            font-size: 13px;
-            margin-bottom: 12px;
-        }
+.stat span{
+    color:#858595;
+    font-size:13px;
+}
 
-        .stat-number {
-            font-size: 32px;
-            font-weight: 800;
-        }
+.stat strong{
+    display:block;
+    font-size:32px;
+    margin-top:12px;
+}
 
-        .content {
-            background: #111117;
-            border: 1px solid #272734;
-            border-radius: 18px;
-            overflow: hidden;
-        }
+/* CARD */
 
-        .content-head {
-            padding: 20px;
-            border-bottom: 1px solid #272734;
-        }
+.card{
+    background:#111117;
+    border:1px solid #292934;
+    border-radius:17px;
+    overflow:hidden;
+}
 
-        .content-head h2 {
-            font-size: 19px;
-        }
+.card-head{
+    padding:20px;
+    border-bottom:1px solid #292934;
+}
 
-        .content-head p {
-            color: #77778a;
-            font-size: 13px;
-            margin-top: 5px;
-        }
+.card-head h2{
+    font-size:19px;
+}
 
-        /* TABLE */
+.card-head p{
+    color:#77778a;
+    font-size:13px;
+    margin-top:5px;
+}
 
-        .table-wrap {
-            overflow-x: auto;
-        }
+.empty{
+    padding:50px;
+    text-align:center;
+    color:#77778a;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+/* TABLE */
 
-        th,
-        td {
-            padding: 15px 18px;
-            text-align: left;
-            border-bottom: 1px solid #23232e;
-            white-space: nowrap;
-        }
+.table{
+    overflow-x:auto;
+}
 
-        th {
-            color: #858595;
-            font-size: 12px;
-            text-transform: uppercase;
-        }
+table{
+    width:100%;
+    border-collapse:collapse;
+}
 
-        td {
-            color: #e4e4ec;
-            font-size: 14px;
-        }
+th,
+td{
+    padding:14px 17px;
+    border-bottom:1px solid #24242e;
+    text-align:left;
+    white-space:nowrap;
+    font-size:13px;
+}
 
-        tr:hover td {
-            background: #15151d;
-        }
+th{
+    color:#858595;
+    font-size:11px;
+    text-transform:uppercase;
+}
 
-        .empty {
-            padding: 50px;
-            text-align: center;
-            color: #77778a;
-        }
+tr:hover td{
+    background:#15151d;
+}
 
-        .status {
-            display: inline-block;
-            padding: 5px 9px;
-            border-radius: 8px;
-            background: #17251d;
-            color: #6ee7a0;
-            font-size: 12px;
-        }
+.hidden{
+    display:none !important;
+}
 
-        /* MOBILE */
+/* MOBILE */
 
-        @media (max-width: 900px) {
+@media(max-width:1000px){
 
-            .sidebar {
-                width: 75px;
-                padding: 20px 10px;
-            }
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
 
-            .logo {
-                font-size: 20px;
-                text-align: center;
-            }
+@media(max-width:700px){
 
-            .admin-title,
-            .menu span,
-            .back-site {
-                display: none;
-            }
+    .sidebar{
+        width:72px;
+        padding:20px 9px;
+    }
 
-            .menu button {
-                text-align: center;
-                font-size: 20px;
-                padding: 12px 5px;
-            }
+    .logo{
+        font-size:18px;
+        text-align:center;
+        margin-bottom:35px;
+    }
 
-            .main {
-                margin-left: 75px;
-                width: calc(100% - 75px);
-                padding: 18px;
-            }
+    .admin-label,
+    .menu span,
+    .site{
+        display:none;
+    }
 
-            .stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
+    .menu button{
+        text-align:center;
+        font-size:19px;
+        padding:12px 4px;
+    }
 
-        @media (max-width: 550px) {
+    .main{
+        margin-left:72px;
+        width:calc(100% - 72px);
+        padding:18px;
+    }
 
-            .stats {
-                grid-template-columns: 1fr;
-            }
+    .stats{
+        grid-template-columns:1fr;
+    }
 
-            .topbar {
-                align-items: flex-start;
-                gap: 15px;
-            }
-
-            .topbar h1 {
-                font-size: 23px;
-            }
-        }
-
-        [hidden] {
-            display: none !important;
-        }
-    </style>
+    .topbar h1{
+        font-size:23px;
+    }
+}
+</style>
 </head>
 
 <body>
 
 <div class="app">
 
-    <!-- SIDEBAR -->
+<!-- SIDEBAR -->
 
-    <aside class="sidebar">
+<aside class="sidebar">
 
-        <a href="index.html" class="logo">
-            <span>SMM</span><b>.TJ</b>
-        </a>
+<a href="index.html" class="logo">
+    SMM<span>.TJ</span>
+</a>
 
-        <div class="admin-title">
-            ADMIN PANEL
-        </div>
+<div class="admin-label">
+    ADMIN PANEL
+</div>
 
-        <nav class="menu">
+<nav class="menu">
 
-            <button class="active" data-section="dashboard">
-                📊 <span>Dashboard</span>
-            </button>
+<button class="active" data-page="dashboard">
+    📊 <span>Dashboard</span>
+</button>
 
-            <button data-section="specialists">
-                👤 <span>Мутахассисон</span>
-            </button>
+<button data-page="specialists">
+    👤 <span>Мутахассисон</span>
+</button>
 
-            <button data-section="clients">
-                👥 <span>Мизоҷон</span>
-            </button>
+<button data-page="clients">
+    👥 <span>Мизоҷон</span>
+</button>
 
-            <button data-section="orders">
-                📦 <span>Заказҳо</span>
-            </button>
+<button data-page="orders">
+    📦 <span>Заказҳо</span>
+</button>
 
-            <button data-section="requests">
-                📩 <span>Дархостҳо</span>
-            </button>
+<button data-page="requests">
+    📩 <span>Дархостҳо</span>
+</button>
 
-            <button data-section="reviews">
-                ⭐ <span>Отзывҳо</span>
-            </button>
+<button data-page="reviews">
+    ⭐ <span>Отзывҳо</span>
+</button>
 
-        </nav>
+</nav>
 
-        <a href="index.html" class="back-site">
-            ← Сайт
-        </a>
+<div class="bottom">
+<a href="index.html" class="site">
+    ← Сайт
+</a>
+</div>
 
-    </aside>
+</aside>
 
 
-    <!-- MAIN -->
+<!-- MAIN -->
 
-    <main class="main">
+<main class="main">
 
-        <!-- LOGIN -->
 
-        <div id="loginScreen">
+<!-- LOGIN -->
 
-            <h2>🔐 Admin Panel</h2>
+<div id="loginBox" class="login-box">
 
-            <p>
-                Барои идоракунии SMM.TJ ба аккаунти администратор ворид шавед.
-            </p>
+<h2>🔐 Admin Panel</h2>
 
-            <form id="loginForm">
+<p>
+Барои идоракунии SMM.TJ ба аккаунти администратор ворид шавед.
+</p>
 
-                <label>
-                    Email
-                    <input
-                        id="email"
-                        type="email"
-                        required
-                        autocomplete="username"
-                    >
-                </label>
+<form id="loginForm">
 
-                <label>
-                    Парол
-                    <input
-                        id="password"
-                        type="password"
-                        required
-                        autocomplete="current-password"
-                    >
-                </label>
+<label>
+Email
 
-                <button class="login-btn" type="submit">
-                    Даромадан
-                </button>
+<input
+    id="email"
+    type="email"
+    placeholder="Email"
+    required
+>
+</label>
 
-                <div id="loginError" class="error"></div>
+<label>
+Парол
 
-            </form>
+<input
+    id="password"
+    type="password"
+    placeholder="Парол"
+    required
+>
+</label>
 
-        </div>
+<button
+    type="submit"
+    class="login-btn"
+>
+    Даромадан
+</button>
 
+<div id="loginError" class="error"></div>
 
-        <!-- ADMIN CONTENT -->
+</form>
 
-        <div id="adminPanel" hidden>
+</div>
 
-            <header class="topbar">
 
-                <div>
-                    <h1 id="pageTitle">
-                        Dashboard
-                    </h1>
+<!-- ADMIN PANEL -->
 
-                    <p>
-                        Идоракунии SMM.TJ
-                    </p>
-                </div>
+<div id="adminPanel" class="hidden">
 
-                <button id="logoutBtn" class="logout">
-                    Баромадан
-                </button>
+<header class="topbar">
 
-            </header>
+<div>
 
+<h1 id="pageTitle">
+Dashboard
+</h1>
 
-            <!-- DASHBOARD -->
+<p>
+Идоракунии SMM.TJ
+</p>
 
-            <section id="dashboard" class="section">
+</div>
 
-                <div class="stats">
+<div>
 
-                    <div class="stat">
-                        <div class="stat-title">
-                            Мутахассисон
-                        </div>
-                        <div id="countSpecialists" class="stat-number">
-                            0
-                        </div>
-                    </div>
+<button id="refreshBtn" class="refresh">
+↻ Навсозӣ
+</button>
 
-                    <div class="stat">
-                        <div class="stat-title">
-                            Мизоҷон
-                        </div>
-                        <div id="countClients" class="stat-number">
-                            0
-                        </div>
-                    </div>
+<button id="logoutBtn" class="logout">
+Баромадан
+</button>
 
-                    <div class="stat">
-                        <div class="stat-title">
-                            Заказҳо
-                        </div>
-                        <div id="countOrders" class="stat-number">
-                            0
-                        </div>
-                    </div>
+</div>
 
-                    <div class="stat">
-                        <div class="stat-title">
-                            Дархостҳо
-                        </div>
-                        <div id="countRequests" class="stat-number">
-                            0
-                        </div>
-                    </div>
+</header>
 
-                    <div class="stat">
-                        <div class="stat-title">
-                            Отзывҳо
-                        </div>
-                        <div id="countReviews" class="stat-number">
-                            0
-                        </div>
-                    </div>
 
-                </div>
+<!-- DASHBOARD -->
 
+<section id="dashboard">
 
-                <div class="content">
+<div class="stats">
 
-                    <div class="content-head">
+<div class="stat">
+<span>Мутахассисон</span>
+<strong id="specialistsCount">0</strong>
+</div>
 
-                        <h2>
-                            Хуш омадед ба Admin Panel
-                        </h2>
+<div class="stat">
+<span>Мизоҷон</span>
+<strong id="clientsCount">0</strong>
+</div>
 
-                        <p>
-                            Аз ин ҷо ҳамаи маълумоти платформа идора карда мешавад.
-                        </p>
+<div class="stat">
+<span>Заказҳо</span>
+<strong id="ordersCount">0</strong>
+</div>
 
-                    </div>
+<div class="stat">
+<span>Дархостҳо</span>
+<strong id="requestsCount">0</strong>
+</div>
 
-                    <div class="empty">
-                        Database пайваст шуданашро интизор аст...
-                    </div>
+<div class="stat">
+<span>Отзывҳо</span>
+<strong id="reviewsCount">0</strong>
+</div>
 
-                </div>
+</div>
 
-            </section>
 
+<div class="card">
 
-            <!-- SPECIALISTS -->
+<div class="card-head">
 
-            <section id="specialists" class="section" hidden>
+<h2>
+Хуш омадед 👋
+</h2>
 
-                <div class="content">
+<p>
+Admin Panel-и SMM.TJ
+</p>
 
-                    <div class="content-head">
+</div>
 
-                        <h2>
-                            Мутахассисон
-                        </h2>
+<div class="empty">
 
-                        <p>
-                            Маълумот аз таблицаи specialists
-                        </p>
+Database пайваст аст.
+Аз меню маълумоти воқеиро бин.
 
-                    </div>
+</div>
 
-                    <div id="specialistsTable" class="table-wrap">
-                    </div>
+</div>
 
-                </div>
+</section>
 
-            </section>
 
+<!-- SPECIALISTS -->
 
-            <!-- CLIENTS -->
+<section id="specialists" class="hidden">
 
-            <section id="clients" class="section" hidden>
+<div class="card">
 
-                <div class="content">
+<div class="card-head">
 
-                    <div class="content-head">
+<h2>
+👤 Мутахассисон
+</h2>
 
-                        <h2>
-                            Мизоҷон
-                        </h2>
+<p>
+Маълумот аз specialists
+</p>
 
-                        <p>
-                            Маълумот аз таблицаи clients
-                        </p>
+</div>
 
-                    </div>
+<div id="specialistsTable" class="table">
+</div>
 
-                    <div id="clientsTable" class="table-wrap">
-                    </div>
+</div>
 
-                </div>
+</section>
 
-            </section>
 
+<!-- CLIENTS -->
 
-            <!-- ORDERS -->
+<section id="clients" class="hidden">
 
-            <section id="orders" class="section" hidden>
+<div class="card">
 
-                <div class="content">
+<div class="card-head">
 
-                    <div class="content-head">
+<h2>
+👥 Мизоҷон
+</h2>
 
-                        <h2>
-                            Заказҳо
-                        </h2>
+<p>
+Маълумот аз clients
+</p>
 
-                        <p>
-                            Маълумот аз таблицаи orders
-                        </p>
+</div>
 
-                    </div>
+<div id="clientsTable" class="table">
+</div>
 
-                    <div id="ordersTable" class="table-wrap">
-                    </div>
+</div>
 
-                </div>
+</section>
 
-            </section>
 
+<!-- ORDERS -->
 
-            <!-- REQUESTS -->
+<section id="orders" class="hidden">
 
-            <section id="requests" class="section" hidden>
+<div class="card">
 
-                <div class="content">
+<div class="card-head">
 
-                    <div class="content-head">
+<h2>
+📦 Заказҳо
+</h2>
 
-                        <h2>
-                            Дархостҳо
-                        </h2>
+<p>
+Маълумот аз orders
+</p>
 
-                        <p>
-                            Маълумот аз таблицаи requests
-                        </p>
+</div>
 
-                    </div>
+<div id="ordersTable" class="table">
+</div>
 
-                    <div id="requestsTable" class="table-wrap">
-                    </div>
+</div>
 
-                </div>
+</section>
 
-            </section>
 
+<!-- REQUESTS -->
 
-            <!-- REVIEWS -->
+<section id="requests" class="hidden">
 
-            <section id="reviews" class="section" hidden>
+<div class="card">
 
-                <div class="content">
+<div class="card-head">
 
-                    <div class="content-head">
+<h2>
+📩 Дархостҳо
+</h2>
 
-                        <h2>
-                            Отзывҳо
-                        </h2>
+<p>
+Маълумот аз requests
+</p>
 
-                        <p>
-                            Маълумот аз таблицаи reviews
-                        </p>
+</div>
 
-                    </div>
+<div id="requestsTable" class="table">
+</div>
 
-                    <div id="reviewsTable" class="table-wrap">
-                    </div>
+</div>
 
-                </div>
+</section>
 
-            </section>
 
-        </div>
+<!-- REVIEWS -->
 
-    </main>
+<section id="reviews" class="hidden">
+
+<div class="card">
+
+<div class="card-head">
+
+<h2>
+⭐ Отзывҳо
+</h2>
+
+<p>
+Маълумот аз reviews
+</p>
+
+</div>
+
+<div id="reviewsTable" class="table">
+</div>
+
+</div>
+
+</section>
+
+</div>
+
+</main>
 
 </div>
 
 
 <script>
 
-"use strict";
-
-
-/* ==========================================
+/* =========================
    SUPABASE
-========================================== */
+========================= */
 
 const SUPABASE_URL =
-    "https://lcldaingzicxbottlznq.supabase.co";
+"https://lcldaingzicxbottlznq.supabase.co";
 
-const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
+const SUPABASE_KEY =
+"sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
 
 const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_PUBLISHABLE_KEY
-    );
-
-
-/* ==========================================
-   ELEMENTS
-========================================== */
-
-const loginScreen =
-    document.getElementById("loginScreen");
-
-const adminPanel =
-    document.getElementById("adminPanel");
-
-const loginForm =
-    document.getElementById("loginForm");
-
-const loginError =
-    document.getElementById("loginError");
-
-const logoutBtn =
-    document.getElementById("logoutBtn");
-
-const pageTitle =
-    document.getElementById("pageTitle");
-
-
-/* ==========================================
-   LOGIN
-========================================== */
-
-loginForm.addEventListener(
-    "submit",
-    async function(event) {
-
-        event.preventDefault();
-
-        loginError.textContent = "";
-
-        const email =
-            document.getElementById("email").value.trim();
-
-        const password =
-            document.getElementById("password").value;
-
-        const {
-            data,
-            error
-        } = await supabaseClient.auth.signInWithPassword({
-            email,
-            password
-        });
-
-        if (error) {
-
-            loginError.textContent =
-                "Email ё парол нодуруст аст.";
-
-            console.error(error);
-
-            return;
-        }
-
-        await checkAdmin(data.user);
-
-    }
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
 );
 
 
-/* ==========================================
-   CHECK ADMIN
-========================================== */
+/* =========================
+   ELEMENTS
+========================= */
 
-async function checkAdmin(user) {
+const loginBox =
+document.getElementById("loginBox");
 
-    if (!user) {
+const adminPanel =
+document.getElementById("adminPanel");
 
-        showLogin();
+const loginForm =
+document.getElementById("loginForm");
 
-        return;
-    }
+const loginError =
+document.getElementById("loginError");
+
+const pageTitle =
+document.getElementById("pageTitle");
+
+
+/* =========================
+   LOGIN
+========================= */
+
+loginForm.addEventListener(
+"submit",
+async function(e){
+
+    e.preventDefault();
+
+    loginError.textContent = "";
+
+    const email =
+        document
+        .getElementById("email")
+        .value
+        .trim();
+
+    const password =
+        document
+        .getElementById("password")
+        .value;
+
 
     const {
         data,
         error
-    } = await supabaseClient
-        .from("admin_users")
-        .select("*")
-        .eq("id", user.id)
-        .maybeSingle();
+    } =
+    await supabaseClient.auth
+    .signInWithPassword({
+        email:email,
+        password:password
+    });
 
-    if (error) {
+
+    if(error){
 
         console.error(error);
 
-        showLogin();
-
         loginError.textContent =
-            "Хатои санҷиши admin.";
+        "Email ё парол нодуруст аст.";
 
         return;
     }
 
-    if (!data) {
+
+    const isAdmin =
+    await checkAdmin(data.user);
+
+
+    if(!isAdmin){
 
         await supabaseClient.auth.signOut();
 
-        showLogin();
-
         loginError.textContent =
-            "Ин аккаунт Admin нест.";
+        "Ин аккаунт Admin нест.";
 
         return;
     }
+
 
     showAdmin();
 
     loadDashboard();
 
-}
+});
 
 
-/* ==========================================
-   SHOW / HIDE
-========================================== */
+/* =========================
+   CHECK ADMIN
+========================= */
 
-function showLogin() {
+async function checkAdmin(user){
 
-    loginScreen.hidden = false;
-
-    adminPanel.hidden = true;
-
-}
-
-
-function showAdmin() {
-
-    loginScreen.hidden = true;
-
-    adminPanel.hidden = false;
-
-}
-
-
-/* ==========================================
-   LOGOUT
-========================================== */
-
-logoutBtn.addEventListener(
-    "click",
-    async function() {
-
-        await supabaseClient.auth.signOut();
-
-        showLogin();
-
+    if(!user){
+        return false;
     }
-);
 
 
-/* ==========================================
-   NAVIGATION
-========================================== */
-
-document
-    .querySelectorAll(".menu button")
-    .forEach(function(button) {
-
-        button.addEventListener(
-            "click",
-            function() {
-
-                const section =
-                    this.dataset.section;
-
-                document
-                    .querySelectorAll(".menu button")
-                    .forEach(function(item) {
-
-                        item.classList.remove("active");
-
-                    });
-
-                this.classList.add("active");
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+    .from("admin_users")
+    .select("user_id")
+    .eq("user_id",user.id)
+    .maybeSingle();
 
 
-                document
-                    .querySelectorAll(".section")
-                    .forEach(function(item) {
+    if(error){
 
-                        item.hidden = true;
-
-                    });
-
-
-                document
-                    .getElementById(section)
-                    .hidden = false;
-
-
-                const titles = {
-
-                    dashboard: "Dashboard",
-                    specialists: "Мутахассисон",
-                    clients: "Мизоҷон",
-                    orders: "Заказҳо",
-                    requests: "Дархостҳо",
-                    reviews: "Отзывҳо"
-
-                };
-
-                pageTitle.textContent =
-                    titles[section] || "Admin";
-
-
-                if (section === "specialists") {
-                    loadTable("specialists");
-                }
-
-                if (section === "clients") {
-                    loadTable("clients");
-                }
-
-                if (section === "orders") {
-                    loadTable("orders");
-                }
-
-                if (section === "requests") {
-                    loadTable("requests");
-                }
-
-                if (section === "reviews") {
-                    loadTable("reviews");
-                }
-
-            }
-
+        console.error(
+            "ADMIN ERROR:",
+            error
         );
 
-    });
+        loginError.textContent =
+        "Хатои санҷиши Admin.";
+
+        return false;
+    }
 
 
-/* ==========================================
-   DASHBOARD
-========================================== */
+    return !!data;
 
-async function getCount(table) {
+}
+
+
+/* =========================
+   SHOW ADMIN
+========================= */
+
+function showAdmin(){
+
+    loginBox.classList.add("hidden");
+
+    adminPanel.classList.remove("hidden");
+
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+document
+.getElementById("logoutBtn")
+.addEventListener(
+"click",
+async function(){
+
+    await supabaseClient
+    .auth
+    .signOut();
+
+    adminPanel
+    .classList
+    .add("hidden");
+
+    loginBox
+    .classList
+    .remove("hidden");
+
+});
+
+
+/* =========================
+   DASHBOARD COUNTS
+========================= */
+
+async function getCount(table){
 
     const {
         count,
         error
-    } = await supabaseClient
-        .from(table)
-        .select("*", {
-            count: "exact",
-            head: true
-        });
+    } =
+    await supabaseClient
+    .from(table)
+    .select("*",{
+        count:"exact",
+        head:true
+    });
 
-    if (error) {
 
-        console.error(table, error);
+    if(error){
+
+        console.error(
+            table,
+            error
+        );
 
         return 0;
     }
 
+
     return count || 0;
+
 }
 
 
-async function loadDashboard() {
+async function loadDashboard(){
 
     const [
         specialists,
@@ -984,7 +903,8 @@ async function loadDashboard() {
         orders,
         requests,
         reviews
-    ] = await Promise.all([
+    ] =
+    await Promise.all([
 
         getCount("specialists"),
         getCount("clients"),
@@ -995,126 +915,136 @@ async function loadDashboard() {
     ]);
 
 
-    document.getElementById(
-        "countSpecialists"
-    ).textContent = specialists;
+    document
+    .getElementById("specialistsCount")
+    .textContent =
+    specialists;
 
 
-    document.getElementById(
-        "countClients"
-    ).textContent = clients;
+    document
+    .getElementById("clientsCount")
+    .textContent =
+    clients;
 
 
-    document.getElementById(
-        "countOrders"
-    ).textContent = orders;
+    document
+    .getElementById("ordersCount")
+    .textContent =
+    orders;
 
 
-    document.getElementById(
-        "countRequests"
-    ).textContent = requests;
+    document
+    .getElementById("requestsCount")
+    .textContent =
+    requests;
 
 
-    document.getElementById(
-        "countReviews"
-    ).textContent = reviews;
+    document
+    .getElementById("reviewsCount")
+    .textContent =
+    reviews;
 
 }
 
 
-/* ==========================================
-   TABLES
-========================================== */
+/* =========================
+   LOAD TABLE
+========================= */
 
-async function loadTable(tableName) {
+async function loadTable(tableName){
 
     const container =
-        document.getElementById(
-            tableName + "Table"
-        );
-
-    if (!container) return;
+    document.getElementById(
+        tableName + "Table"
+    );
 
 
     container.innerHTML =
-        '<div class="empty">Бор шуда истодааст...</div>';
+    '<div class="empty">Бор шуда истодааст...</div>';
 
 
     const {
         data,
         error
-    } = await supabaseClient
-        .from(tableName)
-        .select("*")
-        .order("id", {
-            ascending: false
-        });
+    } =
+    await supabaseClient
+    .from(tableName)
+    .select("*")
+    .limit(200);
 
 
-    if (error) {
+    if(error){
 
         console.error(error);
 
         container.innerHTML =
-            '<div class="empty">Хато ҳангоми гирифтани маълумот.</div>';
+        '<div class="empty">Хато: '
+        +
+        error.message
+        +
+        '</div>';
 
         return;
     }
 
 
-    if (!data || data.length === 0) {
+    if(!data || data.length === 0){
 
         container.innerHTML =
-            '<div class="empty">Маълумот нест.</div>';
+        '<div class="empty">Маълумот нест.</div>';
 
         return;
     }
 
 
     const columns =
-        Object.keys(data[0]);
+    Object.keys(data[0]);
 
 
     let html =
-        "<table><thead><tr>";
+    "<table>";
+
+    html +=
+    "<thead><tr>";
 
 
-    columns.forEach(function(column) {
+    columns.forEach(
+    function(column){
 
         html +=
-            "<th>" +
-            escapeHtml(column) +
-            "</th>";
+        "<th>"
+        +
+        escapeHtml(column)
+        +
+        "</th>";
 
     });
 
 
     html +=
-        "</tr></thead><tbody>";
+    "</tr></thead>";
+
+    html +=
+    "<tbody>";
 
 
-    data.forEach(function(row) {
+    data.forEach(
+    function(row){
 
         html += "<tr>";
 
 
-        columns.forEach(function(column) {
-
-            let value = row[column];
-
-            if (
-                value === null ||
-                value === undefined ||
-                value === ""
-            ) {
-                value = "—";
-            }
-
+        columns.forEach(
+        function(column){
 
             html +=
-                "<td>" +
-                escapeHtml(String(value)) +
-                "</td>";
+            "<td>"
+            +
+            escapeHtml(
+                row[column]
+            )
+            +
+            "</td>";
 
         });
 
@@ -1125,49 +1055,221 @@ async function loadTable(tableName) {
 
 
     html +=
-        "</tbody></table>";
+    "</tbody></table>";
 
 
-    container.innerHTML = html;
+    container.innerHTML =
+    html;
 
 }
 
 
-/* ==========================================
+/* =========================
    SECURITY
-========================================== */
+========================= */
 
-function escapeHtml(value) {
+function escapeHtml(value){
 
-    return value
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    if(
+        value === null ||
+        value === undefined
+    ){
+        return "—";
+    }
+
+
+    return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
 }
 
 
-/* ==========================================
-   SESSION
-========================================== */
+/* =========================
+   NAVIGATION
+========================= */
 
-async function init() {
+const titles = {
+
+    dashboard:"Dashboard",
+
+    specialists:
+    "Мутахассисон",
+
+    clients:
+    "Мизоҷон",
+
+    orders:
+    "Заказҳо",
+
+    requests:
+    "Дархостҳо",
+
+    reviews:
+    "Отзывҳо"
+
+};
+
+
+document
+.querySelectorAll(
+    ".menu button"
+)
+.forEach(
+function(button){
+
+    button.addEventListener(
+    "click",
+    async function(){
+
+        const page =
+        this.dataset.page;
+
+
+        document
+        .querySelectorAll(
+            ".menu button"
+        )
+        .forEach(
+        function(btn){
+
+            btn.classList
+            .remove("active");
+
+        });
+
+
+        this.classList
+        .add("active");
+
+
+        const pages = [
+            "dashboard",
+            "specialists",
+            "clients",
+            "orders",
+            "requests",
+            "reviews"
+        ];
+
+
+        pages.forEach(
+        function(name){
+
+            document
+            .getElementById(name)
+            .classList
+            .add("hidden");
+
+        });
+
+
+        document
+        .getElementById(page)
+        .classList
+        .remove("hidden");
+
+
+        pageTitle.textContent =
+        titles[page];
+
+
+        if(page === "dashboard"){
+
+            await loadDashboard();
+
+        }else{
+
+            await loadTable(page);
+
+        }
+
+    });
+
+});
+
+
+/* =========================
+   REFRESH
+========================= */
+
+document
+.getElementById("refreshBtn")
+.addEventListener(
+"click",
+async function(){
+
+    const active =
+    document
+    .querySelector(
+        ".menu button.active"
+    )
+    .dataset.page;
+
+
+    if(active === "dashboard"){
+
+        await loadDashboard();
+
+    }else{
+
+        await loadTable(active);
+
+    }
+
+});
+
+
+/* =========================
+   SESSION CHECK
+========================= */
+
+async function init(){
 
     const {
         data
-    } = await supabaseClient.auth.getSession();
+    } =
+    await supabaseClient
+    .auth
+    .getSession();
 
-    if (data.session) {
 
+    if(
+        data.session
+    ){
+
+        const admin =
         await checkAdmin(
             data.session.user
         );
 
-    } else {
 
-        showLogin();
+        if(admin){
+
+            showAdmin();
+
+            loadDashboard();
+
+        }else{
+
+            await supabaseClient
+            .auth
+            .signOut();
+
+            loginBox
+            .classList
+            .remove("hidden");
+
+        }
+
+    }else{
+
+        loginBox
+        .classList
+        .remove("hidden");
 
     }
 
