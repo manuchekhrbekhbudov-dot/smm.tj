@@ -1,1961 +1,1853 @@
 <!DOCTYPE html>
 <html lang="tg">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>SMM.TJ — Admin Panel</title>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background:
-                radial-gradient(
-                    circle at 80% 10%,
-                    rgba(124, 58, 237, .18),
-                    transparent 30%
-                ),
-                #08080d;
-            color: white;
-            min-height: 100vh;
-        }
-
-        button,
-        input {
-            font: inherit;
-        }
-
-        button {
-            cursor: pointer;
-            border: none;
-        }
-
-        /* ================= LOGIN ================= */
-
-        .login-page {
-            position: fixed;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #08080d;
-            z-index: 9999;
-        }
-
-        .login-box {
-            width: min(440px, calc(100% - 30px));
-            padding: 35px;
-            background: #111117;
-            border: 1px solid #332b40;
-            border-radius: 25px;
-            box-shadow: 0 0 80px rgba(124, 58, 237, .15);
-        }
-
-        .login-box h1 {
-            font-size: 34px;
-            margin-bottom: 10px;
-        }
-
-        .login-box > p {
-            color: #817b88;
-            line-height: 1.5;
-            margin-bottom: 25px;
-        }
-
-        label {
-            display: block;
-            color: #aaa3b1;
-            margin: 15px 0 7px;
-        }
-
-        input {
-            width: 100%;
-            padding: 14px;
-            border-radius: 11px;
-            border: 1px solid #352d3e;
-            background: #08080d;
-            color: white;
-            outline: none;
-        }
-
-        input:focus {
-            border-color: #914cff;
-        }
-
-        .login-btn {
-            width: 100%;
-            margin-top: 22px;
-            padding: 15px;
-            border-radius: 12px;
-            color: white;
-            font-weight: 700;
-            background: linear-gradient(
-                135deg,
-                #7024e8,
-                #ad4dff
-            );
-        }
-
-        .login-btn:disabled {
-            opacity: .6;
-            cursor: not-allowed;
-        }
-
-        .error {
-            color: #ff6666;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-
-        .success {
-            color: #4ade80;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-
-        /* ================= APP ================= */
-
-        #app {
-            display: none;
-        }
-
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 250px;
-            height: 100vh;
-            padding: 28px 18px;
-            background: #101016;
-            border-right: 1px solid #292334;
-            z-index: 100;
-        }
-
-        .logo {
-            font-size: 28px;
-            font-weight: 900;
-            margin-bottom: 50px;
-        }
-
-        .logo span {
-            color: #9b4dff;
-        }
-
-        .menu-title {
-            color: #777080;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin: 0 0 18px 5px;
-        }
-
-        .menu {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .menu button {
-            width: 100%;
-            padding: 14px 15px;
-            background: transparent;
-            color: #aaa4b3;
-            border-radius: 12px;
-            text-align: left;
-            transition: .2s;
-        }
-
-        .menu button:hover,
-        .menu button.active {
-            background: linear-gradient(
-                90deg,
-                rgba(124, 58, 237, .35),
-                rgba(124, 58, 237, .12)
-            );
-            color: white;
-        }
-
-        .logout {
-            position: absolute;
-            left: 18px;
-            right: 18px;
-            bottom: 25px;
-            padding: 14px;
-            border-radius: 12px;
-            background: rgba(239, 68, 68, .15);
-            color: #ff7272;
-        }
-
-        /* ================= MAIN ================= */
-
-        .main {
-            margin-left: 250px;
-            padding: 35px;
-        }
-
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .topbar h1 {
-            font-size: 32px;
-        }
-
-        .admin-email {
-            color: #999;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-
-        .refresh {
-            background: #17131f;
-            border: 1px solid #342847;
-            color: white;
-            padding: 11px 18px;
-            border-radius: 10px;
-        }
-
-        .refresh:hover {
-            border-color: #914cff;
-        }
-
-        /* ================= STATS ================= */
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 18px;
-            margin-bottom: 30px;
-        }
-
-        .stat {
-            background: #111117;
-            border: 1px solid #292432;
-            border-radius: 18px;
-            padding: 22px;
-        }
-
-        .stat-icon {
-            font-size: 25px;
-            margin-bottom: 14px;
-        }
-
-        .stat-number {
-            font-size: 32px;
-            font-weight: 800;
-        }
-
-        .stat-title {
-            color: #817b89;
-            margin-top: 7px;
-        }
-
-        /* ================= SECTIONS ================= */
-
-        .section {
-            display: none;
-        }
-
-        .section.active {
-            display: block;
-        }
-
-        .section-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .section-head h2 {
-            font-size: 25px;
-        }
-
-        .section-head p {
-            color: #77717f;
-            margin-top: 5px;
-        }
-
-        /* ================= CARDS ================= */
-
-        .cards {
-            display: grid;
-            grid-template-columns:
-                repeat(auto-fill, minmax(300px, 1fr));
-            gap: 18px;
-        }
-
-        .card {
-            background: #111117;
-            border: 1px solid #2a2533;
-            border-radius: 18px;
-            padding: 20px;
-        }
-
-        .card:hover {
-            border-color: #7040b9;
-        }
-
-        .card h3 {
-            margin-bottom: 12px;
-        }
-
-        .card p {
-            color: #96909e;
-            margin: 8px 0;
-            line-height: 1.5;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 6px 10px;
-            border-radius: 20px;
-            background: rgba(124, 58, 237, .18);
-            color: #bb8cff;
-            font-size: 12px;
-            margin-top: 10px;
-        }
-
-        /* ================= REQUESTS ================= */
-
-        .request-card {
-            background: #111117;
-            border: 1px solid #2b2534;
-            border-radius: 18px;
-            padding: 22px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .request-info {
-            flex: 1;
-        }
-
-        .request-info h3 {
-            font-size: 19px;
-            margin-bottom: 12px;
-        }
-
-        .request-info p {
-            color: #97909f;
-            margin: 6px 0;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-
-        .approve {
-            background: linear-gradient(
-                135deg,
-                #16a34a,
-                #22c55e
-            );
-            color: white;
-            padding: 12px 18px;
-            border-radius: 10px;
-        }
-
-        .reject {
-            background: rgba(239, 68, 68, .15);
-            color: #ff7373;
-            border: 1px solid rgba(239, 68, 68, .3);
-            padding: 12px 18px;
-            border-radius: 10px;
-        }
-
-        .approve:hover,
-        .reject:hover {
-            transform: translateY(-1px);
-        }
-
-        .status {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 6px 11px;
-            border-radius: 20px;
-            font-size: 12px;
-        }
-
-        .pending {
-            background: rgba(234, 179, 8, .15);
-            color: #facc15;
-        }
-
-        .approved-status {
-            background: rgba(34, 197, 94, .15);
-            color: #4ade80;
-        }
-
-        .rejected-status {
-            background: rgba(239, 68, 68, .15);
-            color: #f87171;
-        }
-
-        /* ================= EMPTY / LOADING ================= */
-
-        .empty {
-            padding: 40px;
-            text-align: center;
-            color: #77717e;
-            background: #111117;
-            border: 1px dashed #302938;
-            border-radius: 18px;
-        }
-
-        .loading {
-            color: #aaa;
-            padding: 30px;
-            text-align: center;
-        }
-
-        /* ================= TOAST ================= */
-
-        .toast {
-            position: fixed;
-            right: 25px;
-            bottom: 25px;
-            min-width: 280px;
-            max-width: 400px;
-            padding: 15px 18px;
-            border-radius: 12px;
-            background: #18151f;
-            border: 1px solid #3b3150;
-            box-shadow: 0 15px 40px rgba(0,0,0,.4);
-            transform: translateY(120px);
-            opacity: 0;
-            transition: .3s;
-            z-index: 10000;
-        }
-
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .toast.success-toast {
-            border-color: #22c55e;
-        }
-
-        .toast.error-toast {
-            border-color: #ef4444;
-        }
-
-        /* ================= MOBILE ================= */
-
-        @media(max-width: 900px) {
-
-            .sidebar {
-                width: 75px;
-                padding: 25px 10px;
-            }
-
-            .logo {
-                font-size: 18px;
-                text-align: center;
-            }
-
-            .menu-title {
-                display: none;
-            }
-
-            .menu button {
-                font-size: 0;
-                text-align: center;
-                padding: 15px 5px;
-            }
-
-            .menu button::first-letter {
-                font-size: 22px;
-            }
-
-            .logout {
-                font-size: 0;
-            }
-
-            .logout::before {
-                content: "↪";
-                font-size: 22px;
-            }
-
-            .main {
-                margin-left: 75px;
-                padding: 20px;
-            }
-
-            .stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media(max-width: 600px) {
-
-            .topbar {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-
-            .stats {
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-
-            .stat {
-                padding: 15px;
-            }
-
-            .stat-number {
-                font-size: 25px;
-            }
-
-            .request-card {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .actions {
-                flex-direction: column;
-            }
-
-            .actions button {
-                width: 100%;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SMM.TJ — Admin Panel</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+:root{
+    --bg:#08080d;
+    --panel:#111118;
+    --panel2:#171720;
+    --line:#292936;
+    --text:#f7f7fb;
+    --muted:#8f8f9d;
+    --purple:#7c2cff;
+    --purple2:#b14cff;
+    --red:#ff5364;
+    --green:#36d98a;
+}
+
+body{
+    margin:0;
+    background:
+        radial-gradient(
+            circle at 60% 10%,
+            #1b0b36 0,
+            #08080d 38%
+        );
+    color:var(--text);
+    font-family:Arial, sans-serif;
+}
+
+button,
+input{
+    font:inherit;
+}
+
+.hidden{
+    display:none!important;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    width:240px;
+    background:#0d0d13;
+    border-right:1px solid var(--line);
+    padding:24px 16px;
+    position:fixed;
+    top:0;
+    bottom:0;
+    left:0;
+    z-index:10;
+}
+
+.logo{
+    display:block;
+    margin:4px 8px 34px;
+    color:white;
+    text-decoration:none;
+    font-size:27px;
+    font-weight:900;
+}
+
+.logo span{
+    color:#9b42ff;
+}
+
+.menu{
+    display:grid;
+    gap:8px;
+}
+
+.menu button{
+    width:100%;
+    border:0;
+    background:transparent;
+    color:#aaa8b7;
+    text-align:left;
+    padding:14px;
+    border-radius:12px;
+    cursor:pointer;
+}
+
+.menu button:hover,
+.menu button.active{
+    background:#29164d;
+    color:white;
+}
+
+.logout{
+    position:absolute;
+    left:16px;
+    right:16px;
+    bottom:20px;
+
+    border:1px solid #54202a;
+    background:#251116;
+    color:#ff7784;
+
+    border-radius:12px;
+    padding:12px;
+    cursor:pointer;
+}
+
+/* MAIN */
+
+.main{
+    width:100%;
+    min-height:100vh;
+    margin-left:240px;
+    padding:34px;
+}
+
+/* LOGIN */
+
+.login-wrap{
+    min-height:calc(100vh - 68px);
+
+    display:grid;
+    place-items:center;
+}
+
+.login{
+    width:min(460px,100%);
+
+    background:rgba(17,17,24,.96);
+
+    border:1px solid #30303c;
+
+    border-radius:24px;
+
+    padding:32px;
+
+    box-shadow:0 25px 80px #0008;
+}
+
+.login h1{
+    margin:0 0 10px;
+    font-size:32px;
+}
+
+.login p{
+    color:var(--muted);
+    line-height:1.6;
+}
+
+label{
+    display:block;
+    color:#c5c3ce;
+    margin:15px 0 8px;
+}
+
+input{
+    width:100%;
+
+    background:#09090e;
+    color:white;
+
+    border:1px solid #343440;
+
+    border-radius:12px;
+
+    padding:14px;
+
+    outline:none;
+}
+
+input:focus{
+    border-color:#8f43ff;
+    box-shadow:0 0 0 3px #7c2cff22;
+}
+
+.primary{
+    width:100%;
+
+    margin-top:20px;
+
+    border:0;
+
+    border-radius:12px;
+
+    padding:14px;
+
+    color:white;
+
+    font-weight:800;
+
+    background:
+        linear-gradient(
+            90deg,
+            #7020e8,
+            #ad4dff
+        );
+
+    cursor:pointer;
+}
+
+.error{
+    min-height:24px;
+
+    color:#ff6472;
+
+    margin-top:13px;
+}
+
+/* TOP */
+
+.top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    gap:15px;
+
+    margin-bottom:24px;
+}
+
+.top h1{
+    margin:0;
+    font-size:30px;
+}
+
+.refresh{
+    border:1px solid var(--line);
+
+    background:var(--panel);
+
+    color:white;
+
+    padding:11px 16px;
+
+    border-radius:11px;
+
+    cursor:pointer;
+}
+
+/* STATS */
+
+.stats{
+    display:grid;
+
+    grid-template-columns:
+        repeat(5,minmax(0,1fr));
+
+    gap:14px;
+}
+
+.stat{
+    background:rgba(17,17,24,.9);
+
+    border:1px solid var(--line);
+
+    border-radius:16px;
+
+    padding:20px;
+}
+
+.stat span{
+    color:var(--muted);
+
+    font-size:13px;
+}
+
+.stat strong{
+    display:block;
+
+    font-size:31px;
+
+    margin-top:10px;
+}
+
+/* CARD */
+
+.card{
+    margin-top:20px;
+
+    background:rgba(17,17,24,.94);
+
+    border:1px solid var(--line);
+
+    border-radius:18px;
+
+    overflow:hidden;
+}
+
+.card-head{
+    padding:20px;
+
+    border-bottom:1px solid var(--line);
+}
+
+.card-head h2{
+    margin:0 0 5px;
+}
+
+.card-head p{
+    margin:0;
+
+    color:var(--muted);
+}
+
+/* TABLE */
+
+.table-wrap{
+    overflow:auto;
+}
+
+table{
+    width:100%;
+
+    border-collapse:collapse;
+
+    min-width:760px;
+}
+
+th,
+td{
+    padding:14px;
+
+    border-bottom:1px solid #24242d;
+
+    text-align:left;
+
+    vertical-align:top;
+}
+
+th{
+    color:#8d8d9a;
+
+    font-size:12px;
+
+    text-transform:uppercase;
+}
+
+td{
+    font-size:14px;
+}
+
+/* BUTTONS */
+
+.actions{
+    display:flex;
+
+    gap:7px;
+
+    flex-wrap:wrap;
+}
+
+.btn{
+    border:0;
+
+    border-radius:9px;
+
+    padding:8px 11px;
+
+    cursor:pointer;
+
+    color:white;
+
+    font-weight:700;
+}
+
+.accept{
+    background:#123c2a;
+}
+
+.reject{
+    background:#451722;
+}
+
+.delete{
+    background:#29232a;
+}
+
+/* STATUS */
+
+.status{
+    display:inline-flex;
+
+    padding:6px 9px;
+
+    border-radius:99px;
+
+    font-size:12px;
+
+    font-weight:800;
+}
+
+.pending{
+    background:#3a2e0c;
+
+    color:#ffd75a;
+}
+
+.accepted{
+    background:#123c2a;
+
+    color:#62e9a5;
+}
+
+.rejected{
+    background:#451722;
+
+    color:#ff7c89;
+}
+
+/* EMPTY */
+
+.empty{
+    padding:50px;
+
+    text-align:center;
+
+    color:#858593;
+}
+
+/* TOAST */
+
+.toast{
+    position:fixed;
+
+    right:22px;
+    bottom:22px;
+
+    z-index:20;
+
+    background:#171720;
+
+    border:1px solid #383844;
+
+    border-radius:13px;
+
+    padding:14px 17px;
+
+    box-shadow:0 15px 50px #0008;
+
+    max-width:380px;
+}
+
+/* MOBILE */
+
+@media(max-width:900px){
+
+    .sidebar{
+        width:76px;
+
+        padding:22px 10px;
+    }
+
+    .logo{
+        font-size:18px;
+
+        text-align:center;
+
+        margin-bottom:25px;
+    }
+
+    .menu button{
+        text-align:center;
+
+        padding:13px 5px;
+    }
+
+    .menu span{
+        display:none;
+    }
+
+    .logout{
+        font-size:0;
+    }
+
+    .logout:after{
+        content:"↪";
+
+        font-size:20px;
+    }
+
+    .main{
+        margin-left:76px;
+
+        padding:20px;
+    }
+
+    .stats{
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+}
+
+@media(max-width:560px){
+
+    .main{
+        padding:13px;
+    }
+
+    .stats{
+        grid-template-columns:1fr;
+    }
+
+    .login{
+        padding:24px;
+    }
+
+    .top h1{
+        font-size:23px;
+    }
+}
+</style>
 </head>
 
 <body>
 
-<!-- =====================================================
-     LOGIN
-===================================================== -->
+<aside class="sidebar">
 
-<div id="loginPage" class="login-page">
+<a href="index.html" class="logo">
+    SMM<span>.TJ</span>
+</a>
 
-    <div class="login-box">
+<nav class="menu">
 
-        <h1>🔐 Admin Panel</h1>
+<button class="active" data-page="dashboard">
+    📊 <span>Dashboard</span>
+</button>
 
-        <p>
-            Барои ворид шудан ба панели
-            идоракунии SMM.TJ аккаунти Admin-ро истифода баред.
-        </p>
+<button data-page="specialists">
+    👤 <span>Мутахассисон</span>
+</button>
 
-        <label for="email">Email</label>
+<button data-page="clients">
+    👥 <span>Мизоҷон</span>
+</button>
 
-        <input
-            id="email"
-            type="email"
-            autocomplete="username"
-            placeholder="admin@gmail.com"
-        >
+<button data-page="orders">
+    📦 <span>Заказҳо</span>
+</button>
 
-        <label for="password">Парол</label>
+<button data-page="requests">
+    📩 <span>Дархостҳо</span>
+</button>
 
-        <input
-            id="password"
-            type="password"
-            autocomplete="current-password"
-            placeholder="••••••••"
-        >
+<button data-page="reviews">
+    ⭐ <span>Отзывҳо</span>
+</button>
 
-        <button
-            id="loginButton"
-            class="login-btn"
-            onclick="loginAdmin()"
-        >
-            Даромадан
-        </button>
+</nav>
 
-        <div id="loginError" class="error"></div>
+<button id="logout" class="logout">
+    Баромадан
+</button>
 
-    </div>
+</aside>
+
+
+<main class="main">
+
+<!-- LOGIN -->
+
+<section id="loginBox" class="login-wrap">
+
+<div class="login">
+
+<h1>
+    🔐 Admin Panel
+</h1>
+
+<p>
+    Барои ворид шудан ба панели Admin
+    аккаунти худро истифода баред.
+</p>
+
+<form id="loginForm">
+
+<label>
+    Email
+</label>
+
+<input
+    id="email"
+    type="email"
+    autocomplete="username"
+    required
+>
+
+<label>
+    Парол
+</label>
+
+<input
+    id="password"
+    type="password"
+    autocomplete="current-password"
+    required
+>
+
+<button
+    id="loginBtn"
+    class="primary"
+    type="submit"
+>
+    Даромадан
+</button>
+
+<div
+    id="error"
+    class="error"
+></div>
+
+</form>
+
+</div>
+
+</section>
+
+
+<!-- ADMIN -->
+
+<section
+    id="adminBox"
+    class="hidden"
+>
+
+<div class="top">
+
+<h1 id="title">
+    Dashboard
+</h1>
+
+<button
+    id="refresh"
+    class="refresh"
+>
+    ↻ Навсозӣ
+</button>
 
 </div>
 
 
-<!-- =====================================================
-     APP
-===================================================== -->
-
-<div id="app">
-
-    <!-- SIDEBAR -->
-
-    <aside class="sidebar">
-
-        <div class="logo">
-            SMM<span>.TJ</span>
-        </div>
-
-        <div class="menu-title">
-            Admin Panel
-        </div>
-
-        <div class="menu">
-
-            <button
-                class="active"
-                onclick="showSection('dashboard', this)"
-            >
-                📊 Dashboard
-            </button>
-
-            <button
-                onclick="showSection('specialists', this)"
-            >
-                👤 Мутахассисон
-            </button>
-
-            <button
-                onclick="showSection('clients', this)"
-            >
-                👥 Мизоҷон
-            </button>
-
-            <button
-                onclick="showSection('requests', this)"
-            >
-                📦 Дархостҳо
-            </button>
-
-        </div>
-
-        <button
-            class="logout"
-            onclick="logoutAdmin()"
-        >
-            Баромадан
-        </button>
-
-    </aside>
-
-
-    <!-- MAIN -->
-
-    <main class="main">
-
-        <div class="topbar">
-
-            <div>
-
-                <h1 id="pageTitle">
-                    Dashboard
-                </h1>
-
-                <div
-                    id="adminEmail"
-                    class="admin-email"
-                ></div>
-
-            </div>
-
-            <button
-                class="refresh"
-                onclick="loadAll()"
-            >
-                🔄 Навсозӣ
-            </button>
-
-        </div>
-
-
-        <!-- ================= DASHBOARD ================= -->
-
-        <section
-            id="dashboard"
-            class="section active"
-        >
-
-            <div class="stats">
-
-                <div class="stat">
-
-                    <div class="stat-icon">
-                        👤
-                    </div>
-
-                    <div
-                        id="specialistsCount"
-                        class="stat-number"
-                    >
-                        0
-                    </div>
-
-                    <div class="stat-title">
-                        Мутахассисон
-                    </div>
-
-                </div>
-
-
-                <div class="stat">
-
-                    <div class="stat-icon">
-                        👥
-                    </div>
-
-                    <div
-                        id="clientsCount"
-                        class="stat-number"
-                    >
-                        0
-                    </div>
-
-                    <div class="stat-title">
-                        Мизоҷон
-                    </div>
-
-                </div>
-
-
-                <div class="stat">
-
-                    <div class="stat-icon">
-                        📦
-                    </div>
-
-                    <div
-                        id="requestsCount"
-                        class="stat-number"
-                    >
-                        0
-                    </div>
-
-                    <div class="stat-title">
-                        Дархостҳои нав
-                    </div>
-
-                </div>
-
-
-                <div class="stat">
-
-                    <div class="stat-icon">
-                        ⭐
-                    </div>
-
-                    <div
-                        id="approvedCount"
-                        class="stat-number"
-                    >
-                        0
-                    </div>
-
-                    <div class="stat-title">
-                        Қабулшуда
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="card">
-
-                <h2>
-                    👋 Хуш омадед ба Admin Panel
-                </h2>
-
-                <p>
-                    Аз ин ҷо метавонед
-                    мутахассисон, мизоҷон ва
-                    дархостҳои SMM.TJ-ро идора кунед.
-                </p>
-
-            </div>
-
-        </section>
-
-
-        <!-- ================= SPECIALISTS ================= -->
-
-        <section
-            id="specialists"
-            class="section"
-        >
-
-            <div class="section-head">
-
-                <div>
-
-                    <h2>
-                        👤 Мутахассисон
-                    </h2>
-
-                    <p>
-                        Мутахассисони сабтиномшуда
-                    </p>
-
-                </div>
-
-            </div>
-
-            <div
-                id="specialistsList"
-                class="cards"
-            >
-
-                <div class="loading">
-                    Бор шуда истодааст...
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- ================= CLIENTS ================= -->
-
-        <section
-            id="clients"
-            class="section"
-        >
-
-            <div class="section-head">
-
-                <div>
-
-                    <h2>
-                        👥 Мизоҷон
-                    </h2>
-
-                    <p>
-                        Мизоҷони SMM.TJ
-                    </p>
-
-                </div>
-
-            </div>
-
-            <div
-                id="clientsList"
-                class="cards"
-            >
-
-                <div class="loading">
-                    Бор шуда истодааст...
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- ================= REQUESTS ================= -->
-
-        <section
-            id="requests"
-            class="section"
-        >
-
-            <div class="section-head">
-
-                <div>
-
-                    <h2>
-                        📦 Дархостҳо
-                    </h2>
-
-                    <p>
-                        Дархостҳои мизоҷон
-                    </p>
-
-                </div>
-
-            </div>
-
-            <div id="requestsList">
-
-                <div class="loading">
-                    Бор шуда истодааст...
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
+<!-- DASHBOARD -->
+
+<section id="dashboard">
+
+<div class="stats">
+
+<div class="stat">
+<span>Мутахассисон</span>
+<strong id="specialistsCount">0</strong>
+</div>
+
+<div class="stat">
+<span>Мизоҷон</span>
+<strong id="clientsCount">0</strong>
+</div>
+
+<div class="stat">
+<span>Заказҳо</span>
+<strong id="ordersCount">0</strong>
+</div>
+
+<div class="stat">
+<span>Дархостҳо</span>
+<strong id="requestsCount">0</strong>
+</div>
+
+<div class="stat">
+<span>Отзывҳо</span>
+<strong id="reviewsCount">0</strong>
+</div>
 
 </div>
 
 
-<!-- TOAST -->
+<div class="card">
+
+<div class="card-head">
+
+<h2>
+    Хуш омадед 👋
+</h2>
+
+<p>
+    Admin Panel-и SMM.TJ
+</p>
+
+</div>
+
+<div class="empty">
+    Система фаъол аст ✅
+</div>
+
+</div>
+
+</section>
+
+
+<!-- SPECIALISTS -->
+
+<section
+    id="specialists"
+    class="hidden"
+>
+
+<div class="card">
+
+<div class="card-head">
+
+<h2>
+    👤 Мутахассисон
+</h2>
+
+<p>
+    Идоракунии мутахассисон
+</p>
+
+</div>
+
+<div id="specialistsTable"></div>
+
+</div>
+
+</section>
+
+
+<!-- CLIENTS -->
+
+<section
+    id="clients"
+    class="hidden"
+>
+
+<div class="card">
+
+<div class="card-head">
+
+<h2>
+    👥 Мизоҷон
+</h2>
+
+<p>
+    Рӯйхати мизоҷон
+</p>
+
+</div>
+
+<div id="clientsTable"></div>
+
+</div>
+
+</section>
+
+
+<!-- ORDERS -->
+
+<section
+    id="orders"
+    class="hidden"
+>
+
+<div class="card">
+
+<div class="card-head">
+
+<h2>
+    📦 Заказҳо
+</h2>
+
+<p>
+    Идоракунии заказҳо
+</p>
+
+</div>
+
+<div id="ordersTable"></div>
+
+</div>
+
+</section>
+
+
+<!-- REQUESTS -->
+
+<section
+    id="requests"
+    class="hidden"
+>
+
+<div class="card">
+
+<div class="card-head">
+
+<h2>
+    📩 Дархостҳо
+</h2>
+
+<p>
+    Идоракунии дархостҳо
+</p>
+
+</div>
+
+<div id="requestsTable"></div>
+
+</div>
+
+</section>
+
+
+<!-- REVIEWS -->
+
+<section
+    id="reviews"
+    class="hidden"
+>
+
+<div class="card">
+
+<div class="card-head">
+
+<h2>
+    ⭐ Отзывҳо
+</h2>
+
+<p>
+    Рӯйхати отзывҳо
+</p>
+
+</div>
+
+<div id="reviewsTable"></div>
+
+</div>
+
+</section>
+
+</section>
+
+</main>
+
 
 <div
     id="toast"
-    class="toast"
+    class="toast hidden"
 ></div>
 
 
 <script>
 
-/* =====================================================
+/* =========================
    SUPABASE
-===================================================== */
+========================= */
 
 const SUPABASE_URL =
-    "https://ebcwevkwxqohsfkhfbdn.supabase.co";
+"https://lcldaingzicxbottlznq.supabase.co";
 
-const SUPABASE_ANON_KEY =
-    "sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
+const SUPABASE_KEY =
+"sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
 
 const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY
-    );
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
 
-/* =====================================================
-   CONFIG
-===================================================== */
+/* =========================
+   SETTINGS
+========================= */
 
-/*
-   Дар базаи ту status = "new" ҳаст.
+const pages = [
+    "dashboard",
+    "specialists",
+    "clients",
+    "orders",
+    "requests",
+    "reviews"
+];
 
-   Барои қабул аввал "approved" истифода намебарем,
-   чун constraint-и ҳозираи базаи ту онро қабул накардааст.
+const titles = {
 
-   Агар constraint-и базаат "accepted" дошта бошад,
-   ҳаминро истифода мебарем.
-*/
+    dashboard:"Dashboard",
 
-const STATUS_NEW = "new";
-const STATUS_ACCEPTED = "accepted";
-const STATUS_REJECTED = "rejected";
+    specialists:"Мутахассисон",
+
+    clients:"Мизоҷон",
+
+    orders:"Заказҳо",
+
+    requests:"Дархостҳо",
+
+    reviews:"Отзывҳо"
+
+};
 
 
-/* =====================================================
-   HELPERS
-===================================================== */
+/* =========================
+   ESCAPE HTML
+========================= */
 
-function escapeHtml(value) {
+function esc(value){
 
-    if (value === null || value === undefined) {
-        return "";
+    if(
+        value === null ||
+        value === undefined ||
+        value === ""
+    ){
+        return "—";
     }
 
     return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
 }
 
 
-function showToast(message, type = "success") {
+/* =========================
+   TOAST
+========================= */
 
-    const toast =
+function toast(message){
+
+    const box =
         document.getElementById("toast");
 
-    toast.textContent = message;
+    box.textContent = message;
 
-    toast.className =
-        "toast show " +
-        (type === "success"
-            ? "success-toast"
-            : "error-toast");
+    box.classList.remove("hidden");
 
-    setTimeout(() => {
-
-        toast.className = "toast";
-
-    }, 3000);
-}
-
-
-/* =====================================================
-   LOGIN
-===================================================== */
-
-async function loginAdmin() {
-
-    const email =
-        document.getElementById("email")
-            .value
-            .trim();
-
-    const password =
-        document.getElementById("password")
-            .value;
-
-    const error =
-        document.getElementById("loginError");
-
-    const button =
-        document.getElementById("loginButton");
-
-    error.textContent = "";
-
-    if (!email || !password) {
-
-        error.textContent =
-            "Email ва паролро пур кунед.";
-
-        return;
-    }
-
-    button.disabled = true;
-    button.textContent = "Даромада истодааст...";
-
-    try {
-
-        const {
-            data,
-            error: loginError
-        } =
-            await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
-
-        if (loginError) {
-            throw loginError;
-        }
-
-        if (!data.user) {
-            throw new Error(
-                "User ёфт нашуд."
-            );
-        }
-
-
-        /* ADMIN CHECK */
-
-        const {
-            data: adminUser,
-            error: adminError
-        } =
-            await supabaseClient
-                .from("admin_users")
-                .select("user_id")
-                .eq("user_id", data.user.id)
-                .maybeSingle();
-
-        if (adminError) {
-            throw adminError;
-        }
-
-        if (!adminUser) {
-
-            await supabaseClient.auth.signOut();
-
-            throw new Error(
-                "Ин аккаунт Admin нест."
-            );
-        }
-
-
-        /* SHOW APP */
-
-        document
-            .getElementById("loginPage")
-            .style.display = "none";
-
-        document
-            .getElementById("app")
-            .style.display = "block";
-
-        document
-            .getElementById("adminEmail")
-            .textContent = data.user.email || "";
-
-        await loadAll();
-
-        showToast(
-            "Ба Admin Panel бомуваффақият даромадед."
-        );
-
-    } catch (err) {
-
-        console.error(err);
-
-        error.textContent =
-            translateSupabaseError(
-                err.message
-            );
-
-    } finally {
-
-        button.disabled = false;
-        button.textContent = "Даромадан";
-    }
-}
-
-
-/* =====================================================
-   ERROR TRANSLATION
-===================================================== */
-
-function translateSupabaseError(message) {
-
-    if (!message) {
-        return "Хатои номаълум.";
-    }
-
-    const text =
-        message.toLowerCase();
-
-    if (
-        text.includes("invalid login credentials")
-    ) {
-        return "Email ё парол нодуруст аст.";
-    }
-
-    if (
-        text.includes("email not confirmed")
-    ) {
-        return "Email тасдиқ нашудааст.";
-    }
-
-    if (
-        text.includes("user not found")
-    ) {
-        return "Admin аккаунт ёфт нашуд.";
-    }
-
-    if (
-        text.includes("row-level security")
-    ) {
-        return "RLS иҷозаи ин амалро намедиҳад.";
-    }
-
-    return message;
-}
-
-
-/* =====================================================
-   LOGOUT
-===================================================== */
-
-async function logoutAdmin() {
-
-    await supabaseClient.auth.signOut();
-
-    document
-        .getElementById("app")
-        .style.display = "none";
-
-    document
-        .getElementById("loginPage")
-        .style.display = "flex";
-
-    document
-        .getElementById("password")
-        .value = "";
-
-    document
-        .getElementById("loginError")
-        .textContent = "";
-
-    showToast(
-        "Шумо аз аккаунт баромадед."
+    clearTimeout(
+        window.toastTimer
     );
+
+    window.toastTimer =
+        setTimeout(
+            () => {
+                box.classList.add("hidden");
+            },
+            3000
+        );
 }
 
 
-/* =====================================================
-   SESSION CHECK
-===================================================== */
+/* =========================
+   STATUS
+========================= */
 
-async function checkSession() {
+function statusHtml(value){
 
-    const {
-        data: {
-            session
-        }
-    } =
-        await supabaseClient.auth.getSession();
+    const status =
+        String(
+            value || "pending"
+        ).toLowerCase();
 
-    if (!session) {
-        return;
+    let className = "pending";
+
+    if(
+        status.includes("accept") ||
+        status.includes("approv")
+    ){
+
+        className = "accepted";
+
     }
 
-    const user =
-        session.user;
+    if(
+        status.includes("reject")
+    ){
+
+        className = "rejected";
+
+    }
+
+    return `
+        <span class="status ${className}">
+            ${esc(value || "pending")}
+        </span>
+    `;
+}
+
+
+/* =========================
+   ADMIN CHECK
+========================= */
+
+async function isAdmin(userId){
 
     const {
-        data: adminUser,
+        data,
         error
     } =
         await supabaseClient
             .from("admin_users")
             .select("user_id")
-            .eq("user_id", user.id)
+            .eq(
+                "user_id",
+                userId
+            )
             .maybeSingle();
 
-    if (error || !adminUser) {
+    if(error){
 
-        await supabaseClient.auth.signOut();
+        throw error;
 
-        return;
     }
 
-    document
-        .getElementById("loginPage")
-        .style.display = "none";
-
-    document
-        .getElementById("app")
-        .style.display = "block";
-
-    document
-        .getElementById("adminEmail")
-        .textContent = user.email || "";
-
-    await loadAll();
+    return !!data;
 }
 
 
-/* =====================================================
-   NAVIGATION
-===================================================== */
+/* =========================
+   OPEN ADMIN
+========================= */
 
-function showSection(
-    sectionId,
-    button
-) {
+async function openAdmin(user){
 
-    document
-        .querySelectorAll(".section")
-        .forEach(section => {
+    try{
 
-            section.classList.remove(
-                "active"
+        const admin =
+            await isAdmin(
+                user.id
             );
 
-        });
+        if(!admin){
 
+            await supabaseClient
+                .auth
+                .signOut();
 
-    document
-        .querySelectorAll(".menu button")
-        .forEach(btn => {
-
-            btn.classList.remove(
-                "active"
+            throw new Error(
+                "Ин аккаунт Admin нест."
             );
 
-        });
-
-
-    const section =
-        document.getElementById(sectionId);
-
-    if (section) {
-        section.classList.add("active");
-    }
-
-    if (button) {
-        button.classList.add("active");
-    }
-
-
-    const titles = {
-
-        dashboard:
-            "Dashboard",
-
-        specialists:
-            "Мутахассисон",
-
-        clients:
-            "Мизоҷон",
-
-        requests:
-            "Дархостҳо"
-    };
-
-
-    document
-        .getElementById("pageTitle")
-        .textContent =
-            titles[sectionId] ||
-            "Admin Panel";
-
-
-    if (sectionId === "specialists") {
-        loadSpecialists();
-    }
-
-    if (sectionId === "clients") {
-        loadClients();
-    }
-
-    if (sectionId === "requests") {
-        loadRequests();
-    }
-}
-
-
-/* =====================================================
-   LOAD ALL
-===================================================== */
-
-async function loadAll() {
-
-    await Promise.all([
-        loadStats(),
-        loadSpecialists(),
-        loadClients(),
-        loadRequests()
-    ]);
-}
-
-
-/* =====================================================
-   STATS
-===================================================== */
-
-async function loadStats() {
-
-    try {
-
-        const [
-            specialists,
-            clients,
-            requests,
-            accepted
-        ] =
-            await Promise.all([
-
-                supabaseClient
-                    .from("specialists")
-                    .select("*", {
-                        count: "exact",
-                        head: true
-                    }),
-
-                supabaseClient
-                    .from("clients")
-                    .select("*", {
-                        count: "exact",
-                        head: true
-                    }),
-
-                supabaseClient
-                    .from("requests")
-                    .select("*", {
-                        count: "exact",
-                        head: true
-                    })
-                    .eq(
-                        "status",
-                        STATUS_NEW
-                    ),
-
-                supabaseClient
-                    .from("requests")
-                    .select("*", {
-                        count: "exact",
-                        head: true
-                    })
-                    .eq(
-                        "status",
-                        STATUS_ACCEPTED
-                    )
-            ]);
-
+        }
 
         document
-            .getElementById("specialistsCount")
-            .textContent =
-                specialists.count || 0;
+            .getElementById("loginBox")
+            .classList
+            .add("hidden");
 
         document
-            .getElementById("clientsCount")
-            .textContent =
-                clients.count || 0;
+            .getElementById("adminBox")
+            .classList
+            .remove("hidden");
 
         document
-            .getElementById("requestsCount")
-            .textContent =
-                requests.count || 0;
+            .getElementById("error")
+            .textContent = "";
+
+        await loadDashboard();
+
+    }
+    catch(error){
 
         document
-            .getElementById("approvedCount")
+            .getElementById("error")
             .textContent =
-                accepted.count || 0;
+                error.message ||
+                "Хатои Admin";
 
-    } catch (error) {
-
-        console.error(
-            "Stats error:",
-            error
-        );
     }
+
 }
 
 
-/* =====================================================
-   SPECIALISTS
-===================================================== */
-
-async function loadSpecialists() {
-
-    const container =
-        document.getElementById(
-            "specialistsList"
-        );
-
-    container.innerHTML =
-        '<div class="loading">Бор шуда истодааст...</div>';
-
-    try {
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-                .from("specialists")
-                .select("*")
-                .order(
-                    "created_at",
-                    {
-                        ascending: false
-                    }
-                );
-
-        if (error) {
-            throw error;
-        }
-
-        if (!data || data.length === 0) {
-
-            container.innerHTML =
-                '<div class="empty">Мутахассис ҳоло нест.</div>';
-
-            return;
-        }
-
-
-        container.innerHTML =
-            data.map(item => {
-
-                const name =
-                    item.name ||
-                    item.full_name ||
-                    item.specialist_name ||
-                    "Мутахассис";
-
-                const phone =
-                    item.phone ||
-                    "Телефон нест";
-
-                const category =
-                    item.category ||
-                    item.service ||
-                    item.direction ||
-                    "SMM";
-
-                return `
-                    <div class="card">
-
-                        <h3>
-                            👤 ${escapeHtml(name)}
-                        </h3>
-
-                        <p>
-                            📞 ${escapeHtml(phone)}
-                        </p>
-
-                        <span class="badge">
-                            ${escapeHtml(category)}
-                        </span>
-
-                    </div>
-                `;
-
-            }).join("");
-
-    } catch (error) {
-
-        console.error(
-            "Specialists error:",
-            error
-        );
-
-        container.innerHTML =
-            `<div class="empty">
-                Хатогӣ ҳангоми гирифтани мутахассисон:<br>
-                ${escapeHtml(error.message)}
-            </div>`;
-    }
-}
-
-
-/* =====================================================
-   CLIENTS
-===================================================== */
-
-async function loadClients() {
-
-    const container =
-        document.getElementById(
-            "clientsList"
-        );
-
-    container.innerHTML =
-        '<div class="loading">Бор шуда истодааст...</div>';
-
-    try {
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-                .from("clients")
-                .select("*")
-                .order(
-                    "created_at",
-                    {
-                        ascending: false
-                    }
-                );
-
-        if (error) {
-            throw error;
-        }
-
-        if (!data || data.length === 0) {
-
-            container.innerHTML =
-                '<div class="empty">Мизоҷ ҳоло нест.</div>';
-
-            return;
-        }
-
-
-        container.innerHTML =
-            data.map(item => {
-
-                const name =
-                    item.name ||
-                    item.full_name ||
-                    item.client_name ||
-                    "Мизоҷ";
-
-                const phone =
-                    item.phone ||
-                    "Телефон нест";
-
-                const email =
-                    item.email ||
-                    "";
-
-                return `
-                    <div class="card">
-
-                        <h3>
-                            👤 ${escapeHtml(name)}
-                        </h3>
-
-                        <p>
-                            📞 ${escapeHtml(phone)}
-                        </p>
-
-                        ${
-                            email
-                            ? `
-                                <p>
-                                    ✉️ ${escapeHtml(email)}
-                                </p>
-                              `
-                            : ""
-                        }
-
-                    </div>
-                `;
-
-            }).join("");
-
-    } catch (error) {
-
-        console.error(
-            "Clients error:",
-            error
-        );
-
-        container.innerHTML =
-            `<div class="empty">
-                Хатогӣ ҳангоми гирифтани мизоҷон:<br>
-                ${escapeHtml(error.message)}
-            </div>`;
-    }
-}
-
-
-/* =====================================================
-   REQUESTS
-===================================================== */
-
-async function loadRequests() {
-
-    const container =
-        document.getElementById(
-            "requestsList"
-        );
-
-    container.innerHTML =
-        '<div class="loading">Бор шуда истодааст...</div>';
-
-    try {
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-                .from("requests")
-                .select("*")
-                .order(
-                    "created_at",
-                    {
-                        ascending: false
-                    }
-                );
-
-        if (error) {
-            throw error;
-        }
-
-        if (!data || data.length === 0) {
-
-            container.innerHTML =
-                '<div class="empty">Ҳоло ягон дархост нест.</div>';
-
-            return;
-        }
-
-
-        container.innerHTML =
-            data.map(request => {
-
-                return renderRequest(
-                    request
-                );
-
-            }).join("");
-
-    } catch (error) {
-
-        console.error(
-            "Requests error:",
-            error
-        );
-
-        container.innerHTML =
-            `<div class="empty">
-                Хатогӣ ҳангоми гирифтани дархостҳо:<br>
-                ${escapeHtml(error.message)}
-            </div>`;
-    }
-}
-
-
-/* =====================================================
-   REQUEST CARD
-===================================================== */
-
-function renderRequest(request) {
-
-    const status =
-        request.status ||
-        STATUS_NEW;
-
-    let statusClass =
-        "pending";
-
-    let statusText =
-        "Нав";
-
-    if (
-        status === STATUS_ACCEPTED
-    ) {
-
-        statusClass =
-            "approved-status";
-
-        statusText =
-            "Қабул шуд";
-
-    } else if (
-        status === STATUS_REJECTED
-    ) {
-
-        statusClass =
-            "rejected-status";
-
-        statusText =
-            "Рад шуд";
-    }
-
-
-    const clientName =
-        request.client_name ||
-        "Мизоҷ";
-
-    const phone =
-        request.phone ||
-        "—";
-
-    const specialist =
-        request.specialist_name ||
-        "—";
-
-    const message =
-        request.message ||
-        "—";
-
-    const created =
-        request.created_at
-            ? new Date(
-                request.created_at
-              ).toLocaleString(
-                "tg-TJ"
-              )
-            : "—";
-
-
-    let actions = "";
-
-    if (status === STATUS_NEW) {
-
-        actions = `
-            <div class="actions">
-
-                <button
-                    class="approve"
-                    onclick="approveRequest('${request.id}')"
-                >
-                    ✅ Қабул кардан
-                </button>
-
-                <button
-                    class="reject"
-                    onclick="rejectRequest('${request.id}')"
-                >
-                    ❌ Рад кардан
-                </button>
-
-            </div>
-        `;
-    }
-
-
-    return `
-        <div class="request-card">
-
-            <div class="request-info">
-
-                <h3>
-                    👤 ${escapeHtml(clientName)}
-                </h3>
-
-                <p>
-                    📞 Телефон:
-                    ${escapeHtml(phone)}
-                </p>
-
-                <p>
-                    👤 Мутахассис:
-                    ${escapeHtml(specialist)}
-                </p>
-
-                <p>
-                    💬 ${escapeHtml(message)}
-                </p>
-
-                <p>
-                    🕐 ${escapeHtml(created)}
-                </p>
-
-                <span
-                    class="status ${statusClass}"
-                >
-                    ${statusText}
-                </span>
-
-            </div>
-
-            ${actions}
-
-        </div>
-    `;
-}
-
-
-/* =====================================================
-   APPROVE REQUEST
-===================================================== */
-
-async function approveRequest(id) {
-
-    if (!id) {
-        return;
-    }
-
-    const confirmed =
-        confirm(
-            "Ин дархостро қабул мекунед?"
-        );
-
-    if (!confirmed) {
-        return;
-    }
-
-
-    try {
-
-        const {
-            error
-        } =
-            await supabaseClient
-                .from("requests")
-                .update({
-                    status:
-                        STATUS_ACCEPTED
-                })
-                .eq(
-                    "id",
-                    id
-                );
-
-        if (error) {
-            throw error;
-        }
-
-
-        showToast(
-            "Дархост қабул шуд."
-        );
-
-        await loadAll();
-
-    } catch (error) {
-
-        console.error(
-            "Approve error:",
-            error
-        );
-
-        showToast(
-            "Қабул кардан нашуд: " +
-            error.message,
-            "error"
-        );
-    }
-}
-
-
-/* =====================================================
-   REJECT REQUEST
-===================================================== */
-
-async function rejectRequest(id) {
-
-    if (!id) {
-        return;
-    }
-
-    const confirmed =
-        confirm(
-            "Ин дархостро рад мекунед?"
-        );
-
-    if (!confirmed) {
-        return;
-    }
-
-
-    try {
-
-        const {
-            error
-        } =
-            await supabaseClient
-                .from("requests")
-                .update({
-                    status:
-                        STATUS_REJECTED
-                })
-                .eq(
-                    "id",
-                    id
-                );
-
-        if (error) {
-            throw error;
-        }
-
-
-        showToast(
-            "Дархост рад шуд."
-        );
-
-        await loadAll();
-
-    } catch (error) {
-
-        console.error(
-            "Reject error:",
-            error
-        );
-
-        showToast(
-            "Рад кардан нашуд: " +
-            error.message,
-            "error"
-        );
-    }
-}
-
-
-/* =====================================================
-   ENTER KEY LOGIN
-===================================================== */
+/* =========================
+   LOGIN
+========================= */
 
 document
-    .getElementById("password")
+    .getElementById("loginForm")
     .addEventListener(
-        "keydown",
-        function(event) {
+        "submit",
+        async function(event){
 
-            if (
-                event.key === "Enter"
-            ) {
-                loginAdmin();
+            event.preventDefault();
+
+            const error =
+                document
+                    .getElementById("error");
+
+            const button =
+                document
+                    .getElementById("loginBtn");
+
+            error.textContent =
+                "Санҷида истодаем...";
+
+            button.disabled = true;
+
+            try{
+
+                const email =
+                    document
+                        .getElementById("email")
+                        .value
+                        .trim();
+
+                const password =
+                    document
+                        .getElementById("password")
+                        .value;
+
+                const {
+                    data,
+                    error:authError
+                } =
+                    await supabaseClient
+                        .auth
+                        .signInWithPassword({
+
+                            email:email,
+
+                            password:password
+
+                        });
+
+                if(authError){
+
+                    throw authError;
+
+                }
+
+                await openAdmin(
+                    data.user
+                );
+
+            }
+            catch(error){
+
+                document
+                    .getElementById("error")
+                    .textContent =
+                        error.message ||
+                        "Email ё парол нодуруст аст.";
+
+            }
+            finally{
+
+                button.disabled = false;
+
             }
 
         }
     );
 
 
-/* =====================================================
-   START
-===================================================== */
+/* =========================
+   COUNT
+========================= */
 
-checkSession();
+async function countRows(table){
+
+    const {
+        count,
+        error
+    } =
+        await supabaseClient
+            .from(table)
+            .select(
+                "*",
+                {
+                    count:"exact",
+                    head:true
+                }
+            );
+
+    if(error){
+
+        console.error(
+            table,
+            error
+        );
+
+        return 0;
+
+    }
+
+    return count || 0;
+}
+
+
+/* =========================
+   DASHBOARD
+========================= */
+
+async function loadDashboard(){
+
+    document
+        .getElementById(
+            "specialistsCount"
+        )
+        .textContent =
+            await countRows(
+                "specialists"
+            );
+
+
+    document
+        .getElementById(
+            "clientsCount"
+        )
+        .textContent =
+            await countRows(
+                "clients"
+            );
+
+
+    document
+        .getElementById(
+            "ordersCount"
+        )
+        .textContent =
+            await countRows(
+                "orders"
+            );
+
+
+    document
+        .getElementById(
+            "requestsCount"
+        )
+        .textContent =
+            await countRows(
+                "requests"
+            );
+
+
+    document
+        .getElementById(
+            "reviewsCount"
+        )
+        .textContent =
+            await countRows(
+                "reviews"
+            );
+
+}
+
+
+/* =========================
+   ACTION BUTTONS
+========================= */
+
+function actionButtons(
+    table,
+    row
+){
+
+    const id = row.id;
+
+    if(!id){
+
+        return "";
+
+    }
+
+
+    if(
+        table === "orders" ||
+        table === "requests"
+    ){
+
+        return `
+
+        <div class="actions">
+
+            <button
+                class="btn accept"
+                onclick="
+                    changeStatus(
+                        '${table}',
+                        '${id}',
+                        'accepted'
+                    )
+                "
+            >
+                ✓ Қабул
+            </button>
+
+
+            <button
+                class="btn reject"
+                onclick="
+                    changeStatus(
+                        '${table}',
+                        '${id}',
+                        'rejected'
+                    )
+                "
+            >
+                ✕ Рад
+            </button>
+
+        </div>
+
+        `;
+
+    }
+
+
+    if(
+        table === "specialists" ||
+        table === "reviews"
+    ){
+
+        return `
+
+        <button
+            class="btn delete"
+            onclick="
+                deleteRow(
+                    '${table}',
+                    '${id}'
+                )
+            "
+        >
+            🗑️ Нест кардан
+        </button>
+
+        `;
+
+    }
+
+
+    return "";
+
+}
+
+
+/* =========================
+   LOAD TABLE
+========================= */
+
+async function loadTable(table){
+
+    const box =
+        document.getElementById(
+            table + "Table"
+        );
+
+    box.innerHTML =
+        `
+        <div class="empty">
+            Бор шуда истодааст...
+        </div>
+        `;
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from(table)
+            .select("*")
+            .limit(300);
+
+
+    if(error){
+
+        box.innerHTML =
+            `
+            <div class="empty">
+                ❌ ${esc(error.message)}
+            </div>
+            `;
+
+        return;
+
+    }
+
+
+    if(
+        !data ||
+        data.length === 0
+    ){
+
+        box.innerHTML =
+            `
+            <div class="empty">
+                Маълумот нест.
+            </div>
+            `;
+
+        return;
+
+    }
+
+
+    const columns =
+        Object.keys(
+            data[0]
+        );
+
+
+    let html =
+        `
+        <div class="table-wrap">
+
+        <table>
+
+        <thead>
+
+        <tr>
+        `;
+
+
+    columns.forEach(
+        column => {
+
+            html +=
+                `
+                <th>
+                    ${esc(column)}
+                </th>
+                `;
+
+        }
+    );
+
+
+    if(
+        [
+            "orders",
+            "requests",
+            "specialists",
+            "reviews"
+        ].includes(table)
+    ){
+
+        html +=
+            `
+            <th>
+                Амалиёт
+            </th>
+            `;
+
+    }
+
+
+    html +=
+        `
+        </tr>
+
+        </thead>
+
+        <tbody>
+        `;
+
+
+    data.forEach(
+        row => {
+
+            html +=
+                `<tr>`;
+
+
+            columns.forEach(
+                column => {
+
+                    if(
+                        column === "status"
+                    ){
+
+                        html +=
+                            `
+                            <td>
+                                ${statusHtml(
+                                    row[column]
+                                )}
+                            </td>
+                            `;
+
+                    }
+                    else{
+
+                        html +=
+                            `
+                            <td>
+                                ${esc(
+                                    row[column]
+                                )}
+                            </td>
+                            `;
+
+                    }
+
+                }
+            );
+
+
+            if(
+                [
+                    "orders",
+                    "requests",
+                    "specialists",
+                    "reviews"
+                ].includes(table)
+            ){
+
+                html +=
+                    `
+                    <td>
+                        ${actionButtons(
+                            table,
+                            row
+                        )}
+                    </td>
+                    `;
+
+            }
+
+
+            html +=
+                `</tr>`;
+
+        }
+    );
+
+
+    html +=
+        `
+        </tbody>
+
+        </table>
+
+        </div>
+        `;
+
+
+    box.innerHTML = html;
+
+}
+
+
+/* =========================
+   CHANGE STATUS
+========================= */
+
+async function changeStatus(
+    table,
+    id,
+    status
+){
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .from(table)
+            .update({
+                status:status
+            })
+            .eq(
+                "id",
+                id
+            );
+
+
+    if(error){
+
+        toast(
+            "❌ " +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    if(
+        status === "accepted"
+    ){
+
+        toast(
+            "✅ Қабул шуд"
+        );
+
+    }
+    else{
+
+        toast(
+            "❌ Рад шуд"
+        );
+
+    }
+
+
+    await loadTable(table);
+
+    await loadDashboard();
+
+}
+
+
+/* =========================
+   DELETE
+========================= */
+
+async function deleteRow(
+    table,
+    id
+){
+
+    const yes =
+        confirm(
+            "Ин маълумотро нест кунем?"
+        );
+
+    if(!yes){
+
+        return;
+
+    }
+
+
+    const {
+        error
+    } =
+        await supabaseClient
+            .from(table)
+            .delete()
+            .eq(
+                "id",
+                id
+            );
+
+
+    if(error){
+
+        toast(
+            "❌ " +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    toast(
+        "🗑️ Нест шуд"
+    );
+
+
+    await loadTable(table);
+
+    await loadDashboard();
+
+}
+
+
+/* =========================
+   NAVIGATION
+========================= */
+
+document
+    .querySelectorAll(
+        ".menu button"
+    )
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                async function(){
+
+                    const page =
+                        this.dataset.page;
+
+
+                    document
+                        .querySelectorAll(
+                            ".menu button"
+                        )
+                        .forEach(
+                            btn => {
+
+                                btn.classList
+                                    .remove(
+                                        "active"
+                                    );
+
+                            }
+                        );
+
+
+                    this.classList.add(
+                        "active"
+                    );
+
+
+                    pages.forEach(
+                        id => {
+
+                            document
+                                .getElementById(id)
+                                .classList
+                                .add("hidden");
+
+                        }
+                    );
+
+
+                    document
+                        .getElementById(page)
+                        .classList
+                        .remove("hidden");
+
+
+                    document
+                        .getElementById("title")
+                        .textContent =
+                            titles[page];
+
+
+                    if(
+                        page === "dashboard"
+                    ){
+
+                        await loadDashboard();
+
+                    }
+                    else{
+
+                        await loadTable(
+                            page
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+/* =========================
+   REFRESH
+========================= */
+
+document
+    .getElementById("refresh")
+    .addEventListener(
+        "click",
+        async function(){
+
+            const active =
+                document
+                    .querySelector(
+                        ".menu button.active"
+                    )
+                    .dataset.page;
+
+
+            if(
+                active === "dashboard"
+            ){
+
+                await loadDashboard();
+
+            }
+            else{
+
+                await loadTable(
+                    active
+                );
+
+            }
+
+            toast(
+                "↻ Нав шуд"
+            );
+
+        }
+    );
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+document
+    .getElementById("logout")
+    .addEventListener(
+        "click",
+        async function(){
+
+            await supabaseClient
+                .auth
+                .signOut();
+
+
+            document
+                .getElementById("adminBox")
+                .classList
+                .add("hidden");
+
+
+            document
+                .getElementById("loginBox")
+                .classList
+                .remove("hidden");
+
+
+            document
+                .getElementById("password")
+                .value = "";
+
+        }
+    );
+
+
+/* =========================
+   CHECK SESSION
+========================= */
+
+(async function(){
+
+    const {
+        data
+    } =
+        await supabaseClient
+            .auth
+            .getSession();
+
+
+    if(
+        data.session
+    ){
+
+        await openAdmin(
+            data.session.user
+        );
+
+    }
+
+})();
 
 </script>
 
