@@ -2,307 +2,459 @@
 <html lang="tg">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>SMM.TJ Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SMM.TJ | Admin Panel</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
 *{
+    margin:0;
+    padding:0;
     box-sizing:border-box;
 }
 
 body{
-    margin:0;
-    background:#08080d;
+    background:#07070b;
     color:#fff;
-    font-family:Arial,sans-serif;
+    font-family:Arial,Helvetica,sans-serif;
 }
 
 button{
+    font-family:inherit;
     cursor:pointer;
-    font:inherit;
 }
 
 .hidden{
     display:none!important;
 }
 
-/* LOGIN */
+
+/* ================= LOGIN ================= */
 
 .login-page{
+    width:100%;
     min-height:100vh;
+
     display:flex;
-    justify-content:center;
     align-items:center;
+    justify-content:center;
+
     padding:20px;
+
+    background:
+        radial-gradient(
+            circle at 50% 20%,
+            rgba(130,40,255,.18),
+            transparent 40%
+        ),
+        #07070b;
 }
 
 .login-box{
     width:420px;
     max-width:100%;
+
+    padding:35px;
+
     background:#111118;
-    border:1px solid #30263d;
-    border-radius:22px;
-    padding:30px;
-    box-shadow:0 30px 100px #000;
+
+    border:1px solid #2b2635;
+
+    border-radius:24px;
+
+    box-shadow:
+        0 30px 100px rgba(0,0,0,.6);
 }
 
-.logo{
-    font-size:30px;
+.login-logo{
+    font-size:32px;
     font-weight:900;
-    margin-bottom:25px;
+
+    margin-bottom:30px;
 }
 
-.logo span{
-    color:#a348ff;
+.login-logo span{
+    color:#a144ff;
 }
 
 .login-box h1{
-    margin:0 0 10px;
+    font-size:27px;
+    margin-bottom:10px;
 }
 
 .login-box p{
-    color:#858590;
+    color:#858592;
     line-height:1.5;
+
+    margin-bottom:25px;
 }
 
 label{
     display:block;
-    margin:18px 0 7px;
-    color:#aaaab5;
+
+    color:#aaa9b5;
+
+    font-size:14px;
+
+    margin:16px 0 7px;
 }
 
 input{
     width:100%;
+
     padding:14px;
-    background:#08080d;
+
+    background:#09090e;
+
     color:#fff;
+
     border:1px solid #343440;
+
     border-radius:11px;
+
     outline:none;
 }
 
 input:focus{
-    border-color:#914cff;
+    border-color:#9145ff;
 }
 
-.login-btn{
+.login-button{
     width:100%;
+
     margin-top:22px;
+
     padding:14px;
+
     border:0;
+
     border-radius:11px;
+
     color:#fff;
-    font-weight:bold;
-    background:linear-gradient(90deg,#7020e8,#ad4dff);
+
+    font-size:15px;
+
+    font-weight:700;
+
+    background:
+        linear-gradient(
+            90deg,
+            #7020e8,
+            #ad4dff
+        );
 }
 
-.error{
+.login-button:hover{
+    opacity:.9;
+}
+
+.login-error{
     color:#ff6877;
+
+    min-height:22px;
+
     margin-top:15px;
-    min-height:20px;
+
+    font-size:14px;
 }
 
-/* LAYOUT */
+
+/* ================= ADMIN ================= */
+
+.admin{
+    display:none;
+}
+
+
+/* ================= SIDEBAR ================= */
 
 .sidebar{
     position:fixed;
+
     left:0;
     top:0;
     bottom:0;
-    width:240px;
-    padding:25px 15px;
+
+    width:245px;
+
+    padding:25px 16px;
+
     background:#101017;
+
     border-right:1px solid #292934;
 }
 
 .sidebar-logo{
-    font-size:27px;
+    font-size:28px;
     font-weight:900;
+
     padding:0 10px;
-    margin-bottom:35px;
+
+    margin-bottom:38px;
 }
 
 .sidebar-logo span{
-    color:#a348ff;
+    color:#a144ff;
 }
 
 .menu{
     display:flex;
     flex-direction:column;
+
     gap:7px;
 }
 
-.menu button{
-    border:0;
-    background:transparent;
-    color:#aaa8b5;
+.menu-button{
+    width:100%;
+
     padding:14px;
+
+    border:0;
+
     border-radius:11px;
+
+    background:transparent;
+
+    color:#aaa8b5;
+
     text-align:left;
+
+    font-size:14px;
 }
 
-.menu button:hover,
-.menu button.active{
+.menu-button:hover,
+.menu-button.active{
     background:#30165a;
+
     color:#fff;
 }
 
 .logout{
     position:absolute;
-    left:15px;
-    right:15px;
+
+    left:16px;
+    right:16px;
     bottom:20px;
-    background:#32151d!important;
-    color:#ff7180!important;
+
+    background:#35151d;
+
+    color:#ff7180;
+
+    border:1px solid #52202b;
+
+    padding:13px;
+
+    border-radius:11px;
 }
+
+
+/* ================= MAIN ================= */
 
 .main{
-    margin-left:240px;
-    padding:30px;
+    margin-left:245px;
+
+    min-height:100vh;
+
+    padding:32px;
 }
 
-.top{
+.header{
     display:flex;
-    justify-content:space-between;
+
     align-items:center;
-    margin-bottom:25px;
+
+    justify-content:space-between;
+
+    gap:15px;
+
+    margin-bottom:28px;
 }
 
-.top h1{
-    margin:0;
+.header h1{
     font-size:30px;
 }
 
 .refresh{
+    padding:11px 17px;
+
     background:#171720;
+
     color:#fff;
+
     border:1px solid #343440;
-    padding:11px 16px;
+
     border-radius:10px;
 }
 
-/* STATS */
+
+/* ================= PAGES ================= */
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+
+/* ================= STATS ================= */
 
 .stats{
     display:grid;
-    grid-template-columns:repeat(5,1fr);
+
+    grid-template-columns:
+        repeat(5,minmax(0,1fr));
+
     gap:15px;
 }
 
 .stat{
     background:#111118;
-    border:1px solid #292934;
-    border-radius:16px;
-    padding:20px;
+
+    border:1px solid #292936;
+
+    border-radius:17px;
+
+    padding:21px;
 }
 
-.stat-title{
-    color:#888895;
+.stat-name{
+    color:#858592;
+
     font-size:13px;
 }
 
 .stat-number{
-    font-size:31px;
-    font-weight:800;
+    font-size:32px;
+
+    font-weight:900;
+
     margin-top:10px;
 }
 
-/* CARD */
+
+/* ================= CARD ================= */
 
 .card{
     margin-top:20px;
+
     background:#111118;
-    border:1px solid #292934;
+
+    border:1px solid #292936;
+
     border-radius:17px;
+
     overflow:hidden;
 }
 
 .card-header{
     padding:20px;
-    border-bottom:1px solid #292934;
+
+    border-bottom:1px solid #292936;
 }
 
 .card-header h2{
-    margin:0 0 5px;
+    margin-bottom:5px;
 }
 
 .card-header p{
-    margin:0;
     color:#777783;
 }
 
-/* TABLE */
+.card-body{
+    padding:25px;
+}
 
-.table{
-    overflow:auto;
+
+/* ================= TABLE ================= */
+
+.table-wrapper{
+    overflow-x:auto;
 }
 
 table{
     width:100%;
+
     border-collapse:collapse;
+
     min-width:700px;
 }
 
-th,
-td{
+th{
     padding:14px;
-    border-bottom:1px solid #25252f;
+
     text-align:left;
+
+    color:#858592;
+
+    font-size:12px;
+
+    border-bottom:1px solid #292936;
 }
 
-th{
-    color:#888894;
-    font-size:12px;
+td{
+    padding:14px;
+
+    border-bottom:1px solid #24242d;
+
+    color:#dedee6;
+
+    font-size:14px;
 }
 
 .empty{
     padding:45px;
+
     text-align:center;
+
     color:#777783;
 }
 
-/* STATUS */
+
+/* ================= STATUS ================= */
 
 .status{
     display:inline-block;
+
     padding:6px 10px;
+
     border-radius:20px;
+
+    background:#292936;
+
     font-size:12px;
 }
 
-.status-pending{
-    background:#3b300d;
-    color:#ffd75b;
-}
 
-.status-other{
-    background:#292936;
-    color:#ddd;
-}
+/* ================= MOBILE ================= */
 
-/* MOBILE */
-
-@media(max-width:800px){
+@media(max-width:900px){
 
     .sidebar{
-        width:70px;
-        padding:20px 8px;
+        width:75px;
+
+        padding:20px 9px;
     }
 
     .sidebar-logo{
         font-size:17px;
+
         text-align:center;
+
         padding:0;
     }
 
-    .menu button{
-        text-align:center;
+    .menu-button{
         font-size:0;
+
+        text-align:center;
     }
 
-    .menu button::first-letter{
+    .menu-button::first-letter{
         font-size:20px;
     }
 
@@ -312,100 +464,127 @@ th{
 
     .logout::after{
         content:"↪";
+
         font-size:20px;
     }
 
     .main{
-        margin-left:70px;
-        padding:18px;
+        margin-left:75px;
+
+        padding:20px;
     }
 
     .stats{
-        grid-template-columns:1fr 1fr;
+        grid-template-columns:
+            repeat(2,1fr);
     }
 }
 
-@media(max-width:520px){
+
+@media(max-width:550px){
+
+    .main{
+        padding:14px;
+    }
 
     .stats{
         grid-template-columns:1fr;
     }
 
-    .top{
-        align-items:flex-start;
+    .header{
         flex-direction:column;
+
+        align-items:flex-start;
     }
+
 }
+
 </style>
 </head>
+
 
 <body>
 
 
-<!-- =========================
-     LOGIN
-========================= -->
+<!-- =====================================================
+LOGIN
+===================================================== -->
 
-<div id="loginPage" class="login-page">
+<div
+    id="loginPage"
+    class="login-page"
+>
 
     <div class="login-box">
 
-        <div class="logo">
+        <div class="login-logo">
             SMM<span>.TJ</span>
         </div>
 
-        <h1>🔐 Admin Panel</h1>
+        <h1>
+            🔐 Admin Panel
+        </h1>
 
         <p>
-            Барои ворид шудан ба панели
-            идоракунӣ email ва пароли Admin-ро ворид кунед.
+            Ба панели идоракунии SMM.TJ
+            ворид шавед.
         </p>
 
-        <form id="loginForm">
 
-            <label>Email</label>
+        <label>
+            Email
+        </label>
 
-            <input
-                id="email"
-                type="email"
-                value="manuchekhrbekhbudov@gmail.com"
-                required
-            >
+        <input
+            id="adminEmailInput"
+            type="email"
+            value="manuchekhrbekhbudov@gmail.com"
+            autocomplete="username"
+        >
 
-            <label>Парол</label>
 
-            <input
-                id="password"
-                type="password"
-                required
-            >
+        <label>
+            Парол
+        </label>
 
-            <button
-                id="loginButton"
-                class="login-btn"
-                type="submit"
-            >
-                Даромадан
-            </button>
+        <input
+            id="adminPasswordInput"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Пароли Admin"
+        >
 
-            <div
-                id="loginError"
-                class="error"
-            ></div>
 
-        </form>
+        <button
+            id="loginButton"
+            class="login-button"
+        >
+            Даромадан
+        </button>
+
+
+        <div
+            id="loginError"
+            class="login-error"
+        ></div>
 
     </div>
 
 </div>
 
 
-<!-- =========================
-     ADMIN
-========================= -->
 
-<div id="adminPage" class="hidden">
+<!-- =====================================================
+ADMIN
+===================================================== -->
 
+<div
+    id="admin"
+    class="admin"
+>
+
+
+<!-- SIDEBAR -->
 
 <aside class="sidebar">
 
@@ -413,349 +592,411 @@ th{
         SMM<span>.TJ</span>
     </div>
 
+
     <nav class="menu">
 
+
         <button
-            class="active"
+            class="menu-button active"
             data-page="dashboard"
         >
             📊 Dashboard
         </button>
 
+
         <button
+            class="menu-button"
             data-page="specialists"
         >
             👤 Мутахассисон
         </button>
 
+
         <button
+            class="menu-button"
             data-page="clients"
         >
             👥 Мизоҷон
         </button>
 
+
         <button
+            class="menu-button"
             data-page="orders"
         >
             📦 Заказҳо
         </button>
 
+
         <button
+            class="menu-button"
             data-page="requests"
         >
             📩 Дархостҳо
         </button>
 
+
         <button
+            class="menu-button"
             data-page="reviews"
         >
             ⭐ Отзывҳо
         </button>
 
+
     </nav>
 
+
     <button
-        id="logout"
+        id="logoutButton"
         class="logout"
     >
-        Баромадан
+        🚪 Баромадан
     </button>
 
 </aside>
 
 
+
+<!-- MAIN -->
+
 <main class="main">
 
-    <div class="top">
 
-        <div>
+<div class="header">
 
-            <h1 id="pageTitle">
-                Dashboard
-            </h1>
+    <div>
 
-            <div
-                id="adminEmail"
-                style="color:#777783;margin-top:5px"
-            ></div>
-
-        </div>
-
-        <button
-            id="refresh"
-            class="refresh"
-        >
-            ↻ Навсозӣ
-        </button>
+        <h1 id="pageTitle">
+            Dashboard
+        </h1>
 
     </div>
 
 
-    <!-- DASHBOARD -->
-
-    <section
-        id="dashboard"
+    <button
+        id="refreshButton"
+        class="refresh"
     >
+        🔄 Навсозӣ
+    </button>
 
-        <div class="stats">
-
-            <div class="stat">
-
-                <div class="stat-title">
-                    👤 Мутахассисон
-                </div>
-
-                <div
-                    id="countSpecialists"
-                    class="stat-number"
-                >
-                    0
-                </div>
-
-            </div>
+</div>
 
 
-            <div class="stat">
 
-                <div class="stat-title">
-                    👥 Мизоҷон
-                </div>
+<!-- =====================================================
+DASHBOARD
+===================================================== -->
 
-                <div
-                    id="countClients"
-                    class="stat-number"
-                >
-                    0
-                </div>
-
-            </div>
+<section
+    id="dashboard"
+    class="page active"
+>
 
 
-            <div class="stat">
-
-                <div class="stat-title">
-                    📦 Заказҳо
-                </div>
-
-                <div
-                    id="countOrders"
-                    class="stat-number"
-                >
-                    0
-                </div>
-
-            </div>
+<div class="stats">
 
 
-            <div class="stat">
+    <div class="stat">
 
-                <div class="stat-title">
-                    📩 Дархостҳо
-                </div>
-
-                <div
-                    id="countRequests"
-                    class="stat-number"
-                >
-                    0
-                </div>
-
-            </div>
-
-
-            <div class="stat">
-
-                <div class="stat-title">
-                    ⭐ Отзывҳо
-                </div>
-
-                <div
-                    id="countReviews"
-                    class="stat-number"
-                >
-                    0
-                </div>
-
-            </div>
-
+        <div class="stat-name">
+            👤 Мутахассисон
         </div>
 
-
-        <div class="card">
-
-            <div class="card-header">
-
-                <h2>
-                    Хуш омадед 👋
-                </h2>
-
-                <p>
-                    Admin Panel-и SMM.TJ
-                </p>
-
-            </div>
-
-            <div class="empty">
-
-                Ҳамаи маълумот аз Supabase гирифта мешавад.
-
-            </div>
-
+        <div
+            id="specialistsCount"
+            class="stat-number"
+        >
+            0
         </div>
 
-    </section>
+    </div>
 
 
-    <!-- SPECIALISTS -->
+    <div class="stat">
 
-    <section
-        id="specialists"
-        class="hidden"
-    >
-
-        <div class="card">
-
-            <div class="card-header">
-
-                <h2>
-                    👤 Мутахассисон
-                </h2>
-
-            </div>
-
-            <div
-                id="specialistsTable"
-                class="table"
-            ></div>
-
+        <div class="stat-name">
+            👥 Мизоҷон
         </div>
 
-    </section>
-
-
-    <!-- CLIENTS -->
-
-    <section
-        id="clients"
-        class="hidden"
-    >
-
-        <div class="card">
-
-            <div class="card-header">
-
-                <h2>
-                    👥 Мизоҷон
-                </h2>
-
-            </div>
-
-            <div
-                id="clientsTable"
-                class="table"
-            ></div>
-
+        <div
+            id="clientsCount"
+            class="stat-number"
+        >
+            0
         </div>
 
-    </section>
+    </div>
 
 
-    <!-- ORDERS -->
+    <div class="stat">
 
-    <section
-        id="orders"
-        class="hidden"
-    >
-
-        <div class="card">
-
-            <div class="card-header">
-
-                <h2>
-                    📦 Заказҳо
-                </h2>
-
-            </div>
-
-            <div
-                id="ordersTable"
-                class="table"
-            ></div>
-
+        <div class="stat-name">
+            📦 Заказҳо
         </div>
 
-    </section>
-
-
-    <!-- REQUESTS -->
-
-    <section
-        id="requests"
-        class="hidden"
-    >
-
-        <div class="card">
-
-            <div class="card-header">
-
-                <h2>
-                    📩 Дархостҳо
-                </h2>
-
-            </div>
-
-            <div
-                id="requestsTable"
-                class="table"
-            ></div>
-
+        <div
+            id="ordersCount"
+            class="stat-number"
+        >
+            0
         </div>
 
-    </section>
+    </div>
 
 
-    <!-- REVIEWS -->
+    <div class="stat">
 
-    <section
-        id="reviews"
-        class="hidden"
-    >
-
-        <div class="card">
-
-            <div class="card-header">
-
-                <h2>
-                    ⭐ Отзывҳо
-                </h2>
-
-            </div>
-
-            <div
-                id="reviewsTable"
-                class="table"
-            ></div>
-
+        <div class="stat-name">
+            📩 Дархостҳо
         </div>
 
-    </section>
+        <div
+            id="requestsCount"
+            class="stat-number"
+        >
+            0
+        </div>
+
+    </div>
+
+
+    <div class="stat">
+
+        <div class="stat-name">
+            ⭐ Отзывҳо
+        </div>
+
+        <div
+            id="reviewsCount"
+            class="stat-number"
+        >
+            0
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<div class="card">
+
+    <div class="card-header">
+
+        <h2>
+            Хуш омадед 👋
+        </h2>
+
+        <p>
+            SMM.TJ Admin Panel
+        </p>
+
+    </div>
+
+
+    <div class="card-body">
+
+        Панели идоракунӣ омода аст. ✅
+
+    </div>
+
+</div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+SPECIALISTS
+===================================================== -->
+
+<section
+    id="specialists"
+    class="page"
+>
+
+<div class="card">
+
+<div class="card-header">
+
+<h2>
+👤 Мутахассисон
+</h2>
+
+<p>
+Маълумоти мутахассисон аз Supabase
+</p>
+
+</div>
+
+<div
+    id="specialistsContent"
+    class="table-wrapper"
+></div>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+CLIENTS
+===================================================== -->
+
+<section
+    id="clients"
+    class="page"
+>
+
+<div class="card">
+
+<div class="card-header">
+
+<h2>
+👥 Мизоҷон
+</h2>
+
+<p>
+Маълумоти мизоҷон аз Supabase
+</p>
+
+</div>
+
+<div
+    id="clientsContent"
+    class="table-wrapper"
+></div>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+ORDERS
+===================================================== -->
+
+<section
+    id="orders"
+    class="page"
+>
+
+<div class="card">
+
+<div class="card-header">
+
+<h2>
+📦 Заказҳо
+</h2>
+
+<p>
+Заказҳои SMM.TJ
+</p>
+
+</div>
+
+<div
+    id="ordersContent"
+    class="table-wrapper"
+></div>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+REQUESTS
+===================================================== -->
+
+<section
+    id="requests"
+    class="page"
+>
+
+<div class="card">
+
+<div class="card-header">
+
+<h2>
+📩 Дархостҳо
+</h2>
+
+<p>
+Дархостҳои корбарон
+</p>
+
+</div>
+
+<div
+    id="requestsContent"
+    class="table-wrapper"
+></div>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+REVIEWS
+===================================================== -->
+
+<section
+    id="reviews"
+    class="page"
+>
+
+<div class="card">
+
+<div class="card-header">
+
+<h2>
+⭐ Отзывҳо
+</h2>
+
+<p>
+Отзывҳои корбарон
+</p>
+
+</div>
+
+<div
+    id="reviewsContent"
+    class="table-wrapper"
+></div>
+
+</div>
+
+</section>
+
 
 </main>
 
 </div>
 
 
+
 <script>
 
-/* =========================
-   SUPABASE
-========================= */
+/* =====================================================
+SUPABASE
+===================================================== */
 
 const SUPABASE_URL =
 "https://lcldaingzicxbottlznq.supabase.co";
 
+
 const SUPABASE_KEY =
 "sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
+
 
 const supabaseClient =
 window.supabase.createClient(
@@ -764,9 +1005,9 @@ window.supabase.createClient(
 );
 
 
-/* =========================
-   HELPERS
-========================= */
+/* =====================================================
+HELPER
+===================================================== */
 
 function escapeHTML(value){
 
@@ -789,90 +1030,55 @@ function escapeHTML(value){
 }
 
 
-function showError(message){
-
-    document
-        .getElementById("loginError")
-        .textContent = message;
-
-}
-
-
-function showAdmin(){
-
-    document
-        .getElementById("loginPage")
-        .classList
-        .add("hidden");
-
-    document
-        .getElementById("adminPage")
-        .classList
-        .remove("hidden");
-
-}
-
-
-/* =========================
-   CHECK ADMIN
-========================= */
-
-async function checkAdmin(user){
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
-            .from("admin_users")
-            .select("user_id")
-            .eq(
-                "user_id",
-                user.id
-            )
-            .maybeSingle();
-
-
-    if(error){
-
-        throw error;
-
-    }
-
-
-    return !!data;
-
-}
-
-
-/* =========================
-   LOGIN
-========================= */
+/* =====================================================
+LOGIN
+===================================================== */
 
 document
-    .getElementById("loginForm")
+    .getElementById("loginButton")
     .addEventListener(
-        "submit",
-        async function(event){
-
-            event.preventDefault();
-
-            showError(
-                "Санҷида истодаем..."
-            );
-
+        "click",
+        async function(){
 
             const email =
                 document
-                    .getElementById("email")
+                    .getElementById(
+                        "adminEmailInput"
+                    )
                     .value
                     .trim();
 
 
             const password =
                 document
-                    .getElementById("password")
+                    .getElementById(
+                        "adminPasswordInput"
+                    )
                     .value;
+
+
+            const errorBox =
+                document
+                    .getElementById(
+                        "loginError"
+                    );
+
+
+            errorBox.textContent =
+                "Санҷида истодаем...";
+
+
+            if(
+                !email ||
+                !password
+            ){
+
+                errorBox.textContent =
+                    "Email ва паролро пур кунед.";
+
+                return;
+
+            }
 
 
             const {
@@ -892,67 +1098,85 @@ document
 
             if(error){
 
-                showError(
-                    error.message
-                );
+                errorBox.textContent =
+                    error.message;
 
                 return;
 
             }
 
 
-            try{
+            /* ADMIN USERS CHECK */
 
-                const admin =
-                    await checkAdmin(
-                        data.user
-                    );
-
-
-                if(!admin){
-
-                    await supabaseClient
-                        .auth
-                        .signOut();
-
-                    showError(
-                        "Ин аккаунт Admin нест."
-                    );
-
-                    return;
-
-                }
+            const {
+                data:admin,
+                error:adminError
+            } =
+                await supabaseClient
+                    .from("admin_users")
+                    .select("*")
+                    .eq(
+                        "user_id",
+                        data.user.id
+                    )
+                    .maybeSingle();
 
 
-                document
-                    .getElementById("adminEmail")
-                    .textContent =
-                        data.user.email;
+            if(adminError){
 
+                await supabaseClient
+                    .auth
+                    .signOut();
 
-                showAdmin();
-
-                await loadDashboard();
-
-            }
-            catch(error){
-
-                showError(
+                errorBox.textContent =
                     "Admin санҷида нашуд: " +
-                    error.message
-                );
+                    adminError.message;
+
+                return;
 
             }
+
+
+            if(!admin){
+
+                await supabaseClient
+                    .auth
+                    .signOut();
+
+                errorBox.textContent =
+                    "Ин аккаунт Admin нест.";
+
+                return;
+
+            }
+
+
+            errorBox.textContent = "";
+
+
+            document
+                .getElementById("loginPage")
+                .style
+                .display = "none";
+
+
+            document
+                .getElementById("admin")
+                .style
+                .display = "block";
+
+
+            await loadDashboard();
 
         }
     );
 
 
-/* =========================
-   DASHBOARD
-========================= */
+/* =====================================================
+DASHBOARD
+===================================================== */
 
-async function countRows(table){
+async function getCount(table){
 
     const {
         count,
@@ -971,7 +1195,7 @@ async function countRows(table){
 
     if(error){
 
-        console.error(
+        console.log(
             table,
             error
         );
@@ -989,64 +1213,73 @@ async function countRows(table){
 async function loadDashboard(){
 
     document
-        .getElementById("countSpecialists")
+        .getElementById(
+            "specialistsCount"
+        )
         .textContent =
-            await countRows(
+            await getCount(
                 "specialists"
             );
 
 
     document
-        .getElementById("countClients")
+        .getElementById(
+            "clientsCount"
+        )
         .textContent =
-            await countRows(
+            await getCount(
                 "clients"
             );
 
 
     document
-        .getElementById("countOrders")
+        .getElementById(
+            "ordersCount"
+        )
         .textContent =
-            await countRows(
+            await getCount(
                 "orders"
             );
 
 
     document
-        .getElementById("countRequests")
+        .getElementById(
+            "requestsCount"
+        )
         .textContent =
-            await countRows(
+            await getCount(
                 "requests"
             );
 
 
     document
-        .getElementById("countReviews")
+        .getElementById(
+            "reviewsCount"
+        )
         .textContent =
-            await countRows(
+            await getCount(
                 "reviews"
             );
 
 }
 
 
-/* =========================
-   TABLE LOADER
-========================= */
+/* =====================================================
+LOAD TABLE
+===================================================== */
 
 async function loadTable(table){
 
-    const box =
-        document
-            .getElementById(
-                table + "Table"
-            );
+    const container =
+        document.getElementById(
+            table + "Content"
+        );
 
 
-    box.innerHTML =
+    container.innerHTML =
         `
         <div class="empty">
-            Бор шуда истодааст...
+            ⏳ Бор шуда истодааст...
         </div>
         `;
 
@@ -1063,12 +1296,16 @@ async function loadTable(table){
 
     if(error){
 
-        box.innerHTML =
+        container.innerHTML =
             `
             <div class="empty">
-                ❌ ${escapeHTML(
+
+                ❌ Хато:
+
+                ${escapeHTML(
                     error.message
                 )}
+
             </div>
             `;
 
@@ -1082,10 +1319,10 @@ async function loadTable(table){
         data.length === 0
     ){
 
-        box.innerHTML =
+        container.innerHTML =
             `
             <div class="empty">
-                Маълумот нест.
+                Ҳоло маълумот нест.
             </div>
             `;
 
@@ -1154,35 +1391,17 @@ async function loadTable(table){
                         column === "status"
                     ){
 
-                        const status =
-                            String(
-                                value || "pending"
-                            );
-
-
                         html +=
                             `
                             <td>
 
-                            <span
-                                class="
-                                status
-                                ${
-                                    status ===
-                                    "pending"
-                                    ?
-                                    "status-pending"
-                                    :
-                                    "status-other"
-                                }
-                                "
-                            >
-
-                            ${escapeHTML(
-                                status
-                            )}
-
-                            </span>
+                                <span
+                                    class="status"
+                                >
+                                    ${escapeHTML(
+                                        value
+                                    )}
+                                </span>
 
                             </td>
                             `;
@@ -1220,19 +1439,19 @@ async function loadTable(table){
         `;
 
 
-    box.innerHTML =
+    container.innerHTML =
         html;
 
 }
 
 
-/* =========================
-   NAVIGATION
-========================= */
+/* =====================================================
+NAVIGATION
+===================================================== */
 
 document
     .querySelectorAll(
-        ".menu button"
+        ".menu-button"
     )
     .forEach(
         button => {
@@ -1247,12 +1466,12 @@ document
 
                     document
                         .querySelectorAll(
-                            ".menu button"
+                            ".menu-button"
                         )
                         .forEach(
-                            btn => {
+                            item => {
 
-                                btn.classList
+                                item.classList
                                     .remove(
                                         "active"
                                     );
@@ -1266,34 +1485,32 @@ document
                     );
 
 
-                    [
-                        "dashboard",
-                        "specialists",
-                        "clients",
-                        "orders",
-                        "requests",
-                        "reviews"
-                    ]
-                    .forEach(
-                        id => {
+                    document
+                        .querySelectorAll(
+                            ".page"
+                        )
+                        .forEach(
+                            item => {
 
-                            document
-                                .getElementById(id)
-                                .classList
-                                .add("hidden");
+                                item.classList
+                                    .remove(
+                                        "active"
+                                    );
 
-                        }
-                    );
+                            }
+                        );
 
 
                     document
                         .getElementById(page)
                         .classList
-                        .remove("hidden");
+                        .add("active");
 
 
                     document
-                        .getElementById("pageTitle")
+                        .getElementById(
+                            "pageTitle"
+                        )
                         .textContent =
                             {
 
@@ -1341,12 +1558,14 @@ document
     );
 
 
-/* =========================
-   REFRESH
-========================= */
+/* =====================================================
+REFRESH
+===================================================== */
 
 document
-    .getElementById("refresh")
+    .getElementById(
+        "refreshButton"
+    )
     .addEventListener(
         "click",
         async function(){
@@ -1354,9 +1573,10 @@ document
             const active =
                 document
                     .querySelector(
-                        ".menu button.active"
+                        ".menu-button.active"
                     )
-                    .dataset.page;
+                    .dataset
+                    .page;
 
 
             if(
@@ -1379,12 +1599,14 @@ document
     );
 
 
-/* =========================
-   LOGOUT
-========================= */
+/* =====================================================
+LOGOUT
+===================================================== */
 
 document
-    .getElementById("logout")
+    .getElementById(
+        "logoutButton"
+    )
     .addEventListener(
         "click",
         async function(){
@@ -1395,28 +1617,34 @@ document
 
 
             document
-                .getElementById("adminPage")
-                .classList
-                .add("hidden");
+                .getElementById(
+                    "admin"
+                )
+                .style
+                .display = "none";
 
 
             document
-                .getElementById("loginPage")
-                .classList
-                .remove("hidden");
+                .getElementById(
+                    "loginPage"
+                )
+                .style
+                .display = "flex";
 
 
             document
-                .getElementById("password")
+                .getElementById(
+                    "adminPasswordInput"
+                )
                 .value = "";
 
         }
     );
 
 
-/* =========================
-   EXISTING SESSION
-========================= */
+/* =====================================================
+SESSION
+===================================================== */
 
 (async function(){
 
@@ -1432,31 +1660,38 @@ document
         data.session
     ){
 
-        try{
-
-            if(
-                await checkAdmin(
-                    data.session.user
+        const admin =
+            await supabaseClient
+                .from("admin_users")
+                .select("*")
+                .eq(
+                    "user_id",
+                    data.session.user.id
                 )
-            ){
+                .maybeSingle();
 
-                document
-                    .getElementById("adminEmail")
-                    .textContent =
-                        data.session.user.email;
 
-                showAdmin();
+        if(
+            admin.data
+        ){
 
-                await loadDashboard();
+            document
+                .getElementById(
+                    "loginPage"
+                )
+                .style
+                .display = "none";
 
-            }
 
-        }
-        catch(error){
+            document
+                .getElementById(
+                    "admin"
+                )
+                .style
+                .display = "block";
 
-            console.error(
-                error
-            );
+
+            await loadDashboard();
 
         }
 
@@ -1465,6 +1700,643 @@ document
 })();
 
 </script>
+<script>
+const SUPABASE_URL =
+"https://lcldaingzicxbottlznq.supabase.co";
 
+const SUPABASE_KEY =
+"sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
+
+const supabaseClient =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+/* =========================
+   HTML SECURITY
+========================= */
+
+function esc(value){
+
+    if(value === null || value === undefined){
+        return "—";
+    }
+
+    return String(value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+function showStatus(status){
+
+    if(!status){
+        return `<span class="status">pending</span>`;
+    }
+
+    return `
+        <span class="status">
+            ${esc(status)}
+        </span>
+    `;
+}
+
+
+/* =========================
+   CHANGE REQUEST STATUS
+========================= */
+
+async function changeRequestStatus(id,newStatus){
+
+    const answer = confirm(
+        newStatus === "approved"
+        ? "Ин дархостро қабул мекунӣ?"
+        : "Ин дархостро рад мекунӣ?"
+    );
+
+    if(!answer){
+        return;
+    }
+
+    const { error } =
+        await supabaseClient
+            .from("requests")
+            .update({
+                status:newStatus
+            })
+            .eq("id",id);
+
+    if(error){
+
+        alert(
+            "ХАТО:\n" +
+            error.message
+        );
+
+        return;
+    }
+
+    alert(
+        newStatus === "approved"
+        ? "✅ Дархост қабул шуд"
+        : "❌ Дархост рад шуд"
+    );
+
+    loadRequests();
+}
+
+
+/* =========================
+   LOAD REQUESTS
+========================= */
+
+async function loadRequests(){
+
+    const box =
+        document.getElementById(
+            "requestsContent"
+        );
+
+    box.innerHTML =
+        `
+        <div class="empty">
+            ⏳ Бор шуда истодааст...
+        </div>
+        `;
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("requests")
+            .select("*")
+            .order(
+                "created_at",
+                {
+                    ascending:false
+                }
+            );
+
+
+    if(error){
+
+        box.innerHTML =
+            `
+            <div class="empty">
+                ❌ ${esc(error.message)}
+            </div>
+            `;
+
+        return;
+    }
+
+
+    if(!data || data.length === 0){
+
+        box.innerHTML =
+            `
+            <div class="empty">
+                📭 Ҳоло дархост нест.
+            </div>
+            `;
+
+        return;
+    }
+
+
+    const columns =
+        Object.keys(data[0]);
+
+
+    let html =
+        `
+        <table>
+
+        <thead>
+
+        <tr>
+        `;
+
+
+    columns.forEach(column => {
+
+        html += `
+            <th>
+                ${esc(column)}
+            </th>
+        `;
+
+    });
+
+
+    html += `
+        <th>
+            Амал
+        </th>
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+    `;
+
+
+    data.forEach(row => {
+
+        html += `<tr>`;
+
+
+        columns.forEach(column => {
+
+            if(column === "status"){
+
+                html += `
+                    <td>
+                        ${showStatus(
+                            row[column]
+                        )}
+                    </td>
+                `;
+
+            }else{
+
+                html += `
+                    <td>
+                        ${esc(
+                            row[column]
+                        )}
+                    </td>
+                `;
+
+            }
+
+        });
+
+
+        const status =
+            String(
+                row.status || "pending"
+            ).toLowerCase();
+
+
+        html += `
+            <td>
+
+                <div class="actions">
+
+                    ${
+                        status === "pending"
+                        ?
+                        `
+                        <button
+                            class="accept"
+                            onclick="
+                                changeRequestStatus(
+                                    '${row.id}',
+                                    'approved'
+                                )
+                            "
+                        >
+                            ✅ Қабул
+                        </button>
+
+                        <button
+                            class="reject"
+                            onclick="
+                                changeRequestStatus(
+                                    '${row.id}',
+                                    'rejected'
+                                )
+                            "
+                        >
+                            ❌ Рад
+                        </button>
+                        `
+                        :
+                        `
+                        <span class="status">
+                            ${esc(status)}
+                        </span>
+                        `
+                    }
+
+                </div>
+
+            </td>
+        `;
+
+
+        html += `</tr>`;
+
+    });
+
+
+    html += `
+        </tbody>
+
+        </table>
+    `;
+
+
+    box.innerHTML = html;
+}
+
+
+/* =========================
+   CHANGE ORDER STATUS
+========================= */
+
+async function changeOrderStatus(id,newStatus){
+
+    const answer = confirm(
+        newStatus === "approved"
+        ? "Ин заказро қабул мекунӣ?"
+        : "Ин заказро рад мекунӣ?"
+    );
+
+    if(!answer){
+        return;
+    }
+
+
+    const { error } =
+        await supabaseClient
+            .from("orders")
+            .update({
+                status:newStatus
+            })
+            .eq("id",id);
+
+
+    if(error){
+
+        alert(
+            "ХАТО:\n" +
+            error.message
+        );
+
+        return;
+    }
+
+
+    alert(
+        newStatus === "approved"
+        ? "✅ Заказ қабул шуд"
+        : "❌ Заказ рад шуд"
+    );
+
+
+    loadOrders();
+}
+
+
+/* =========================
+   LOAD ORDERS
+========================= */
+
+async function loadOrders(){
+
+    const box =
+        document.getElementById(
+            "ordersContent"
+        );
+
+
+    box.innerHTML =
+        `
+        <div class="empty">
+            ⏳ Бор шуда истодааст...
+        </div>
+        `;
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("orders")
+            .select("*")
+            .order(
+                "created_at",
+                {
+                    ascending:false
+                }
+            );
+
+
+    if(error){
+
+        box.innerHTML =
+            `
+            <div class="empty">
+                ❌ ${esc(error.message)}
+            </div>
+            `;
+
+        return;
+    }
+
+
+    if(!data || data.length === 0){
+
+        box.innerHTML =
+            `
+            <div class="empty">
+                📭 Заказ нест.
+            </div>
+            `;
+
+        return;
+    }
+
+
+    const columns =
+        Object.keys(data[0]);
+
+
+    let html =
+        `
+        <table>
+
+        <thead>
+
+        <tr>
+        `;
+
+
+    columns.forEach(column => {
+
+        html += `
+            <th>
+                ${esc(column)}
+            </th>
+        `;
+
+    });
+
+
+    html += `
+        <th>
+            Амал
+        </th>
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+    `;
+
+
+    data.forEach(row => {
+
+        html += `<tr>`;
+
+
+        columns.forEach(column => {
+
+            if(column === "status"){
+
+                html += `
+                    <td>
+                        ${showStatus(
+                            row[column]
+                        )}
+                    </td>
+                `;
+
+            }else{
+
+                html += `
+                    <td>
+                        ${esc(
+                            row[column]
+                        )}
+                    </td>
+                `;
+
+            }
+
+        });
+
+
+        const status =
+            String(
+                row.status || "pending"
+            ).toLowerCase();
+
+
+        html += `
+            <td>
+
+                <div class="actions">
+
+                    ${
+                        status === "pending"
+                        ?
+                        `
+                        <button
+                            class="accept"
+                            onclick="
+                                changeOrderStatus(
+                                    '${row.id}',
+                                    'approved'
+                                )
+                            "
+                        >
+                            ✅ Қабул
+                        </button>
+
+                        <button
+                            class="reject"
+                            onclick="
+                                changeOrderStatus(
+                                    '${row.id}',
+                                    'rejected'
+                                )
+                            "
+                        >
+                            ❌ Рад
+                        </button>
+                        `
+                        :
+                        `
+                        <span class="status">
+                            ${esc(status)}
+                        </span>
+                        `
+                    }
+
+                </div>
+
+            </td>
+        `;
+
+
+        html += `</tr>`;
+
+    });
+
+
+    html += `
+        </tbody>
+
+        </table>
+    `;
+
+
+    box.innerHTML = html;
+}
+
+
+/* =========================
+   NAVIGATION
+========================= */
+
+document
+.querySelectorAll(".menu-button")
+.forEach(button => {
+
+    button.addEventListener(
+        "click",
+        async function(){
+
+            const page =
+                this.dataset.page;
+
+
+            document
+            .querySelectorAll(
+                ".menu-button"
+            )
+            .forEach(btn =>
+                btn.classList.remove(
+                    "active"
+                )
+            );
+
+
+            this.classList.add(
+                "active"
+            );
+
+
+            document
+            .querySelectorAll(
+                ".page"
+            )
+            .forEach(page =>
+                page.classList.remove(
+                    "active"
+                )
+            );
+
+
+            document
+            .getElementById(page)
+            .classList.add(
+                "active"
+            );
+
+
+            document
+            .getElementById(
+                "pageTitle"
+            )
+            .textContent =
+                {
+                    dashboard:"Dashboard",
+                    specialists:"Мутахассисон",
+                    clients:"Мизоҷон",
+                    orders:"Заказҳо",
+                    requests:"Дархостҳо",
+                    reviews:"Отзывҳо"
+                }[page];
+
+
+            if(page === "dashboard"){
+
+                await loadDashboard();
+
+            }
+
+            else if(page === "requests"){
+
+                await loadRequests();
+
+            }
+
+            else if(page === "orders"){
+
+                await loadOrders();
+
+            }
+
+            else{
+
+                await loadTable(
+                    page
+                );
+
+            }
+
+        }
+    );
+
+});
+</script>
 </body>
 </html>
