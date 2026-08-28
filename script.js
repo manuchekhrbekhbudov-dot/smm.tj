@@ -1,54 +1,88 @@
 "use strict";
 
 /* =========================================================
-   ELEMENTS
+   SUPABASE
 ========================================================= */
 
-const searchForm = document.getElementById("searchForm");
-const searchInput = document.getElementById("searchInput");
-const specialistsGrid = document.getElementById("specialistsGrid");
+const SUPABASE_URL =
+    "https://lcldaingzicxbottlznq.supabase.co";
 
-const notificationBtn = document.getElementById("notificationBtn");
-const notificationPanel = document.getElementById("notificationPanel");
+const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
 
-const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-const mainNav = document.getElementById("mainNav");
-
-const loginForm = document.getElementById("loginForm");
-const registerForm = document.getElementById("registerForm");
-const orderForm = document.getElementById("orderForm");
-
-const chatWidget = document.getElementById("chatWidget");
-const floatingChat = document.getElementById("floatingChat");
-const chatForm = document.getElementById("chatForm");
-const chatInput = document.getElementById("chatInput");
-const chatMessages = document.getElementById("chatMessages");
-
-const accountTypeInput = document.getElementById("accountType");
-const accountTypeButtons = document.querySelectorAll(".account-type");
-
-const sortSelect = document.getElementById("sortSelect");
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+    );
 
 
 /* =========================================================
-   REAL DATA
+   ELEMENTS
 ========================================================= */
 
-/*
-    Ҳоло платформа нав аст.
-    Барои ҳамин маълумоти сохта вуҷуд надорад.
+const searchForm =
+    document.getElementById("searchForm");
 
-    Баъдтар ҳамин массив аз Backend/API гирифта мешавад:
+const searchInput =
+    document.getElementById("searchInput");
 
-    GET /api/specialists
+const specialistsGrid =
+    document.getElementById("specialistsGrid");
 
-    Масалан:
+const notificationBtn =
+    document.getElementById("notificationBtn");
 
-    const specialists = await fetch("/api/specialists")
-        .then(response => response.json());
-*/
+const notificationPanel =
+    document.getElementById("notificationPanel");
+
+const mobileMenuBtn =
+    document.getElementById("mobileMenuBtn");
+
+const mainNav =
+    document.getElementById("mainNav");
+
+const loginForm =
+    document.getElementById("loginForm");
+
+const registerForm =
+    document.getElementById("registerForm");
+
+const orderForm =
+    document.getElementById("orderForm");
+
+const chatWidget =
+    document.getElementById("chatWidget");
+
+const floatingChat =
+    document.getElementById("floatingChat");
+
+const chatForm =
+    document.getElementById("chatForm");
+
+const chatInput =
+    document.getElementById("chatInput");
+
+const chatMessages =
+    document.getElementById("chatMessages");
+
+const accountTypeInput =
+    document.getElementById("accountType");
+
+const accountTypeButtons =
+    document.querySelectorAll(".account-type");
+
+const sortSelect =
+    document.getElementById("sortSelect");
+
+
+/* =========================================================
+   DATA
+========================================================= */
 
 let specialists = [];
+
+let currentUser = null;
 
 
 /* =========================================================
@@ -57,96 +91,781 @@ let specialists = [];
 
 function openModal(modalId) {
 
-    const modal = document.getElementById(modalId);
+    const modal =
+        document.getElementById(modalId);
 
-    if (!modal) {
-        return;
-    }
+    if (!modal) return;
 
     modal.classList.add("active");
 
-    document.body.classList.add("modal-open");
-
-    modal.setAttribute("aria-hidden", "false");
-
-    const firstInput = modal.querySelector(
-        "input:not([type='hidden']), textarea, select, button"
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
     );
 
-    if (firstInput) {
-        setTimeout(() => {
-            firstInput.focus();
-        }, 100);
-    }
+    document.body.classList.add(
+        "modal-open"
+    );
+
 }
+
+window.openModal =
+    openModal;
 
 
 function closeModal(modalId) {
 
-    const modal = document.getElementById(modalId);
+    const modal =
+        document.getElementById(modalId);
 
-    if (!modal) {
-        return;
-    }
+    if (!modal) return;
 
     modal.classList.remove("active");
 
-    modal.setAttribute("aria-hidden", "true");
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
 
-    const activeModal = document.querySelector(".modal.active");
+    if (
+        !document.querySelector(
+            ".modal.active"
+        )
+    ) {
 
-    if (!activeModal) {
-        document.body.classList.remove("modal-open");
+        document.body.classList.remove(
+            "modal-open"
+        );
+
     }
+
 }
 
+window.closeModal =
+    closeModal;
 
-function switchModal(currentModal, nextModal) {
+
+function switchModal(
+    currentModal,
+    nextModal
+) {
 
     closeModal(currentModal);
 
     setTimeout(() => {
+
         openModal(nextModal);
-    }, 100);
+
+    }, 150);
+
+}
+
+window.switchModal =
+    switchModal;
+
+
+/* =========================================================
+   MODAL BACKDROP
+========================================================= */
+
+document
+    .querySelectorAll(".modal")
+    .forEach(modal => {
+
+        modal.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target === modal
+                ) {
+
+                    closeModal(
+                        modal.id
+                    );
+
+                }
+
+            }
+        );
+
+    });
+
+
+/* =========================================================
+   ESC
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (event.key !== "Escape") {
+            return;
+        }
+
+        const activeModal =
+            document.querySelector(
+                ".modal.active"
+            );
+
+        if (activeModal) {
+
+            closeModal(
+                activeModal.id
+            );
+
+        }
+
+        closeNotifications();
+
+    }
+);
+
+
+/* =========================================================
+   ACCOUNT TYPE
+========================================================= */
+
+accountTypeButtons.forEach(
+    button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                accountTypeButtons.forEach(
+                    item => {
+
+                        item.classList.remove(
+                            "active"
+                        );
+
+                    }
+                );
+
+                button.classList.add(
+                    "active"
+                );
+
+                const type =
+                    button.dataset.accountType ||
+                    "smm";
+
+                if (accountTypeInput) {
+
+                    accountTypeInput.value =
+                        type;
+
+                }
+
+            }
+        );
+
+    }
+);
+
+
+/* =========================================================
+   AUTH — CURRENT USER
+========================================================= */
+
+async function loadCurrentUser() {
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.auth.getUser();
+
+        if (error) {
+
+            currentUser = null;
+
+            return null;
+
+        }
+
+        currentUser =
+            data?.user || null;
+
+        return currentUser;
+
+    } catch (error) {
+
+        console.error(
+            "GET USER ERROR:",
+            error
+        );
+
+        currentUser = null;
+
+        return null;
+
+    }
+
 }
 
 
 /* =========================================================
-   CLOSE MODAL BY BACKDROP
+   AUTH STATE
 ========================================================= */
 
-document.querySelectorAll(".modal").forEach(modal => {
+supabaseClient.auth.onAuthStateChange(
+    (_event, session) => {
 
-    modal.addEventListener("click", event => {
+        currentUser =
+            session?.user || null;
 
-        if (event.target === modal) {
-            closeModal(modal.id);
-        }
+        updateAuthUI();
 
-    });
-
-});
+    }
+);
 
 
 /* =========================================================
-   ESC KEY
+   AUTH UI
 ========================================================= */
 
-document.addEventListener("keydown", event => {
+function updateAuthUI() {
 
-    if (event.key !== "Escape") {
+    const headerActions =
+        document.querySelector(
+            ".header-actions"
+        );
+
+    if (!headerActions) return;
+
+
+    const oldBox =
+        document.getElementById(
+            "userAuthBox"
+        );
+
+    if (oldBox) {
+        oldBox.remove();
+    }
+
+
+    if (!currentUser) {
         return;
     }
 
-    const activeModal = document.querySelector(".modal.active");
 
-    if (activeModal) {
-        closeModal(activeModal.id);
+    const box =
+        document.createElement(
+            "div"
+        );
+
+    box.id =
+        "userAuthBox";
+
+    box.style.display =
+        "flex";
+
+    box.style.alignItems =
+        "center";
+
+    box.style.gap =
+        "8px";
+
+
+    box.innerHTML = `
+
+        <span
+            style="
+                max-width:160px;
+                overflow:hidden;
+                text-overflow:ellipsis;
+                white-space:nowrap;
+                font-size:13px;
+                font-weight:600;
+            "
+        >
+            ${escapeHTML(
+                currentUser.email || "User"
+            )}
+        </span>
+
+        <button
+            type="button"
+            class="btn btn-outline"
+            id="logoutButton"
+        >
+            Баромадан
+        </button>
+
+    `;
+
+
+    const mobileButton =
+        headerActions.querySelector(
+            ".mobile-menu-btn"
+        );
+
+
+    if (mobileButton) {
+
+        headerActions.insertBefore(
+            box,
+            mobileButton
+        );
+
+    } else {
+
+        headerActions.appendChild(
+            box
+        );
+
     }
 
-    closeNotifications();
 
-});
+    document
+        .getElementById(
+            "logoutButton"
+        )
+        ?.addEventListener(
+            "click",
+            logoutUser
+        );
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+async function logoutUser() {
+
+    try {
+
+        const {
+            error
+        } =
+            await supabaseClient.auth.signOut();
+
+        if (error) {
+            throw error;
+        }
+
+        currentUser = null;
+
+        updateAuthUI();
+
+        showToast(
+            "✅ Шумо аз аккаунт баромадед.",
+            "success"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "LOGOUT ERROR:",
+            error
+        );
+
+        showToast(
+            "❌ Баромадан иҷро нашуд.",
+            "error"
+        );
+
+    }
+
+}
+
+window.logoutUser =
+    logoutUser;
+
+
+/* =========================================================
+   REGISTER
+========================================================= */
+
+if (registerForm) {
+
+    registerForm.addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+
+            const submitButton =
+                registerForm.querySelector(
+                    "button[type='submit']"
+                );
+
+
+            const originalText =
+                submitButton
+                    ? submitButton.textContent
+                    : "Создани аккаунт";
+
+
+            const formData =
+                new FormData(
+                    registerForm
+                );
+
+
+            const name =
+                String(
+                    formData.get("name") || ""
+                ).trim();
+
+
+            const email =
+                String(
+                    formData.get("email") || ""
+                ).trim();
+
+
+            const password =
+                String(
+                    formData.get("password") || ""
+                );
+
+
+            const accountType =
+                String(
+                    formData.get(
+                        "accountType"
+                    ) || "smm"
+                );
+
+
+            if (!name) {
+
+                showToast(
+                    "Номро ворид кунед.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+
+            if (!email) {
+
+                showToast(
+                    "Email-ро ворид кунед.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+
+            if (password.length < 8) {
+
+                showToast(
+                    "Парол бояд ҳадди ақал 8 аломат бошад.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+
+            setButtonLoading(
+                submitButton,
+                "Сабт шуда истодааст..."
+            );
+
+
+            try {
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient.auth.signUp({
+
+                        email:
+                            email,
+
+                        password:
+                            password,
+
+                        options: {
+
+                            data: {
+
+                                name:
+                                    name,
+
+                                account_type:
+                                    accountType
+
+                            }
+
+                        }
+
+                    });
+
+
+                if (error) {
+                    throw error;
+                }
+
+
+                registerForm.reset();
+
+                closeModal(
+                    "registerModal"
+                );
+
+
+                if (data?.session) {
+
+                    showToast(
+                        "✅ Аккаунт сохта шуд!",
+                        "success"
+                    );
+
+                } else {
+
+                    showToast(
+                        "✅ Аккаунт сохта шуд. Email-ро тасдиқ кунед.",
+                        "success"
+                    );
+
+                }
+
+
+                await loadCurrentUser();
+
+                updateAuthUI();
+
+
+            } catch (error) {
+
+                console.error(
+                    "REGISTER ERROR:",
+                    error
+                );
+
+
+                showToast(
+                    "❌ " +
+                    (
+                        error?.message ||
+                        "Регистрация иҷро нашуд."
+                    ),
+                    "error"
+                );
+
+
+            } finally {
+
+                setButtonLoading(
+                    submitButton,
+                    originalText
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+if (loginForm) {
+
+    loginForm.addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+
+            const submitButton =
+                loginForm.querySelector(
+                    "button[type='submit']"
+                );
+
+
+            const originalText =
+                submitButton
+                    ? submitButton.textContent
+                    : "Даромадан";
+
+
+            const formData =
+                new FormData(
+                    loginForm
+                );
+
+
+            const email =
+                String(
+                    formData.get("email") || ""
+                ).trim();
+
+
+            const password =
+                String(
+                    formData.get("password") || ""
+                );
+
+
+            if (!email || !password) {
+
+                showToast(
+                    "Email ва паролро пур кунед.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+
+            setButtonLoading(
+                submitButton,
+                "Даромада истодааст..."
+            );
+
+
+            try {
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient.auth
+                        .signInWithPassword({
+
+                            email:
+                                email,
+
+                            password:
+                                password
+
+                        });
+
+
+                if (error) {
+                    throw error;
+                }
+
+
+                currentUser =
+                    data?.user || null;
+
+
+                loginForm.reset();
+
+                closeModal(
+                    "loginModal"
+                );
+
+                updateAuthUI();
+
+
+                showToast(
+                    "✅ Хуш омадед!",
+                    "success"
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "LOGIN ERROR:",
+                    error
+                );
+
+
+                showToast(
+                    "❌ " +
+                    (
+                        error?.message ||
+                        "Email ё парол нодуруст аст."
+                    ),
+                    "error"
+                );
+
+
+            } finally {
+
+                setButtonLoading(
+                    submitButton,
+                    originalText
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   LOAD SPECIALISTS
+========================================================= */
+
+async function loadSpecialists() {
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from("specialists")
+                .select("*")
+                .order(
+                    "rating",
+                    {
+                        ascending: false
+                    }
+                );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        specialists =
+            Array.isArray(data)
+                ? data
+                : [];
+
+
+        renderSpecialists(
+            specialists
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "SPECIALISTS ERROR:",
+            error
+        );
+
+        specialists = [];
+
+        renderSpecialists([]);
+
+    }
+
+}
 
 
 /* =========================================================
@@ -155,60 +874,86 @@ document.addEventListener("keydown", event => {
 
 if (searchForm) {
 
-    searchForm.addEventListener("submit", event => {
+    searchForm.addEventListener(
+        "submit",
+        event => {
 
-        event.preventDefault();
+            event.preventDefault();
 
-        searchSpecialists();
+            searchSpecialists();
 
-    });
+        }
+    );
 
 }
 
 
 function searchSpecialists() {
 
-    const query = searchInput
-        ? searchInput.value.trim().toLowerCase()
-        : "";
+    const query =
+        searchInput
+            ? searchInput.value
+                .trim()
+                .toLowerCase()
+            : "";
+
 
     if (!query) {
 
-        renderSpecialists([]);
+        renderSpecialists(
+            specialists
+        );
 
         scrollToSpecialists();
 
         return;
+
     }
 
 
-    const filtered = specialists.filter(specialist => {
+    const filtered =
+        specialists.filter(
+            specialist => {
 
-        const name =
-            String(specialist.name || "").toLowerCase();
+                const name =
+                    String(
+                        specialist.name || ""
+                    ).toLowerCase();
 
-        const city =
-            String(specialist.city || "").toLowerCase();
 
-        const category =
-            String(specialist.category || "").toLowerCase();
+                const city =
+                    String(
+                        specialist.city || ""
+                    ).toLowerCase();
 
-        const services =
-            Array.isArray(specialist.services)
-                ? specialist.services.join(" ").toLowerCase()
-                : "";
 
-        return (
-            name.includes(query) ||
-            city.includes(query) ||
-            category.includes(query) ||
-            services.includes(query)
+                const category =
+                    String(
+                        specialist.category || ""
+                    ).toLowerCase();
+
+
+                const service =
+                    String(
+                        specialist.service || ""
+                    ).toLowerCase();
+
+
+                return (
+                    name.includes(query) ||
+                    city.includes(query) ||
+                    category.includes(query) ||
+                    service.includes(query)
+                );
+
+            }
         );
 
-    });
 
+    renderSpecialists(
+        filtered
+    );
 
-    renderSpecialists(filtered);
 
     scrollToSpecialists();
 
@@ -216,34 +961,59 @@ function searchSpecialists() {
 
 
 /* =========================================================
-   CATEGORY FILTER
+   FILTER CATEGORY
 ========================================================= */
 
-function filterCategory(category) {
+function filterCategory(
+    category
+) {
 
-    if (!category) {
-        return;
-    }
+    if (!category) return;
 
 
-    const filtered = specialists.filter(specialist => {
+    const value =
+        String(category)
+            .trim()
+            .toLowerCase();
 
-        return String(specialist.category || "")
-            .toLowerCase() === category.toLowerCase();
 
-    });
+    const filtered =
+        specialists.filter(
+            specialist => {
+
+                return (
+                    String(
+                        specialist.category ||
+                        specialist.service ||
+                        ""
+                    )
+                    .toLowerCase() ===
+                    value
+                );
+
+            }
+        );
 
 
     if (searchInput) {
-        searchInput.value = category;
+
+        searchInput.value =
+            category;
+
     }
 
 
-    renderSpecialists(filtered);
+    renderSpecialists(
+        filtered
+    );
+
 
     scrollToSpecialists();
 
 }
+
+window.filterCategory =
+    filterCategory;
 
 
 /* =========================================================
@@ -252,62 +1022,74 @@ function filterCategory(category) {
 
 if (sortSelect) {
 
-    sortSelect.addEventListener("change", () => {
-
-        sortSpecialists();
-
-    });
+    sortSelect.addEventListener(
+        "change",
+        sortSpecialists
+    );
 
 }
 
 
 function sortSpecialists() {
 
-    const type = sortSelect
-        ? sortSelect.value
-        : "rating";
+    const type =
+        sortSelect
+            ? sortSelect.value
+            : "rating";
 
 
-    const sorted = [...specialists];
+    const sorted =
+        [...specialists];
 
 
     if (type === "rating") {
 
-        sorted.sort((a, b) => {
-
-            return Number(b.rating || 0) -
-                Number(a.rating || 0);
-
-        });
+        sorted.sort(
+            (a, b) =>
+                Number(
+                    b.rating || 0
+                ) -
+                Number(
+                    a.rating || 0
+                )
+        );
 
     }
 
 
     if (type === "reviews") {
 
-        sorted.sort((a, b) => {
-
-            return Number(b.reviews || 0) -
-                Number(a.reviews || 0);
-
-        });
+        sorted.sort(
+            (a, b) =>
+                Number(
+                    b.reviews || 0
+                ) -
+                Number(
+                    a.reviews || 0
+                )
+        );
 
     }
 
 
     if (type === "experience") {
 
-        sorted.sort((a, b) => {
-
-            return Number(b.experience || 0) -
-                Number(a.experience || 0);
-
-        });
+        sorted.sort(
+            (a, b) =>
+                Number(
+                    b.experience || 0
+                ) -
+                Number(
+                    a.experience || 0
+                )
+        );
 
     }
 
 
-    renderSpecialists(sorted);
+    renderSpecialists(
+        sorted
+    );
 
 }
 
@@ -316,21 +1098,22 @@ function sortSpecialists() {
    RENDER SPECIALISTS
 ========================================================= */
 
-function renderSpecialists(data) {
+function renderSpecialists(
+    data
+) {
 
     if (!specialistsGrid) {
         return;
     }
 
 
-    /*
-        Дар версияи ҳозира data аз backend намеояд.
-        Аз ин рӯ ҳеҷ profile-и сохта нишон дода намешавад.
-    */
-
-    if (!Array.isArray(data) || data.length === 0) {
+    if (
+        !Array.isArray(data) ||
+        data.length === 0
+    ) {
 
         specialistsGrid.innerHTML = `
+
             <div class="empty-state">
 
                 <div class="empty-state-icon">
@@ -342,8 +1125,8 @@ function renderSpecialists(data) {
                 </h3>
 
                 <p>
-                    SMM.TJ нав оғоз шудааст.
-                    Шумо метавонед аввалин мутахассис бошед.
+                    Мутахассисони аввалини
+                    SMM.TJ метавонанд профили худро созанд.
                 </p>
 
                 <button
@@ -355,17 +1138,20 @@ function renderSpecialists(data) {
                 </button>
 
             </div>
+
         `;
 
         return;
+
     }
 
 
-    specialistsGrid.innerHTML = data.map(specialist => {
-
-        return createSpecialistCard(specialist);
-
-    }).join("");
+    specialistsGrid.innerHTML =
+        data
+            .map(
+                createSpecialistCard
+            )
+            .join("");
 
 }
 
@@ -374,70 +1160,70 @@ function renderSpecialists(data) {
    SPECIALIST CARD
 ========================================================= */
 
-function createSpecialistCard(specialist) {
+function createSpecialistCard(
+    specialist
+) {
 
-    const name = escapeHTML(
-        specialist.name || "Мутахассис"
-    );
-
-    const city = escapeHTML(
-        specialist.city || "—"
-    );
-
-    const category = escapeHTML(
-        specialist.category || "SMM"
-    );
-
-    const experience = Number(
-        specialist.experience || 0
-    );
-
-    const rating = Number(
-        specialist.rating || 0
-    );
-
-    const reviews = Number(
-        specialist.reviews || 0
-    );
-
-    const price = escapeHTML(
-        specialist.price || "—"
-    );
-
-    const initial = escapeHTML(
-        String(specialist.name || "М").charAt(0).toUpperCase()
-    );
+    const name =
+        escapeHTML(
+            specialist.name ||
+            "Мутахассис"
+        );
 
 
-    const verified = specialist.verified
-        ? `
-            <span class="verified">
-                ✓ Verified
-            </span>
-        `
-        : "";
+    const city =
+        escapeHTML(
+            specialist.city ||
+            "Тоҷикистон"
+        );
 
 
-    const services = Array.isArray(specialist.services)
-        ? specialist.services
-        : [];
+    const category =
+        escapeHTML(
+            specialist.category ||
+            specialist.service ||
+            "SMM"
+        );
 
 
-    const serviceHTML = services
-        .slice(0, 4)
-        .map(service => {
+    const experience =
+        Number(
+            specialist.experience || 0
+        );
 
-            return `
-                <span class="service-tag">
-                    ${escapeHTML(service)}
-                </span>
-            `;
 
-        })
-        .join("");
+    const rating =
+        Number(
+            specialist.rating || 0
+        );
+
+
+    const reviews =
+        Number(
+            specialist.reviews || 0
+        );
+
+
+    const price =
+        escapeHTML(
+            specialist.price ||
+            "Нарх мувофиқа мешавад"
+        );
+
+
+    const initial =
+        escapeHTML(
+            String(
+                specialist.name ||
+                "М"
+            )
+            .charAt(0)
+            .toUpperCase()
+        );
 
 
     return `
+
         <article class="specialist-card">
 
             <div class="specialist-top">
@@ -450,7 +1236,6 @@ function createSpecialistCard(specialist) {
 
                     <h3>
                         ${name}
-                        ${verified}
                     </h3>
 
                     <div class="specialist-location">
@@ -469,7 +1254,11 @@ function createSpecialistCard(specialist) {
                 </span>
 
                 <strong>
-                    ${rating > 0 ? rating.toFixed(1) : "—"}
+                    ${
+                        rating > 0
+                            ? rating.toFixed(1)
+                            : "—"
+                    }
                 </strong>
 
                 <span>
@@ -485,26 +1274,30 @@ function createSpecialistCard(specialist) {
                     ${category}
                 </span>
 
-                ${serviceHTML}
-
             </div>
 
 
             <p class="specialist-experience">
+
                 Таҷриба:
+
                 <strong>
                     ${experience} сол
                 </strong>
+
             </p>
 
 
             <div class="specialist-bottom">
 
                 <div class="price">
+
                     ${price}
+
                     <small>
                         / моҳ
                     </small>
+
                 </div>
 
                 <button
@@ -520,6 +1313,7 @@ function createSpecialistCard(specialist) {
             </div>
 
         </article>
+
     `;
 
 }
@@ -529,21 +1323,44 @@ function createSpecialistCard(specialist) {
    STARS
 ========================================================= */
 
-function createStars(rating) {
+function createStars(
+    rating
+) {
 
-    const numericRating = Number(rating);
+    const value =
+        Number(rating);
 
-    if (!numericRating || numericRating <= 0) {
+
+    if (
+        !value ||
+        value <= 0
+    ) {
+
         return "☆☆☆☆☆";
+
     }
 
 
-    const rounded = Math.round(numericRating);
+    const rounded =
+        Math.round(value);
 
-    return "★".repeat(
-        Math.min(5, Math.max(0, rounded))
-    ) + "☆".repeat(
-        Math.max(0, 5 - rounded)
+
+    return (
+        "★".repeat(
+            Math.min(
+                5,
+                Math.max(
+                    0,
+                    rounded
+                )
+            )
+        ) +
+        "☆".repeat(
+            Math.max(
+                0,
+                5 - rounded
+            )
+        )
     );
 
 }
@@ -553,286 +1370,342 @@ function createStars(rating) {
    SPECIALIST PROFILE
 ========================================================= */
 
-function openSpecialistProfile(id) {
+function openSpecialistProfile(
+    id
+) {
 
-    if (!id) {
-        return;
-    }
-
-
-    const specialist = specialists.find(
-        item => String(item.id) === String(id)
-    );
+    const specialist =
+        specialists.find(
+            item =>
+                String(item.id) ===
+                String(id)
+        );
 
 
     if (!specialist) {
+
+        showToast(
+            "Мутахассис пайдо нашуд.",
+            "error"
+        );
+
         return;
+
     }
 
 
-    /*
-        Баъдтар ин ҷо:
+    const old =
+        document.getElementById(
+            "specialistProfileModal"
+        );
 
-        window.location.href =
-            `/specialist/${specialist.id}`;
 
-        мешавад.
+    if (old) {
+        old.remove();
+    }
 
-        Ҳоло profile-и алоҳида ҳанӯз сохта нашудааст.
-    */
 
-    console.log(
-        "Specialist profile:",
-        specialist
+    const name =
+        escapeHTML(
+            specialist.name ||
+            "Мутахассис"
+        );
+
+
+    const city =
+        escapeHTML(
+            specialist.city ||
+            "Тоҷикистон"
+        );
+
+
+    const category =
+        escapeHTML(
+            specialist.category ||
+            specialist.service ||
+            "SMM"
+        );
+
+
+    const rating =
+        Number(
+            specialist.rating || 0
+        );
+
+
+    const experience =
+        Number(
+            specialist.experience || 0
+        );
+
+
+    const modal =
+        document.createElement(
+            "div"
+        );
+
+
+    modal.id =
+        "specialistProfileModal";
+
+    modal.className =
+        "modal active";
+
+
+    modal.innerHTML = `
+
+        <div class="modal-box">
+
+            <button
+                type="button"
+                class="modal-close"
+                id="specialistClose"
+            >
+                ×
+            </button>
+
+            <div class="specialist-avatar">
+                ${escapeHTML(
+                    name.charAt(0)
+                )}
+            </div>
+
+            <h2>
+                ${name}
+            </h2>
+
+            <p>
+                📍 ${city}
+            </p>
+
+            <p>
+                💼 ${category}
+            </p>
+
+            <p>
+                ⭐ ${
+                    rating > 0
+                        ? rating.toFixed(1)
+                        : "—"
+                }
+            </p>
+
+            <p>
+                📈 Таҷриба:
+                ${experience} сол
+            </p>
+
+            <button
+                type="button"
+                class="btn btn-primary full-width"
+                id="specialistOrder"
+            >
+                Заказ додан
+            </button>
+
+        </div>
+
+    `;
+
+
+    document.body.appendChild(
+        modal
     );
 
-}
 
-
-/* =========================================================
-   REGISTER ACCOUNT TYPE
-========================================================= */
-
-accountTypeButtons.forEach(button => {
-
-    button.addEventListener("click", () => {
-
-        accountTypeButtons.forEach(item => {
-
-            item.classList.remove("active");
-
-        });
-
-
-        button.classList.add("active");
-
-
-        const selectedType =
-            button.dataset.accountType || "smm";
-
-
-        if (accountTypeInput) {
-
-            accountTypeInput.value =
-                selectedType;
-
-        }
-
-    });
-
-});
-
-
-/* =========================================================
-   LOGIN
-========================================================= */
-
-if (loginForm) {
-
-    loginForm.addEventListener("submit", async event => {
-
-        event.preventDefault();
-
-
-        const submitButton =
-            loginForm.querySelector(
-                "button[type='submit']"
-            );
-
-
-        const originalText =
-            submitButton
-                ? submitButton.textContent
-                : "";
-
-
-        setButtonLoading(
-            submitButton,
-            "Даромада истодааст..."
+    document
+        .getElementById(
+            "specialistClose"
+        )
+        ?.addEventListener(
+            "click",
+            () => modal.remove()
         );
 
 
-        /*
-            Дар production:
+    document
+        .getElementById(
+            "specialistOrder"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
 
-            const response = await fetch(
-                "/api/auth/login",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(...)
-                }
-            );
-        */
+                modal.remove();
 
+                openModal(
+                    "orderModal"
+                );
 
-        await wait(600);
-
-
-        setButtonLoading(
-            submitButton,
-            originalText
+            }
         );
-
-
-        closeModal("loginModal");
-
-
-        showToast(
-            "Backend ҳоло пайваст нашудааст.",
-            "info"
-        );
-
-    });
 
 }
 
 
-/* =========================================================
-   REGISTER
-========================================================= */
-
-if (registerForm) {
-
-    registerForm.addEventListener("submit", async event => {
-
-        event.preventDefault();
-
-
-        const submitButton =
-            registerForm.querySelector(
-                "button[type='submit']"
-            );
-
-
-        const originalText =
-            submitButton
-                ? submitButton.textContent
-                : "";
-
-
-        const formData =
-            new FormData(registerForm);
-
-
-        const accountType =
-            formData.get("accountType");
-
-
-        if (
-            accountType !== "smm" &&
-            accountType !== "business"
-        ) {
-
-            showToast(
-                "Навъи аккаунтро интихоб кунед.",
-                "error"
-            );
-
-            return;
-        }
-
-
-        setButtonLoading(
-            submitButton,
-            "Сохта истодааст..."
-        );
-
-
-        /*
-            Production API:
-
-            POST /api/auth/register
-        */
-
-
-        await wait(700);
-
-
-        setButtonLoading(
-            submitButton,
-            originalText
-        );
-
-
-        closeModal("registerModal");
-
-
-        showToast(
-            "Регистрация баъд аз пайваст шудани backend фаъол мешавад.",
-            "info"
-        );
-
-    });
-
-}
+window.openSpecialistProfile =
+    openSpecialistProfile;
 
 
 /* =========================================================
-   ORDER
+   ORDER — SUPABASE
 ========================================================= */
 
 if (orderForm) {
 
-    orderForm.addEventListener("submit", async event => {
+    orderForm.addEventListener(
+        "submit",
+        async event => {
 
-        event.preventDefault();
+            event.preventDefault();
 
 
-        const submitButton =
-            orderForm.querySelector(
-                "button[type='submit']"
+            if (!currentUser) {
+
+                closeModal(
+                    "orderModal"
+                );
+
+                openModal(
+                    "loginModal"
+                );
+
+                showToast(
+                    "Аввал ба аккаунт дароед.",
+                    "info"
+                );
+
+                return;
+
+            }
+
+
+            const submitButton =
+                orderForm.querySelector(
+                    "button[type='submit']"
+                );
+
+
+            const originalText =
+                submitButton
+                    ? submitButton.textContent
+                    : "Заказро сохтан";
+
+
+            const formData =
+                new FormData(
+                    orderForm
+                );
+
+
+            const payload = {
+
+                client_id:
+                    currentUser.id,
+
+                business_category:
+                    formData.get(
+                        "businessCategory"
+                    ),
+
+                service:
+                    formData.get(
+                        "service"
+                    ),
+
+                budget:
+                    formData.get(
+                        "budget"
+                    ) || null,
+
+                deadline:
+                    formData.get(
+                        "deadline"
+                    ) || null,
+
+                instagram:
+                    formData.get(
+                        "instagram"
+                    ) || null,
+
+                website:
+                    formData.get(
+                        "website"
+                    ) || null,
+
+                description:
+                    formData.get(
+                        "description"
+                    )
+
+            };
+
+
+            setButtonLoading(
+                submitButton,
+                "Сабт шуда истодааст..."
             );
 
 
-        const originalText =
-            submitButton
-                ? submitButton.textContent
-                : "";
+            try {
+
+                const {
+                    error
+                } =
+                    await supabaseClient
+                        .from("orders")
+                        .insert(
+                            payload
+                        );
 
 
-        setButtonLoading(
-            submitButton,
-            "Ирсол шуда истодааст..."
-        );
+                if (error) {
+                    throw error;
+                }
 
 
-        /*
-            Production:
+                orderForm.reset();
 
-            POST /api/orders
-
-            Бо:
-            - businessCategory
-            - service
-            - budget
-            - deadline
-            - instagram
-            - website
-            - description
-        */
+                closeModal(
+                    "orderModal"
+                );
 
 
-        await wait(700);
+                showToast(
+                    "✅ Заказ бомуваффақият сабт шуд!",
+                    "success"
+                );
 
 
-        setButtonLoading(
-            submitButton,
-            originalText
-        );
+            } catch (error) {
+
+                console.error(
+                    "ORDER ERROR:",
+                    error
+                );
 
 
-        closeModal("orderModal");
+                showToast(
+                    "❌ Заказ сабт нашуд: " +
+                    (
+                        error?.message ||
+                        "хатои database"
+                    ),
+                    "error"
+                );
 
 
-        showToast(
-            "Заказ баъд аз пайваст шудани backend сохта мешавад.",
-            "info"
-        );
+            } finally {
 
-    });
+                setButtonLoading(
+                    submitButton,
+                    originalText
+                );
+
+            }
+
+        }
+    );
 
 }
 
@@ -843,13 +1716,16 @@ if (orderForm) {
 
 if (notificationBtn) {
 
-    notificationBtn.addEventListener("click", event => {
+    notificationBtn.addEventListener(
+        "click",
+        event => {
 
-        event.stopPropagation();
+            event.stopPropagation();
 
-        toggleNotifications();
+            toggleNotifications();
 
-    });
+        }
+    );
 
 }
 
@@ -861,11 +1737,15 @@ function toggleNotifications() {
     }
 
 
-    notificationPanel.classList.toggle("active");
+    notificationPanel.classList.toggle(
+        "active"
+    );
 
 
     const isOpen =
-        notificationPanel.classList.contains("active");
+        notificationPanel.classList.contains(
+            "active"
+        );
 
 
     notificationPanel.setAttribute(
@@ -875,6 +1755,9 @@ function toggleNotifications() {
 
 }
 
+window.toggleNotifications =
+    toggleNotifications;
+
 
 function closeNotifications() {
 
@@ -883,7 +1766,10 @@ function closeNotifications() {
     }
 
 
-    notificationPanel.classList.remove("active");
+    notificationPanel.classList.remove(
+        "active"
+    );
+
 
     notificationPanel.setAttribute(
         "aria-hidden",
@@ -892,24 +1778,8 @@ function closeNotifications() {
 
 }
 
-
-document.addEventListener("click", event => {
-
-    if (!notificationPanel) {
-        return;
-    }
-
-
-    if (
-        !notificationPanel.contains(event.target) &&
-        !notificationBtn?.contains(event.target)
-    ) {
-
-        closeNotifications();
-
-    }
-
-});
+window.closeNotifications =
+    closeNotifications;
 
 
 /* =========================================================
@@ -923,11 +1793,10 @@ function toggleChat() {
     }
 
 
-    chatWidget.classList.toggle("active");
-
-
     const isOpen =
-        chatWidget.classList.contains("active");
+        chatWidget.classList.toggle(
+            "active"
+        );
 
 
     chatWidget.setAttribute(
@@ -939,42 +1808,53 @@ function toggleChat() {
     if (floatingChat) {
 
         floatingChat.style.display =
-            isOpen ? "none" : "grid";
+            isOpen
+                ? "none"
+                : "grid";
 
     }
 
 
-    if (isOpen && chatInput) {
+    if (
+        isOpen &&
+        chatInput
+    ) {
 
-        setTimeout(() => {
-            chatInput.focus();
-        }, 100);
+        setTimeout(
+            () => chatInput.focus(),
+            100
+        );
 
     }
 
 }
 
+window.toggleChat =
+    toggleChat;
 
-/* =========================================================
-   CHAT SEND
-========================================================= */
 
 if (chatForm) {
 
-    chatForm.addEventListener("submit", event => {
+    chatForm.addEventListener(
+        "submit",
+        event => {
 
-        event.preventDefault();
+            event.preventDefault();
 
-        sendMessage();
+            sendMessage();
 
-    });
+        }
+    );
 
 }
 
 
 function sendMessage() {
 
-    if (!chatInput || !chatMessages) {
+    if (
+        !chatInput ||
+        !chatMessages
+    ) {
         return;
     }
 
@@ -988,60 +1868,57 @@ function sendMessage() {
     }
 
 
-    const emptyMessage =
+    const empty =
         chatMessages.querySelector(
             ".chat-empty"
         );
 
 
-    if (emptyMessage) {
-        emptyMessage.remove();
+    if (empty) {
+        empty.remove();
     }
 
 
     const message =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
     message.className =
         "message sent";
 
 
-    const textNode =
-        document.createTextNode(text);
+    message.textContent =
+        text;
 
 
     const time =
-        document.createElement("small");
+        document.createElement(
+            "small"
+        );
 
 
     time.textContent =
         "ҳозир";
 
 
-    message.appendChild(textNode);
-
-    message.appendChild(time);
-
-
-    chatMessages.appendChild(message);
+    message.appendChild(
+        time
+    );
 
 
-    chatInput.value = "";
+    chatMessages.appendChild(
+        message
+    );
+
+
+    chatInput.value =
+        "";
 
 
     chatMessages.scrollTop =
         chatMessages.scrollHeight;
-
-
-    /*
-        Production:
-
-        POST /api/messages
-
-        WebSocket / Socket.IO
-        барои real-time chat.
-    */
 
 }
 
@@ -1052,45 +1929,59 @@ function sendMessage() {
 
 if (mobileMenuBtn) {
 
-    mobileMenuBtn.addEventListener("click", () => {
+    mobileMenuBtn.addEventListener(
+        "click",
+        () => {
 
-        const isOpen =
-            mainNav?.classList.toggle("mobile-open");
+            if (!mainNav) {
+                return;
+            }
 
 
-        mobileMenuBtn.setAttribute(
-            "aria-expanded",
-            String(Boolean(isOpen))
-        );
+            const isOpen =
+                mainNav.classList.toggle(
+                    "mobile-open"
+                );
 
-    });
+
+            mobileMenuBtn.setAttribute(
+                "aria-expanded",
+                String(isOpen)
+            );
+
+        }
+    );
 
 }
 
 
 if (mainNav) {
 
-    mainNav.querySelectorAll("a").forEach(link => {
+    mainNav
+        .querySelectorAll("a")
+        .forEach(link => {
 
-        link.addEventListener("click", () => {
+            link.addEventListener(
+                "click",
+                () => {
 
-            mainNav.classList.remove(
-                "mobile-open"
+                    mainNav.classList.remove(
+                        "mobile-open"
+                    );
+
+                    if (mobileMenuBtn) {
+
+                        mobileMenuBtn.setAttribute(
+                            "aria-expanded",
+                            "false"
+                        );
+
+                    }
+
+                }
             );
 
-
-            if (mobileMenuBtn) {
-
-                mobileMenuBtn.setAttribute(
-                    "aria-expanded",
-                    "false"
-                );
-
-            }
-
         });
-
-    });
 
 }
 
@@ -1099,16 +1990,24 @@ if (mainNav) {
    TOAST
 ========================================================= */
 
-function showToast(message, type = "info") {
+function showToast(
+    message,
+    type = "info"
+) {
 
     let container =
-        document.getElementById("toastContainer");
+        document.getElementById(
+            "toastContainer"
+        );
 
 
     if (!container) {
 
         container =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
+
 
         container.id =
             "toastContainer";
@@ -1124,7 +2023,7 @@ function showToast(message, type = "info") {
             "20px";
 
         container.style.zIndex =
-            "5000";
+            "99999";
 
         container.style.display =
             "flex";
@@ -1144,7 +2043,9 @@ function showToast(message, type = "info") {
 
 
     const toast =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
     toast.textContent =
@@ -1152,36 +2053,28 @@ function showToast(message, type = "info") {
 
 
     toast.style.padding =
-        "13px 16px";
+        "14px 18px";
 
     toast.style.borderRadius =
-        "12px";
+        "14px";
 
     toast.style.background =
-        "#111827";
+        "#4f46e5";
 
     toast.style.color =
-        "#ffffff";
+        "#fff";
 
     toast.style.fontSize =
-        "13px";
+        "14px";
 
     toast.style.fontWeight =
         "600";
 
     toast.style.maxWidth =
-        "340px";
+        "360px";
 
     toast.style.boxShadow =
-        "0 15px 40px rgba(0,0,0,.15)";
-
-
-    if (type === "error") {
-
-        toast.style.background =
-            "#dc2626";
-
-    }
+        "0 15px 40px rgba(0,0,0,.2)";
 
 
     if (type === "success") {
@@ -1192,23 +2085,42 @@ function showToast(message, type = "info") {
     }
 
 
-    container.appendChild(toast);
+    if (type === "error") {
+
+        toast.style.background =
+            "#dc2626";
+
+    }
 
 
-    setTimeout(() => {
+    container.appendChild(
+        toast
+    );
 
-        toast.remove();
 
-    }, 3500);
+    setTimeout(
+        () => {
+
+            toast.remove();
+
+        },
+        4000
+    );
 
 }
+
+window.showToast =
+    showToast;
 
 
 /* =========================================================
    BUTTON LOADING
 ========================================================= */
 
-function setButtonLoading(button, text) {
+function setButtonLoading(
+    button,
+    text
+) {
 
     if (!button) {
         return;
@@ -1220,11 +2132,15 @@ function setButtonLoading(button, text) {
 
 
     button.disabled =
-        text.includes("...");
+        text.includes(
+            "истодааст"
+        );
 
 
     button.style.opacity =
-        button.disabled ? "0.7" : "1";
+        button.disabled
+            ? "0.7"
+            : "1";
 
 }
 
@@ -1247,8 +2163,11 @@ function scrollToSpecialists() {
 
 
     section.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
+        behavior:
+            "smooth",
+
+        block:
+            "start"
     });
 
 }
@@ -1258,171 +2177,86 @@ function scrollToSpecialists() {
    HELPERS
 ========================================================= */
 
-function wait(milliseconds) {
+function escapeHTML(
+    value
+) {
 
-    return new Promise(resolve => {
-
-        setTimeout(
-            resolve,
-            milliseconds
+    return String(value)
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
         );
 
-    });
-
 }
 
 
-function escapeHTML(value) {
+function escapeAttribute(
+    value
+) {
 
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-
-}
-
-
-function escapeAttribute(value) {
-
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;");
+    return escapeHTML(
+        value
+    );
 
 }
 
 
 /* =========================================================
-   INITIALIZATION
+   START
 ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
 
-    /*
-        Дар launch-и аввал:
-        маълумоти сохта нишон намедиҳем.
-    */
-
-    renderSpecialists([]);
-
-
-    if (notificationPanel) {
-
-        notificationPanel.setAttribute(
-            "aria-hidden",
-            "true"
+        console.log(
+            "SMM.TJ started"
         );
 
-    }
+
+        await loadCurrentUser();
 
 
-    if (chatWidget) {
-
-        chatWidget.setAttribute(
-            "aria-hidden",
-            "true"
-        );
-
-    }
+        updateAuthUI();
 
 
-    document.querySelectorAll(".account-type")
-        .forEach(button => {
+        await loadSpecialists();
 
-            button.addEventListener(
-                "click",
-                () => {
 
-                    const type =
-                        button.dataset.accountType;
+        if (notificationPanel) {
 
-                    if (accountTypeInput && type) {
-
-                        accountTypeInput.value =
-                            type;
-
-                    }
-
-                }
+            notificationPanel.setAttribute(
+                "aria-hidden",
+                "true"
             );
 
-        });
-
-});
-// ===============================
-// AUTO SAVE CLIENT TO SUPABASE
-// ===============================
-
-async function saveClient(clientData) {
-    try {
-        const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/clients`,
-            {
-                method: "POST",
-                headers: {
-                    ...API_HEADERS,
-                    "Prefer": "return=representation"
-                },
-                body: JSON.stringify({
-                    name: clientData.name,
-                    phone: clientData.phone,
-                    email: clientData.email || null
-                })
-            }
-        );
-
-        if (!response.ok) {
-            const error = await response.text();
-            console.error("Supabase error:", error);
-            alert("Хатогӣ ҳангоми нигоҳдорӣ!");
-            return false;
         }
 
-        const saved = await response.json();
 
-        console.log("Client saved:", saved);
+        if (chatWidget) {
 
-        alert("✅ Маълумот бомуваффақият нигоҳ дошта шуд!");
+            chatWidget.setAttribute(
+                "aria-hidden",
+                "true"
+            );
 
-        return true;
+        }
 
-    } catch (error) {
-        console.error("Save error:", error);
-        alert("❌ Пайвастшавӣ ба сервер хато шуд!");
-        return false;
     }
-}
-document.addEventListener("DOMContentLoaded", () => {
-
-    const form = document.getElementById("clientForm");
-
-    if (!form) return;
-
-    form.addEventListener("submit", async (event) => {
-
-        event.preventDefault();
-
-        const clientData = {
-            name: document.getElementById("clientName").value.trim(),
-            phone: document.getElementById("clientPhone").value.trim(),
-            email: document.getElementById("clientEmail").value.trim()
-        };
-
-        if (!clientData.name || !clientData.phone) {
-            alert("Ном ва телефонро пур кунед!");
-            return;
-        }
-
-        const success = await saveClient(clientData);
-
-        if (success) {
-            form.reset();
-        }
-
-    });
-
-});
+);
