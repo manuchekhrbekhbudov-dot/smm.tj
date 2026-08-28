@@ -2,80 +2,100 @@
 <html lang="tg">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SMM.TJ Admin</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SMM.TJ Admin Panel</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-*{box-sizing:border-box}
+*{box-sizing:border-box;margin:0;padding:0}
+
 body{
-    margin:0;
-    font-family:Arial,sans-serif;
     background:#07070b;
     color:#fff;
+    font-family:Arial,sans-serif
 }
+
 button,input{font:inherit}
+button{cursor:pointer}
 .hidden{display:none!important}
 
 /* LOGIN */
-.login{
+#loginPage{
     min-height:100vh;
     display:flex;
-    justify-content:center;
     align-items:center;
+    justify-content:center;
     padding:20px;
 }
+
 .login-box{
     width:420px;
+    max-width:100%;
     padding:35px;
     background:#111118;
     border:1px solid #302c3b;
     border-radius:24px;
-    box-shadow:0 25px 80px #000;
+    box-shadow:0 25px 90px #000;
 }
+
 .logo{
-    font-size:30px;
+    font-size:31px;
     font-weight:900;
-    margin-bottom:25px;
+    margin-bottom:25px
 }
+
 .logo span{color:#a348ff}
-.login h1{margin:0 0 10px}
-.login p{color:#888894;line-height:1.5}
+
+.login-box h1{margin-bottom:10px}
+
+.login-box p{
+    color:#858592;
+    line-height:1.5;
+    margin-bottom:25px
+}
+
 label{
     display:block;
-    margin:17px 0 7px;
     color:#aaaab5;
+    margin:16px 0 7px
 }
+
 input{
     width:100%;
     padding:14px;
-    border:1px solid #363641;
-    border-radius:11px;
     background:#08080d;
-    color:white;
-    outline:none;
+    color:#fff;
+    border:1px solid #343440;
+    border-radius:11px;
+    outline:none
 }
-input:focus{border-color:#984cff}
+
+input:focus{
+    border-color:#984cff
+}
+
 .login-btn{
     width:100%;
     margin-top:22px;
     padding:14px;
     border:0;
     border-radius:11px;
-    color:white;
-    font-weight:bold;
-    background:linear-gradient(90deg,#7020e8,#ad4dff);
-    cursor:pointer;
+    color:#fff;
+    font-weight:800;
+    background:linear-gradient(90deg,#7020e8,#ad4dff)
 }
+
 #error{
     min-height:22px;
     margin-top:14px;
-    color:#ff6877;
+    color:#ff6877
 }
 
 /* ADMIN */
-#admin{display:none}
+#admin{
+    display:none
+}
 
 .sidebar{
     position:fixed;
@@ -85,64 +105,71 @@ input:focus{border-color:#984cff}
     width:240px;
     padding:25px 15px;
     background:#101017;
-    border-right:1px solid #292936;
+    border-right:1px solid #292936
 }
+
 .sidebar-logo{
     font-size:28px;
     font-weight:900;
-    margin:0 10px 35px;
+    margin:0 10px 35px
 }
+
 .sidebar-logo span{color:#a348ff}
 
 .menu{
     display:flex;
     flex-direction:column;
-    gap:7px;
+    gap:7px
 }
+
 .menu button{
     border:0;
     background:transparent;
     color:#aaa8b5;
     padding:14px;
     border-radius:11px;
-    text-align:left;
-    cursor:pointer;
+    text-align:left
 }
+
 .menu button:hover,
 .menu button.active{
     background:#30165a;
-    color:white;
+    color:#fff
 }
+
 .logout{
     position:absolute;
     left:15px;
     right:15px;
     bottom:20px;
     background:#35151d!important;
-    color:#ff7180!important;
+    color:#ff7180!important
 }
 
 .main{
     margin-left:240px;
-    padding:30px;
     min-height:100vh;
+    padding:30px
 }
+
 .header{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin-bottom:25px;
+    margin-bottom:25px
 }
-.header h1{margin:0}
+
+.header h1{font-size:30px}
+
 .refresh{
     border:1px solid #343440;
     background:#171720;
-    color:white;
+    color:#fff;
     padding:11px 16px;
-    border-radius:10px;
-    cursor:pointer;
+    border-radius:10px
 }
 
+/* PAGES */
 .page{display:none}
 .page.active{display:block}
 
@@ -150,19 +177,22 @@ input:focus{border-color:#984cff}
 .stats{
     display:grid;
     grid-template-columns:repeat(5,1fr);
-    gap:15px;
+    gap:15px
 }
+
 .stat{
     background:#111118;
     border:1px solid #292936;
     border-radius:16px;
-    padding:20px;
+    padding:20px
 }
+
 .stat small{color:#858592}
+
 .stat strong{
     display:block;
     font-size:32px;
-    margin-top:10px;
+    margin-top:10px
 }
 
 /* CARD */
@@ -171,97 +201,128 @@ input:focus{border-color:#984cff}
     background:#111118;
     border:1px solid #292936;
     border-radius:17px;
-    overflow:hidden;
+    overflow:hidden
 }
+
 .card-head{
     padding:20px;
-    border-bottom:1px solid #292936;
+    border-bottom:1px solid #292936
 }
-.card-head h2{margin:0 0 5px}
-.card-head p{
-    margin:0;
-    color:#777783;
-}
+
+.card-head h2{margin-bottom:5px}
+
+.card-head p{color:#777783}
 
 /* TABLE */
 .table{
-    overflow:auto;
+    overflow:auto
 }
+
 table{
     width:100%;
     border-collapse:collapse;
-    min-width:800px;
+    min-width:800px
 }
+
 th,td{
     padding:14px;
     border-bottom:1px solid #25252e;
-    text-align:left;
+    text-align:left
 }
+
 th{
     color:#858592;
-    font-size:12px;
+    font-size:12px
 }
+
 td{font-size:14px}
 
 .actions{
     display:flex;
-    gap:7px;
+    gap:7px
 }
+
 .accept,
 .reject{
     border:0;
-    padding:8px 11px;
+    padding:8px 12px;
     border-radius:9px;
-    color:white;
-    cursor:pointer;
-    font-weight:bold;
+    color:#fff;
+    font-weight:800
 }
-.accept{background:#123c29}
-.reject{background:#42151e}
+
+.accept{
+    background:#123c29;
+    color:#5ee69c
+}
+
+.reject{
+    background:#42151e;
+    color:#ff7180
+}
 
 .status{
     display:inline-block;
     padding:6px 10px;
     border-radius:20px;
     background:#292936;
-    font-size:12px;
+    font-size:12px
 }
 
 .empty{
     padding:45px;
     text-align:center;
-    color:#777783;
+    color:#777783
 }
 
 @media(max-width:850px){
-    .sidebar{width:70px;padding:20px 8px}
+
+    .sidebar{
+        width:70px;
+        padding:20px 8px
+    }
+
     .sidebar-logo{
         font-size:17px;
         text-align:center;
-        margin-left:0;
+        margin-left:0
     }
+
     .menu button{
         font-size:0;
-        text-align:center;
+        text-align:center
     }
-    .menu button::first-letter{font-size:20px}
-    .logout{font-size:0}
+
+    .menu button::first-letter{
+        font-size:20px
+    }
+
+    .logout{
+        font-size:0
+    }
+
     .logout:after{
         content:"↪";
-        font-size:20px;
+        font-size:20px
     }
+
     .main{
         margin-left:70px;
-        padding:18px;
+        padding:18px
     }
-    .stats{grid-template-columns:1fr 1fr}
+
+    .stats{
+        grid-template-columns:1fr 1fr
+    }
 }
+
 @media(max-width:550px){
     .stats{grid-template-columns:1fr}
+
     .header{
         flex-direction:column;
         align-items:flex-start;
-        gap:15px;
+        gap:15px
     }
 }
 </style>
@@ -269,97 +330,98 @@ td{font-size:14px}
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginPage" class="login">
+<!-- ================= LOGIN ================= -->
 
-    <div class="login-box">
+<section id="loginPage">
 
-        <div class="logo">
-            SMM<span>.TJ</span>
-        </div>
+<div class="login-box">
 
-        <h1>🔐 Admin Panel</h1>
+<div class="logo">
+SMM<span>.TJ</span>
+</div>
 
-        <p>
-            Танҳо Admin метавонад ба ин панел ворид шавад.
-        </p>
+<h1>🔐 Admin Panel</h1>
 
-        <label>Email</label>
+<p>
+Ба панели идоракунии SMM.TJ ворид шавед.
+</p>
 
-        <input
-            id="email"
-            type="email"
-            value="manuchekhrbekhbudov@gmail.com"
-        >
+<label>Email</label>
 
-        <label>Парол</label>
+<input
+    id="email"
+    type="email"
+    value="manuchekhrbekhbudov@gmail.com"
+    autocomplete="username"
+>
 
-        <input
-            id="password"
-            type="password"
-            placeholder="Пароли Supabase"
-        >
+<label>Парол</label>
 
-        <button
-            id="loginBtn"
-            class="login-btn"
-        >
-            Даромадан
-        </button>
+<input
+    id="password"
+    type="password"
+    placeholder="Пароли Supabase"
+    autocomplete="current-password"
+>
 
-        <div id="error"></div>
+<button
+    id="loginBtn"
+    class="login-btn"
+>
+Даромадан
+</button>
 
-    </div>
+<div id="error"></div>
 
 </div>
 
+</section>
 
-<!-- ADMIN -->
+
+<!-- ================= ADMIN ================= -->
+
 <div id="admin">
 
 <aside class="sidebar">
 
-    <div class="sidebar-logo">
-        SMM<span>.TJ</span>
-    </div>
+<div class="sidebar-logo">
+SMM<span>.TJ</span>
+</div>
 
-    <div class="menu">
+<div class="menu">
 
-        <button
-            class="active"
-            data-page="dashboard"
-        >
-            📊 Dashboard
-        </button>
+<button class="active" data-page="dashboard">
+📊 Dashboard
+</button>
 
-        <button data-page="specialists">
-            👤 Мутахассисон
-        </button>
+<button data-page="specialists">
+👤 Мутахассисон
+</button>
 
-        <button data-page="clients">
-            👥 Мизоҷон
-        </button>
+<button data-page="clients">
+👥 Мизоҷон
+</button>
 
-        <button data-page="orders">
-            📦 Заказҳо
-        </button>
+<button data-page="orders">
+📦 Заказҳо
+</button>
 
-        <button data-page="requests">
-            📩 Дархостҳо
-        </button>
+<button data-page="requests">
+📩 Дархостҳо
+</button>
 
-        <button data-page="reviews">
-            ⭐ Отзывҳо
-        </button>
+<button data-page="reviews">
+⭐ Отзывҳо
+</button>
 
-    </div>
+</div>
 
-    <button
-        id="logout"
-        class="logout"
-    >
-        🚪 Баромадан
-    </button>
+<button
+    id="logout"
+    class="logout"
+>
+🚪 Баромадан
+</button>
 
 </aside>
 
@@ -368,21 +430,22 @@ td{font-size:14px}
 
 <div class="header">
 
-    <h1 id="title">
-        Dashboard
-    </h1>
+<h1 id="title">
+Dashboard
+</h1>
 
-    <button
-        id="refresh"
-        class="refresh"
-    >
-        🔄 Навсозӣ
-    </button>
+<button
+    id="refresh"
+    class="refresh"
+>
+🔄 Навсозӣ
+</button>
 
 </div>
 
 
 <!-- DASHBOARD -->
+
 <section
     id="dashboard"
     class="page active"
@@ -390,43 +453,50 @@ td{font-size:14px}
 
 <div class="stats">
 
-    <div class="stat">
-        <small>Мутахассисон</small>
-        <strong id="c1">0</strong>
-    </div>
+<div class="stat">
+<small>👤 Мутахассисон</small>
+<strong id="c1">0</strong>
+</div>
 
-    <div class="stat">
-        <small>Мизоҷон</small>
-        <strong id="c2">0</strong>
-    </div>
+<div class="stat">
+<small>👥 Мизоҷон</small>
+<strong id="c2">0</strong>
+</div>
 
-    <div class="stat">
-        <small>Заказҳо</small>
-        <strong id="c3">0</strong>
-    </div>
+<div class="stat">
+<small>📦 Заказҳо</small>
+<strong id="c3">0</strong>
+</div>
 
-    <div class="stat">
-        <small>Дархостҳо</small>
-        <strong id="c4">0</strong>
-    </div>
+<div class="stat">
+<small>📩 Дархостҳо</small>
+<strong id="c4">0</strong>
+</div>
 
-    <div class="stat">
-        <small>Отзывҳо</small>
-        <strong id="c5">0</strong>
-    </div>
+<div class="stat">
+<small>⭐ Отзывҳо</small>
+<strong id="c5">0</strong>
+</div>
 
 </div>
 
 <div class="card">
 
-    <div class="card-head">
-        <h2>Хуш омадед 👋</h2>
-        <p>SMM.TJ Admin Panel</p>
-    </div>
+<div class="card-head">
 
-    <div class="empty">
-        Панели Admin фаъол аст ✅
-    </div>
+<h2>
+Хуш омадед 👋
+</h2>
+
+<p>
+SMM.TJ Admin Panel
+</p>
+
+</div>
+
+<div class="empty">
+Панели Admin фаъол аст ✅
+</div>
 
 </div>
 
@@ -434,6 +504,7 @@ td{font-size:14px}
 
 
 <!-- SPECIALISTS -->
+
 <section
     id="specialists"
     class="page"
@@ -442,8 +513,13 @@ td{font-size:14px}
 <div class="card">
 
 <div class="card-head">
+
 <h2>👤 Мутахассисон</h2>
-<p>Маълумоти мутахассисон</p>
+
+<p>
+Рӯйхати мутахассисон
+</p>
+
 </div>
 
 <div
@@ -457,6 +533,7 @@ td{font-size:14px}
 
 
 <!-- CLIENTS -->
+
 <section
     id="clients"
     class="page"
@@ -465,8 +542,13 @@ td{font-size:14px}
 <div class="card">
 
 <div class="card-head">
+
 <h2>👥 Мизоҷон</h2>
-<p>Маълумоти мизоҷон</p>
+
+<p>
+Рӯйхати мизоҷон
+</p>
+
 </div>
 
 <div
@@ -480,6 +562,7 @@ td{font-size:14px}
 
 
 <!-- ORDERS -->
+
 <section
     id="orders"
     class="page"
@@ -488,8 +571,13 @@ td{font-size:14px}
 <div class="card">
 
 <div class="card-head">
+
 <h2>📦 Заказҳо</h2>
-<p>Идоракунии заказҳо</p>
+
+<p>
+Заказҳои гирифташуда
+</p>
+
 </div>
 
 <div
@@ -503,6 +591,7 @@ td{font-size:14px}
 
 
 <!-- REQUESTS -->
+
 <section
     id="requests"
     class="page"
@@ -511,8 +600,13 @@ td{font-size:14px}
 <div class="card">
 
 <div class="card-head">
+
 <h2>📩 Дархостҳо</h2>
-<p>Қабул ё Отмена кардани дархост</p>
+
+<p>
+Қабул ё Отмена кардани дархост
+</p>
+
 </div>
 
 <div
@@ -526,6 +620,7 @@ td{font-size:14px}
 
 
 <!-- REVIEWS -->
+
 <section
     id="reviews"
     class="page"
@@ -534,8 +629,13 @@ td{font-size:14px}
 <div class="card">
 
 <div class="card-head">
+
 <h2>⭐ Отзывҳо</h2>
-<p>Ҳамаи отзывҳо</p>
+
+<p>
+Рӯйхати отзывҳо
+</p>
+
 </div>
 
 <div
@@ -554,9 +654,9 @@ td{font-size:14px}
 
 <script>
 
-/* ================================
-SUPABASE
-================================ */
+/* =========================================
+   SUPABASE
+========================================= */
 
 const SUPABASE_URL =
 "https://lcldaingzicxbottlznq.supabase.co";
@@ -571,13 +671,40 @@ window.supabase.createClient(
 );
 
 
-/* ================================
-LOGIN
-================================ */
+/* =========================================
+   SAFE HTML
+========================================= */
+
+function safe(value){
+
+    if(
+        value === null ||
+        value === undefined
+    ){
+
+        return "—";
+
+    }
+
+    return String(value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================================
+   LOGIN
+========================================= */
 
 document
 .getElementById("loginBtn")
-.addEventListener("click", async () => {
+.addEventListener(
+"click",
+async function(){
 
     const email =
         document
@@ -594,8 +721,9 @@ document
         document
         .getElementById("error");
 
+
     error.textContent =
-        "Санҷида истодаем...";
+        "⏳ Санҷида истодаем...";
 
 
     const result =
@@ -614,6 +742,7 @@ document
             result.error.message;
 
         return;
+
     }
 
 
@@ -638,6 +767,7 @@ document
             admin.error.message;
 
         return;
+
     }
 
 
@@ -646,33 +776,34 @@ document
         await db.auth.signOut();
 
         error.textContent =
-            "Ин аккаунт Admin нест.";
+            "❌ Ин аккаунт Admin нест.";
 
         return;
+
     }
 
 
     error.textContent = "";
 
-
     document
     .getElementById("loginPage")
-    .style.display = "none";
-
+    .style
+    .display = "none";
 
     document
     .getElementById("admin")
-    .style.display = "block";
+    .style
+    .display = "block";
 
 
-    loadDashboard();
+    await loadDashboard();
 
 });
 
 
-/* ================================
-COUNT
-================================ */
+/* =========================================
+   COUNT
+========================================= */
 
 async function count(table){
 
@@ -687,6 +818,7 @@ async function count(table){
             }
         );
 
+
     if(result.error){
 
         console.log(
@@ -695,9 +827,12 @@ async function count(table){
         );
 
         return 0;
+
     }
 
+
     return result.count || 0;
+
 }
 
 
@@ -706,60 +841,48 @@ async function loadDashboard(){
     document
     .getElementById("c1")
     .textContent =
-        await count("specialists");
+        await count(
+            "specialists"
+        );
 
 
     document
     .getElementById("c2")
     .textContent =
-        await count("clients");
+        await count(
+            "clients"
+        );
 
 
     document
     .getElementById("c3")
     .textContent =
-        await count("orders");
+        await count(
+            "orders"
+        );
 
 
     document
     .getElementById("c4")
     .textContent =
-        await count("requests");
+        await count(
+            "requests"
+        );
 
 
     document
     .getElementById("c5")
     .textContent =
-        await count("reviews");
+        await count(
+            "reviews"
+        );
 
 }
 
 
-/* ================================
-SAFE TEXT
-================================ */
-
-function safe(value){
-
-    if(
-        value === null ||
-        value === undefined
-    ){
-        return "—";
-    }
-
-    return String(value)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
-}
-
-
-/* ================================
-LOAD TABLE
-================================ */
+/* =========================================
+   LOAD TABLE
+========================================= */
 
 async function loadTable(table){
 
@@ -797,6 +920,7 @@ async function loadTable(table){
             `;
 
         return;
+
     }
 
 
@@ -817,11 +941,14 @@ async function loadTable(table){
             `;
 
         return;
+
     }
 
 
     const columns =
-        Object.keys(rows[0]);
+        Object.keys(
+            rows[0]
+        );
 
 
     let html =
@@ -834,20 +961,23 @@ async function loadTable(table){
         `;
 
 
-    columns.forEach(column => {
+    columns.forEach(
+        column => {
 
-        html +=
-            `
-            <th>
-                ${safe(column)}
-            </th>
-            `;
+            html +=
+                `
+                <th>
+                    ${safe(column)}
+                </th>
+                `;
 
-    });
+        }
+    );
 
 
     if(
-        table === "requests"
+        table === "requests" ||
+        table === "orders"
     ){
 
         html +=
@@ -875,23 +1005,51 @@ async function loadTable(table){
         html += `<tr>`;
 
 
-        columns.forEach(column => {
+        columns.forEach(
+            column => {
 
-            html +=
-                `
-                <td>
-                    ${safe(
-                        row[column]
-                    )}
-                </td>
-                `;
+                if(
+                    column === "status"
+                ){
 
-        });
+                    html +=
+                        `
+                        <td>
+                            <span class="status">
+                                ${safe(
+                                    row[column]
+                                )}
+                            </span>
+                        </td>
+                        `;
+
+                }
+                else{
+
+                    html +=
+                        `
+                        <td>
+                            ${safe(
+                                row[column]
+                            )}
+                        </td>
+                        `;
+
+                }
+
+            }
+        );
 
 
         if(
             table === "requests"
         ){
+
+            const status =
+                String(
+                    row.status || "pending"
+                ).toLowerCase();
+
 
             html +=
                 `
@@ -903,7 +1061,7 @@ async function loadTable(table){
                         class="accept"
                         onclick="
                             acceptRequest(
-                                '${safe(row.id)}'
+                                '${row.id}'
                             )
                         "
                     >
@@ -914,7 +1072,47 @@ async function loadTable(table){
                         class="reject"
                         onclick="
                             rejectRequest(
-                                '${safe(row.id)}'
+                                '${row.id}'
+                            )
+                        "
+                    >
+                        ❌ ОТМЕНА
+                    </button>
+
+                </div>
+
+                </td>
+                `;
+
+        }
+
+
+        if(
+            table === "orders"
+        ){
+
+            html +=
+                `
+                <td>
+
+                <div class="actions">
+
+                    <button
+                        class="accept"
+                        onclick="
+                            acceptOrder(
+                                '${row.id}'
+                            )
+                        "
+                    >
+                        ✅ ҚАБУЛ
+                    </button>
+
+                    <button
+                        class="reject"
+                        onclick="
+                            rejectOrder(
+                                '${row.id}'
                             )
                         "
                     >
@@ -942,72 +1140,262 @@ async function loadTable(table){
         `;
 
 
-    box.innerHTML = html;
+    box.innerHTML =
+        html;
 
 }
 
 
-/* ================================
-REQUEST ACTIONS
-================================ */
-
-/*
-  Ҳоло мо инҷо status-ро намезанем,
-  то constraint-и база боз error надиҳад.
-*/
+/* =========================================
+   REQUEST → ACCEPT
+========================================= */
 
 async function acceptRequest(id){
 
+    if(
+        !confirm(
+            "Ин дархостро қабул мекунӣ?"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    const result =
+        await db
+        .from("requests")
+        .update({
+            status:"approved"
+        })
+        .eq(
+            "id",
+            id
+        );
+
+
+    if(result.error){
+
+        alert(
+            "❌ ХАТО:\n\n" +
+            result.error.message
+        );
+
+        return;
+
+    }
+
+
     alert(
-        "Дархост интихоб шуд: ҚАБУЛ\n\n" +
-        "Барои сабти воқеии status " +
-        "constraint-и requests-ро бояд мувофиқ кунем."
+        "✅ Дархост қабул шуд!"
     );
+
+
+    await loadTable(
+        "requests"
+    );
+
+    await loadDashboard();
 
 }
 
+
+/* =========================================
+   REQUEST → REJECT
+========================================= */
 
 async function rejectRequest(id){
 
+    if(
+        !confirm(
+            "Ин дархостро отмена мекунӣ?"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    const result =
+        await db
+        .from("requests")
+        .update({
+            status:"rejected"
+        })
+        .eq(
+            "id",
+            id
+        );
+
+
+    if(result.error){
+
+        alert(
+            "❌ ХАТО:\n\n" +
+            result.error.message
+        );
+
+        return;
+
+    }
+
+
     alert(
-        "Дархост интихоб шуд: ОТМЕНА\n\n" +
-        "Барои сабти воқеии status " +
-        "constraint-и requests-ро бояд мувофиқ кунем."
+        "❌ Дархост отмена шуд!"
     );
+
+
+    await loadTable(
+        "requests"
+    );
+
+    await loadDashboard();
 
 }
 
 
-/* ================================
-NAVIGATION
-================================ */
+/* =========================================
+   ORDER → ACCEPT
+========================================= */
+
+async function acceptOrder(id){
+
+    if(
+        !confirm(
+            "Ин заказро қабул мекунӣ?"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    const result =
+        await db
+        .from("orders")
+        .update({
+            status:"approved"
+        })
+        .eq(
+            "id",
+            id
+        );
+
+
+    if(result.error){
+
+        alert(
+            "❌ ХАТО:\n\n" +
+            result.error.message
+        );
+
+        return;
+
+    }
+
+
+    alert(
+        "✅ Заказ қабул шуд!"
+    );
+
+
+    await loadTable(
+        "orders"
+    );
+
+    await loadDashboard();
+
+}
+
+
+/* =========================================
+   ORDER → REJECT
+========================================= */
+
+async function rejectOrder(id){
+
+    if(
+        !confirm(
+            "Ин заказро отмена мекунӣ?"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    const result =
+        await db
+        .from("orders")
+        .update({
+            status:"rejected"
+        })
+        .eq(
+            "id",
+            id
+        );
+
+
+    if(result.error){
+
+        alert(
+            "❌ ХАТО:\n\n" +
+            result.error.message
+        );
+
+        return;
+
+    }
+
+
+    alert(
+        "❌ Заказ отмена шуд!"
+    );
+
+
+    await loadTable(
+        "orders"
+    );
+
+    await loadDashboard();
+
+}
+
+
+/* =========================================
+   NAVIGATION
+========================================= */
 
 document
 .querySelectorAll(".menu button")
-.forEach(button => {
+.forEach(
+button => {
 
     button.addEventListener(
         "click",
-        async () => {
+        async function(){
 
             const page =
-                button.dataset.page;
+                this.dataset.page;
 
 
             document
             .querySelectorAll(
                 ".menu button"
             )
-            .forEach(item => {
+            .forEach(
+                item =>
+                    item.classList.remove(
+                        "active"
+                    )
+            );
 
-                item.classList.remove(
-                    "active"
-                );
 
-            });
-
-
-            button.classList.add(
+            this.classList.add(
                 "active"
             );
 
@@ -1016,13 +1404,12 @@ document
             .querySelectorAll(
                 ".page"
             )
-            .forEach(item => {
-
-                item.classList.remove(
-                    "active"
-                );
-
-            });
+            .forEach(
+                item =>
+                    item.classList.remove(
+                        "active"
+                    )
+            );
 
 
             document
@@ -1032,9 +1419,10 @@ document
             );
 
 
-            const names = {
+            const titles = {
 
-                dashboard:"Dashboard",
+                dashboard:
+                    "Dashboard",
 
                 specialists:
                     "Мутахассисон",
@@ -1057,7 +1445,7 @@ document
             document
             .getElementById("title")
             .textContent =
-                names[page];
+                titles[page];
 
 
             if(
@@ -1081,15 +1469,15 @@ document
 });
 
 
-/* ================================
-REFRESH
-================================ */
+/* =========================================
+   REFRESH
+========================================= */
 
 document
 .getElementById("refresh")
 .addEventListener(
     "click",
-    async () => {
+    async function(){
 
         const active =
             document
@@ -1118,25 +1506,30 @@ document
 );
 
 
-/* ================================
-LOGOUT
-================================ */
+/* =========================================
+   LOGOUT
+========================================= */
 
 document
 .getElementById("logout")
 .addEventListener(
     "click",
-    async () => {
+    async function(){
 
         await db.auth.signOut();
 
+
         document
         .getElementById("admin")
-        .style.display = "none";
+        .style
+        .display = "none";
+
 
         document
         .getElementById("loginPage")
-        .style.display = "flex";
+        .style
+        .display = "flex";
+
 
         document
         .getElementById("password")
@@ -1144,6 +1537,56 @@ document
 
     }
 );
+
+
+/* =========================================
+   EXISTING SESSION
+========================================= */
+
+(async function(){
+
+    const result =
+        await db.auth.getSession();
+
+
+    if(
+        result.data.session
+    ){
+
+        const admin =
+            await db
+            .from("admin_users")
+            .select("user_id")
+            .eq(
+                "user_id",
+                result.data.session.user.id
+            )
+            .maybeSingle();
+
+
+        if(
+            admin.data
+        ){
+
+            document
+            .getElementById("loginPage")
+            .style
+            .display = "none";
+
+
+            document
+            .getElementById("admin")
+            .style
+            .display = "block";
+
+
+            await loadDashboard();
+
+        }
+
+    }
+
+})();
 
 </script>
 
