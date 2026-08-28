@@ -2,481 +2,310 @@
 <html lang="tg">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SMM.TJ — Admin Panel</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SMM.TJ — Admin</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-}
-
+*{box-sizing:border-box}
 body{
-    font-family:Arial, sans-serif;
-    background:#08080d;
-    color:#fff;
+ margin:0;
+ background:#08080d;
+ color:#fff;
+ font-family:Arial,sans-serif
 }
-
-.app{
-    min-height:100vh;
-    display:flex;
-}
-
-/* SIDEBAR */
+.hidden{display:none!important}
 
 .sidebar{
-    width:250px;
-    position:fixed;
-    left:0;
-    top:0;
-    bottom:0;
-    background:#101017;
-    border-right:1px solid #292934;
-    padding:25px 16px;
+ position:fixed;
+ left:0;top:0;bottom:0;
+ width:240px;
+ background:#111118;
+ border-right:1px solid #292933;
+ padding:25px 15px
 }
-
 .logo{
-    display:block;
-    text-decoration:none;
-    color:#fff;
-    font-size:28px;
-    font-weight:900;
-    margin:0 10px 45px;
+ color:#fff;
+ font-size:28px;
+ font-weight:900;
+ text-decoration:none;
+ display:block;
+ margin:0 10px 45px
 }
-
-.logo span{
-    color:#9b5cff;
-}
-
-.admin-label{
-    color:#77778a;
-    font-size:11px;
-    letter-spacing:2px;
-    margin:0 10px 15px;
-}
-
-.menu{
-    display:flex;
-    flex-direction:column;
-    gap:7px;
-}
+.logo b{color:#974cff}
 
 .menu button{
-    border:0;
-    background:transparent;
-    color:#aaaaba;
-    padding:14px;
-    border-radius:12px;
-    text-align:left;
-    cursor:pointer;
-    font-size:15px;
+ width:100%;
+ display:block;
+ border:0;
+ background:transparent;
+ color:#aaa;
+ padding:14px;
+ margin:5px 0;
+ border-radius:12px;
+ text-align:left;
+ cursor:pointer
 }
-
 .menu button:hover,
 .menu button.active{
-    background:#241742;
-    color:#fff;
+ background:#28164a;
+ color:#fff
 }
-
-.bottom{
-    position:absolute;
-    left:16px;
-    right:16px;
-    bottom:20px;
-}
-
-.site{
-    display:block;
-    text-align:center;
-    text-decoration:none;
-    color:#aaa;
-    background:#191920;
-    padding:12px;
-    border-radius:11px;
-}
-
-/* MAIN */
 
 .main{
-    margin-left:250px;
-    width:calc(100% - 250px);
-    padding:30px;
+ margin-left:240px;
+ padding:30px
 }
 
-.topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:30px;
+.login{
+ max-width:430px;
+ margin:100px auto;
+ background:#111118;
+ border:1px solid #30303b;
+ border-radius:22px;
+ padding:32px
 }
-
-.topbar h1{
-    font-size:30px;
-}
-
-.topbar p{
-    color:#77778a;
-    margin-top:5px;
-}
-
-.refresh,
-.logout{
-    border:1px solid #333341;
-    background:#17171f;
-    color:#fff;
-    padding:11px 16px;
-    border-radius:10px;
-    cursor:pointer;
-}
-
-.logout{
-    background:#32171c;
-    color:#ff858f;
-}
-
-/* LOGIN */
-
-.login-box{
-    max-width:440px;
-    margin:100px auto;
-    background:#111117;
-    border:1px solid #2b2b38;
-    border-radius:22px;
-    padding:35px;
-}
-
-.login-box h2{
-    font-size:28px;
-    margin-bottom:10px;
-}
-
-.login-box p{
-    color:#858595;
-    line-height:1.5;
-    margin-bottom:25px;
-}
+.login h1{margin-top:0}
+.login p{color:#888;line-height:1.5}
 
 label{
-    display:block;
-    color:#aaaaba;
-    font-size:13px;
-    margin-bottom:16px;
+ display:block;
+ color:#aaa;
+ margin:18px 0 7px
 }
-
 input{
-    width:100%;
-    margin-top:7px;
-    padding:14px;
-    border-radius:10px;
-    border:1px solid #333341;
-    background:#09090e;
-    color:#fff;
-    outline:none;
+ width:100%;
+ padding:14px;
+ background:#09090e;
+ color:#fff;
+ border:1px solid #343440;
+ border-radius:10px;
+ outline:0
 }
+input:focus{border-color:#984dff}
 
-input:focus{
-    border-color:#9b5cff;
+.primary{
+ width:100%;
+ border:0;
+ padding:14px;
+ margin-top:20px;
+ border-radius:11px;
+ background:linear-gradient(90deg,#7028dc,#a855f7);
+ color:#fff;
+ font-weight:800;
+ cursor:pointer
 }
-
-.login-btn{
-    width:100%;
-    border:0;
-    padding:14px;
-    border-radius:11px;
-    background:linear-gradient(90deg,#7028dc,#a855f7);
-    color:#fff;
-    font-weight:800;
-    cursor:pointer;
-}
-
 .error{
-    color:#ff737d;
-    margin-top:15px;
-    font-size:13px;
+ color:#ff6975;
+ margin-top:15px;
+ font-size:14px
 }
 
-/* DASHBOARD */
+.top{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-bottom:30px
+}
+.top h1{margin:0}
+.top button{
+ background:#181820;
+ color:#fff;
+ border:1px solid #33333f;
+ padding:10px 15px;
+ border-radius:10px;
+ cursor:pointer
+}
 
 .stats{
-    display:grid;
-    grid-template-columns:repeat(5,1fr);
-    gap:16px;
-    margin-bottom:25px;
+ display:grid;
+ grid-template-columns:repeat(5,1fr);
+ gap:15px
 }
-
 .stat{
-    background:#111117;
-    border:1px solid #292934;
-    border-radius:17px;
-    padding:22px;
+ background:#111118;
+ border:1px solid #292933;
+ border-radius:17px;
+ padding:22px
 }
-
 .stat span{
-    color:#858595;
-    font-size:13px;
+ color:#888;
+ font-size:13px
 }
-
 .stat strong{
-    display:block;
-    font-size:32px;
-    margin-top:12px;
+ display:block;
+ font-size:32px;
+ margin-top:12px
 }
-
-/* CARD */
 
 .card{
-    background:#111117;
-    border:1px solid #292934;
-    border-radius:17px;
-    overflow:hidden;
+ margin-top:25px;
+ background:#111118;
+ border:1px solid #292933;
+ border-radius:17px;
+ overflow:hidden
 }
-
 .card-head{
-    padding:20px;
-    border-bottom:1px solid #292934;
+ padding:20px;
+ border-bottom:1px solid #292933
 }
-
-.card-head h2{
-    font-size:19px;
-}
-
 .card-head p{
-    color:#77778a;
-    font-size:13px;
-    margin-top:5px;
+ color:#777;
+ margin-bottom:0
 }
-
-.empty{
-    padding:50px;
-    text-align:center;
-    color:#77778a;
-}
-
-/* TABLE */
 
 .table{
-    overflow-x:auto;
+ overflow:auto
 }
-
 table{
-    width:100%;
-    border-collapse:collapse;
+ width:100%;
+ border-collapse:collapse
 }
-
-th,
-td{
-    padding:14px 17px;
-    border-bottom:1px solid #24242e;
-    text-align:left;
-    white-space:nowrap;
-    font-size:13px;
+th,td{
+ padding:14px;
+ border-bottom:1px solid #25252e;
+ text-align:left;
+ white-space:nowrap
 }
-
 th{
-    color:#858595;
-    font-size:11px;
-    text-transform:uppercase;
+ color:#888;
+ font-size:12px
+}
+.empty{
+ padding:50px;
+ text-align:center;
+ color:#777
 }
 
-tr:hover td{
-    background:#15151d;
+.logout{
+ position:absolute;
+ bottom:20px;
+ left:15px;
+ right:15px;
+ border:0;
+ padding:12px;
+ border-radius:10px;
+ background:#30171c;
+ color:#ff808b;
+ cursor:pointer
 }
 
-.hidden{
-    display:none !important;
-}
-
-/* MOBILE */
-
-@media(max-width:1000px){
-
-    .stats{
-        grid-template-columns:repeat(2,1fr);
-    }
-}
-
-@media(max-width:700px){
-
-    .sidebar{
-        width:72px;
-        padding:20px 9px;
-    }
-
-    .logo{
-        font-size:18px;
-        text-align:center;
-        margin-bottom:35px;
-    }
-
-    .admin-label,
-    .menu span,
-    .site{
-        display:none;
-    }
-
-    .menu button{
-        text-align:center;
-        font-size:19px;
-        padding:12px 4px;
-    }
-
-    .main{
-        margin-left:72px;
-        width:calc(100% - 72px);
-        padding:18px;
-    }
-
-    .stats{
-        grid-template-columns:1fr;
-    }
-
-    .topbar h1{
-        font-size:23px;
-    }
+@media(max-width:800px){
+ .sidebar{width:70px}
+ .logo{font-size:18px;text-align:center}
+ .menu span{display:none}
+ .menu button{text-align:center}
+ .main{
+  margin-left:70px;
+  padding:18px
+ }
+ .stats{
+  grid-template-columns:1fr 1fr
+ }
 }
 </style>
 </head>
 
 <body>
 
-<div class="app">
-
-<!-- SIDEBAR -->
-
 <aside class="sidebar">
 
 <a href="index.html" class="logo">
-    SMM<span>.TJ</span>
+SMM<b>.TJ</b>
 </a>
 
-<div class="admin-label">
-    ADMIN PANEL
-</div>
-
-<nav class="menu">
+<div class="menu">
 
 <button class="active" data-page="dashboard">
-    📊 <span>Dashboard</span>
+📊 <span>Dashboard</span>
 </button>
 
 <button data-page="specialists">
-    👤 <span>Мутахассисон</span>
+👤 <span>Мутахассисон</span>
 </button>
 
 <button data-page="clients">
-    👥 <span>Мизоҷон</span>
+👥 <span>Мизоҷон</span>
 </button>
 
 <button data-page="orders">
-    📦 <span>Заказҳо</span>
+📦 <span>Заказҳо</span>
 </button>
 
 <button data-page="requests">
-    📩 <span>Дархостҳо</span>
+📩 <span>Дархостҳо</span>
 </button>
 
 <button data-page="reviews">
-    ⭐ <span>Отзывҳо</span>
+⭐ <span>Отзывҳо</span>
 </button>
 
-</nav>
-
-<div class="bottom">
-<a href="index.html" class="site">
-    ← Сайт
-</a>
 </div>
+
+<button id="logout" class="logout">
+Баромадан
+</button>
 
 </aside>
 
 
-<!-- MAIN -->
-
 <main class="main">
-
 
 <!-- LOGIN -->
 
-<div id="loginBox" class="login-box">
+<div id="loginBox" class="login">
 
-<h2>🔐 Admin Panel</h2>
+<h1>🔐 Admin Panel</h1>
 
 <p>
-Барои идоракунии SMM.TJ ба аккаунти администратор ворид шавед.
+Танҳо администратор метавонад ба панели идоракунӣ дарояд.
 </p>
 
 <form id="loginForm">
 
-<label>
-Email
-
+<label>Email</label>
 <input
-    id="email"
-    type="email"
-    placeholder="Email"
-    required
+ id="email"
+ type="email"
+ required
+ autocomplete="username"
 >
-</label>
 
-<label>
-Парол
-
+<label>Парол</label>
 <input
-    id="password"
-    type="password"
-    placeholder="Парол"
-    required
+ id="password"
+ type="password"
+ required
+ autocomplete="current-password"
 >
-</label>
 
-<button
-    type="submit"
-    class="login-btn"
->
-    Даромадан
+<button class="primary" type="submit">
+Даромадан
 </button>
 
-<div id="loginError" class="error"></div>
+<div id="error" class="error"></div>
 
 </form>
 
 </div>
 
 
-<!-- ADMIN PANEL -->
+<!-- ADMIN -->
 
-<div id="adminPanel" class="hidden">
+<div id="adminBox" class="hidden">
 
-<header class="topbar">
+<div class="top">
 
 <div>
-
-<h1 id="pageTitle">
-Dashboard
-</h1>
-
-<p>
-Идоракунии SMM.TJ
-</p>
-
+<h1 id="title">Dashboard</h1>
 </div>
 
-<div>
-
-<button id="refreshBtn" class="refresh">
+<button id="refresh">
 ↻ Навсозӣ
 </button>
 
-<button id="logoutBtn" class="logout">
-Баромадан
-</button>
-
 </div>
-
-</header>
 
 
 <!-- DASHBOARD -->
@@ -487,199 +316,105 @@ Dashboard
 
 <div class="stat">
 <span>Мутахассисон</span>
-<strong id="specialistsCount">0</strong>
+<strong id="countSpecialists">0</strong>
 </div>
 
 <div class="stat">
 <span>Мизоҷон</span>
-<strong id="clientsCount">0</strong>
+<strong id="countClients">0</strong>
 </div>
 
 <div class="stat">
 <span>Заказҳо</span>
-<strong id="ordersCount">0</strong>
+<strong id="countOrders">0</strong>
 </div>
 
 <div class="stat">
 <span>Дархостҳо</span>
-<strong id="requestsCount">0</strong>
+<strong id="countRequests">0</strong>
 </div>
 
 <div class="stat">
 <span>Отзывҳо</span>
-<strong id="reviewsCount">0</strong>
+<strong id="countReviews">0</strong>
 </div>
 
 </div>
-
 
 <div class="card">
-
 <div class="card-head">
-
-<h2>
-Хуш омадед 👋
-</h2>
-
-<p>
-Admin Panel-и SMM.TJ
-</p>
-
+<h2>SMM.TJ Admin</h2>
+<p>Маълумоти воқеии Supabase.</p>
 </div>
 
 <div class="empty">
-
-Database пайваст аст.
-Аз меню маълумоти воқеиро бин.
-
+Admin Panel фаъол аст ✅
 </div>
-
 </div>
 
 </section>
 
-
-<!-- SPECIALISTS -->
 
 <section id="specialists" class="hidden">
-
 <div class="card">
-
 <div class="card-head">
-
-<h2>
-👤 Мутахассисон
-</h2>
-
-<p>
-Маълумот аз specialists
-</p>
-
+<h2>👤 Мутахассисон</h2>
+<p>specialists</p>
 </div>
-
-<div id="specialistsTable" class="table">
+<div id="specialistsTable" class="table"></div>
 </div>
-
-</div>
-
 </section>
 
-
-<!-- CLIENTS -->
 
 <section id="clients" class="hidden">
-
 <div class="card">
-
 <div class="card-head">
-
-<h2>
-👥 Мизоҷон
-</h2>
-
-<p>
-Маълумот аз clients
-</p>
-
+<h2>👥 Мизоҷон</h2>
+<p>clients</p>
 </div>
-
-<div id="clientsTable" class="table">
+<div id="clientsTable" class="table"></div>
 </div>
-
-</div>
-
 </section>
 
-
-<!-- ORDERS -->
 
 <section id="orders" class="hidden">
-
 <div class="card">
-
 <div class="card-head">
-
-<h2>
-📦 Заказҳо
-</h2>
-
-<p>
-Маълумот аз orders
-</p>
-
+<h2>📦 Заказҳо</h2>
+<p>orders</p>
 </div>
-
-<div id="ordersTable" class="table">
+<div id="ordersTable" class="table"></div>
 </div>
-
-</div>
-
 </section>
 
-
-<!-- REQUESTS -->
 
 <section id="requests" class="hidden">
-
 <div class="card">
-
 <div class="card-head">
-
-<h2>
-📩 Дархостҳо
-</h2>
-
-<p>
-Маълумот аз requests
-</p>
-
+<h2>📩 Дархостҳо</h2>
+<p>requests</p>
 </div>
-
-<div id="requestsTable" class="table">
+<div id="requestsTable" class="table"></div>
 </div>
-
-</div>
-
 </section>
 
 
-<!-- REVIEWS -->
-
 <section id="reviews" class="hidden">
-
 <div class="card">
-
 <div class="card-head">
-
-<h2>
-⭐ Отзывҳо
-</h2>
-
-<p>
-Маълумот аз reviews
-</p>
-
+<h2>⭐ Отзывҳо</h2>
+<p>reviews</p>
 </div>
-
-<div id="reviewsTable" class="table">
+<div id="reviewsTable" class="table"></div>
 </div>
-
-</div>
-
 </section>
 
 </div>
 
 </main>
 
-</div>
-
 
 <script>
-
-/* =========================
-   SUPABASE
-========================= */
 
 const SUPABASE_URL =
 "https://lcldaingzicxbottlznq.supabase.co";
@@ -687,596 +422,424 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
 "sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
 
-const supabaseClient =
+const db =
 window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
+ SUPABASE_URL,
+ SUPABASE_KEY
 );
 
 
-/* =========================
-   ELEMENTS
-========================= */
-
-const loginBox =
-document.getElementById("loginBox");
-
-const adminPanel =
-document.getElementById("adminPanel");
-
-const loginForm =
-document.getElementById("loginForm");
-
-const loginError =
-document.getElementById("loginError");
-
-const pageTitle =
-document.getElementById("pageTitle");
+const $ = id =>
+document.getElementById(id);
 
 
-/* =========================
-   LOGIN
-========================= */
+/* LOGIN */
 
-loginForm.addEventListener(
+$("loginForm").addEventListener(
 "submit",
 async function(e){
 
-    e.preventDefault();
+ e.preventDefault();
 
-    loginError.textContent = "";
+ $("error").textContent="";
 
-    const email =
-        document
-        .getElementById("email")
-        .value
-        .trim();
+ const email =
+ $("email").value.trim();
 
-    const password =
-        document
-        .getElementById("password")
-        .value;
+ const password =
+ $("password").value;
 
 
-    const {
-        data,
-        error
-    } =
-    await supabaseClient.auth
-    .signInWithPassword({
-        email:email,
-        password:password
-    });
+ const {data,error} =
+ await db.auth.signInWithPassword({
+  email,
+  password
+ });
 
 
-    if(error){
+ if(error){
 
-        console.error(error);
+  console.error(error);
 
-        loginError.textContent =
-        "Email ё парол нодуруст аст.";
+  $("error").textContent =
+  error.message;
 
-        return;
-    }
-
-
-    const isAdmin =
-    await checkAdmin(data.user);
+  return;
+ }
 
 
-    if(!isAdmin){
+ /* CHECK ADMIN */
 
-        await supabaseClient.auth.signOut();
+ const {data:admin,error:adminError} =
+ await db
+ .from("admin_users")
+ .select("user_id")
+ .eq("user_id",data.user.id)
+ .maybeSingle();
 
-        loginError.textContent =
-        "Ин аккаунт Admin нест.";
 
-        return;
-    }
+ if(adminError){
+
+  console.error(adminError);
+
+  await db.auth.signOut();
+
+  $("error").textContent =
+  "Хатои санҷиши Admin: "
+  + adminError.message;
+
+  return;
+ }
 
 
-    showAdmin();
+ if(!admin){
 
-    loadDashboard();
+  await db.auth.signOut();
+
+  $("error").textContent =
+  "Ин аккаунт Admin нест.";
+
+  return;
+ }
+
+
+ showAdmin();
+
+ await loadDashboard();
 
 });
 
 
-/* =========================
-   CHECK ADMIN
-========================= */
-
-async function checkAdmin(user){
-
-    if(!user){
-        return false;
-    }
-
-
-    const {
-        data,
-        error
-    } =
-    await supabaseClient
-    .from("admin_users")
-    .select("user_id")
-    .eq("user_id",user.id)
-    .maybeSingle();
-
-
-    if(error){
-
-        console.error(
-            "ADMIN ERROR:",
-            error
-        );
-
-        loginError.textContent =
-        "Хатои санҷиши Admin.";
-
-        return false;
-    }
-
-
-    return !!data;
-
-}
-
-
-/* =========================
-   SHOW ADMIN
-========================= */
+/* SHOW ADMIN */
 
 function showAdmin(){
 
-    loginBox.classList.add("hidden");
+ $("loginBox")
+ .classList
+ .add("hidden");
 
-    adminPanel.classList.remove("hidden");
+ $("adminBox")
+ .classList
+ .remove("hidden");
 
 }
 
 
-/* =========================
-   LOGOUT
-========================= */
+/* LOGOUT */
 
-document
-.getElementById("logoutBtn")
-.addEventListener(
-"click",
+$("logout").onclick =
 async function(){
 
-    await supabaseClient
-    .auth
-    .signOut();
+ await db.auth.signOut();
 
-    adminPanel
-    .classList
-    .add("hidden");
+ $("adminBox")
+ .classList
+ .add("hidden");
 
-    loginBox
-    .classList
-    .remove("hidden");
+ $("loginBox")
+ .classList
+ .remove("hidden");
 
-});
+};
 
 
-/* =========================
-   DASHBOARD COUNTS
-========================= */
+/* COUNT */
 
 async function getCount(table){
 
-    const {
-        count,
-        error
-    } =
-    await supabaseClient
-    .from(table)
-    .select("*",{
-        count:"exact",
-        head:true
-    });
+ const {count,error} =
+ await db
+ .from(table)
+ .select("*",{
+  count:"exact",
+  head:true
+ });
 
+ if(error){
 
-    if(error){
+  console.error(
+   table,
+   error
+  );
 
-        console.error(
-            table,
-            error
-        );
+  return 0;
+ }
 
-        return 0;
-    }
-
-
-    return count || 0;
-
+ return count || 0;
 }
 
 
 async function loadDashboard(){
 
-    const [
-        specialists,
-        clients,
-        orders,
-        requests,
-        reviews
-    ] =
-    await Promise.all([
+ const result =
+ await Promise.all([
 
-        getCount("specialists"),
-        getCount("clients"),
-        getCount("orders"),
-        getCount("requests"),
-        getCount("reviews")
+  getCount("specialists"),
+  getCount("clients"),
+  getCount("orders"),
+  getCount("requests"),
+  getCount("reviews")
 
-    ]);
+ ]);
 
 
-    document
-    .getElementById("specialistsCount")
-    .textContent =
-    specialists;
+ $("countSpecialists")
+ .textContent=result[0];
 
+ $("countClients")
+ .textContent=result[1];
 
-    document
-    .getElementById("clientsCount")
-    .textContent =
-    clients;
+ $("countOrders")
+ .textContent=result[2];
 
+ $("countRequests")
+ .textContent=result[3];
 
-    document
-    .getElementById("ordersCount")
-    .textContent =
-    orders;
-
-
-    document
-    .getElementById("requestsCount")
-    .textContent =
-    requests;
-
-
-    document
-    .getElementById("reviewsCount")
-    .textContent =
-    reviews;
+ $("countReviews")
+ .textContent=result[4];
 
 }
 
 
-/* =========================
-   LOAD TABLE
-========================= */
+/* TABLE */
 
-async function loadTable(tableName){
+async function loadTable(table){
 
-    const container =
-    document.getElementById(
-        tableName + "Table"
-    );
+ const box =
+ $(table+"Table");
 
-
-    container.innerHTML =
-    '<div class="empty">Бор шуда истодааст...</div>';
+ box.innerHTML =
+ '<div class="empty">Бор шуда истодааст...</div>';
 
 
-    const {
-        data,
-        error
-    } =
-    await supabaseClient
-    .from(tableName)
-    .select("*")
-    .limit(200);
+ const {data,error} =
+ await db
+ .from(table)
+ .select("*")
+ .limit(200);
 
 
-    if(error){
+ if(error){
 
-        console.error(error);
+  box.innerHTML =
+  '<div class="empty">'
+  + escapeHtml(error.message)
+  + '</div>';
 
-        container.innerHTML =
-        '<div class="empty">Хато: '
-        +
-        error.message
-        +
-        '</div>';
-
-        return;
-    }
+  return;
+ }
 
 
-    if(!data || data.length === 0){
+ if(!data || data.length===0){
 
-        container.innerHTML =
-        '<div class="empty">Маълумот нест.</div>';
+  box.innerHTML =
+  '<div class="empty">Маълумот нест.</div>';
 
-        return;
-    }
-
-
-    const columns =
-    Object.keys(data[0]);
+  return;
+ }
 
 
-    let html =
-    "<table>";
-
-    html +=
-    "<thead><tr>";
+ const columns =
+ Object.keys(data[0]);
 
 
-    columns.forEach(
-    function(column){
-
-        html +=
-        "<th>"
-        +
-        escapeHtml(column)
-        +
-        "</th>";
-
-    });
+ let html =
+ "<table><thead><tr>";
 
 
-    html +=
-    "</tr></thead>";
+ columns.forEach(column=>{
 
-    html +=
-    "<tbody>";
+  html +=
+  "<th>"
+  + escapeHtml(column)
+  + "</th>";
 
-
-    data.forEach(
-    function(row){
-
-        html += "<tr>";
+ });
 
 
-        columns.forEach(
-        function(column){
-
-            html +=
-            "<td>"
-            +
-            escapeHtml(
-                row[column]
-            )
-            +
-            "</td>";
-
-        });
+ html +=
+ "</tr></thead><tbody>";
 
 
-        html += "</tr>";
+ data.forEach(row=>{
 
-    });
+  html += "<tr>";
+
+  columns.forEach(column=>{
+
+   html +=
+   "<td>"
+   + escapeHtml(row[column])
+   + "</td>";
+
+  });
+
+  html += "</tr>";
+
+ });
 
 
-    html +=
-    "</tbody></table>";
+ html +=
+ "</tbody></table>";
 
 
-    container.innerHTML =
-    html;
+ box.innerHTML=html;
 
 }
 
 
-/* =========================
-   SECURITY
-========================= */
+/* ESCAPE */
 
 function escapeHtml(value){
 
-    if(
-        value === null ||
-        value === undefined
-    ){
-        return "—";
-    }
+ if(value===null ||
+    value===undefined ||
+    value===""){
+  return "—";
+ }
 
-
-    return String(value)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
+ return String(value)
+ .replace(/&/g,"&amp;")
+ .replace(/</g,"&lt;")
+ .replace(/>/g,"&gt;")
+ .replace(/"/g,"&quot;")
+ .replace(/'/g,"&#039;");
 
 }
 
 
-/* =========================
-   NAVIGATION
-========================= */
+/* NAVIGATION */
 
-const titles = {
-
-    dashboard:"Dashboard",
-
-    specialists:
-    "Мутахассисон",
-
-    clients:
-    "Мизоҷон",
-
-    orders:
-    "Заказҳо",
-
-    requests:
-    "Дархостҳо",
-
-    reviews:
-    "Отзывҳо"
-
+const titles={
+ dashboard:"Dashboard",
+ specialists:"Мутахассисон",
+ clients:"Мизоҷон",
+ orders:"Заказҳо",
+ requests:"Дархостҳо",
+ reviews:"Отзывҳо"
 };
 
 
 document
-.querySelectorAll(
-    ".menu button"
-)
-.forEach(
-function(button){
+.querySelectorAll(".menu button")
+.forEach(button=>{
 
-    button.addEventListener(
-    "click",
-    async function(){
+ button.onclick=async()=>{
 
-        const page =
-        this.dataset.page;
+  const page =
+  button.dataset.page;
 
 
-        document
-        .querySelectorAll(
-            ".menu button"
-        )
-        .forEach(
-        function(btn){
-
-            btn.classList
-            .remove("active");
-
-        });
+  document
+  .querySelectorAll(".menu button")
+  .forEach(x=>
+   x.classList.remove("active")
+  );
 
 
-        this.classList
-        .add("active");
+  button.classList.add("active");
 
 
-        const pages = [
-            "dashboard",
-            "specialists",
-            "clients",
-            "orders",
-            "requests",
-            "reviews"
-        ];
+  [
+   "dashboard",
+   "specialists",
+   "clients",
+   "orders",
+   "requests",
+   "reviews"
+  ].forEach(id=>{
+
+   $(id)
+   .classList
+   .add("hidden");
+
+  });
 
 
-        pages.forEach(
-        function(name){
-
-            document
-            .getElementById(name)
-            .classList
-            .add("hidden");
-
-        });
+  $(page)
+  .classList
+  .remove("hidden");
 
 
-        document
-        .getElementById(page)
-        .classList
-        .remove("hidden");
+  $("title").textContent =
+  titles[page];
 
 
-        pageTitle.textContent =
-        titles[page];
+  if(page==="dashboard"){
 
+   await loadDashboard();
 
-        if(page === "dashboard"){
+  }else{
 
-            await loadDashboard();
+   await loadTable(page);
 
-        }else{
+  }
 
-            await loadTable(page);
-
-        }
-
-    });
+ };
 
 });
 
 
-/* =========================
-   REFRESH
-========================= */
+/* REFRESH */
 
-document
-.getElementById("refreshBtn")
-.addEventListener(
-"click",
-async function(){
+$("refresh").onclick=async()=>{
 
-    const active =
-    document
-    .querySelector(
-        ".menu button.active"
-    )
-    .dataset.page;
+ const active =
+ document
+ .querySelector(".menu button.active")
+ .dataset.page;
 
 
-    if(active === "dashboard"){
+ if(active==="dashboard"){
 
-        await loadDashboard();
+  await loadDashboard();
 
-    }else{
+ }else{
 
-        await loadTable(active);
+  await loadTable(active);
 
-    }
+ }
 
-});
-
-
-/* =========================
-   SESSION CHECK
-========================= */
-
-async function init(){
-
-    const {
-        data
-    } =
-    await supabaseClient
-    .auth
-    .getSession();
+};
 
 
-    if(
-        data.session
-    ){
+/* SESSION */
 
-        const admin =
-        await checkAdmin(
-            data.session.user
-        );
+(async()=>{
+
+ const {data} =
+ await db.auth.getSession();
 
 
-        if(admin){
-
-            showAdmin();
-
-            loadDashboard();
-
-        }else{
-
-            await supabaseClient
-            .auth
-            .signOut();
-
-            loginBox
-            .classList
-            .remove("hidden");
-
-        }
-
-    }else{
-
-        loginBox
-        .classList
-        .remove("hidden");
-
-    }
-
-}
+ if(!data.session){
+  return;
+ }
 
 
-init();
+ const admin =
+ await db
+ .from("admin_users")
+ .select("user_id")
+ .eq(
+  "user_id",
+  data.session.user.id
+ )
+ .maybeSingle();
+
+
+ if(admin.data){
+
+  showAdmin();
+
+  await loadDashboard();
+
+ }else{
+
+  await db.auth.signOut();
+
+ }
+
+})();
 
 </script>
 
