@@ -1353,3 +1353,76 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
 });
+// ===============================
+// AUTO SAVE CLIENT TO SUPABASE
+// ===============================
+
+async function saveClient(clientData) {
+    try {
+        const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/clients`,
+            {
+                method: "POST",
+                headers: {
+                    ...API_HEADERS,
+                    "Prefer": "return=representation"
+                },
+                body: JSON.stringify({
+                    name: clientData.name,
+                    phone: clientData.phone,
+                    email: clientData.email || null
+                })
+            }
+        );
+
+        if (!response.ok) {
+            const error = await response.text();
+            console.error("Supabase error:", error);
+            alert("Хатогӣ ҳангоми нигоҳдорӣ!");
+            return false;
+        }
+
+        const saved = await response.json();
+
+        console.log("Client saved:", saved);
+
+        alert("✅ Маълумот бомуваффақият нигоҳ дошта шуд!");
+
+        return true;
+
+    } catch (error) {
+        console.error("Save error:", error);
+        alert("❌ Пайвастшавӣ ба сервер хато шуд!");
+        return false;
+    }
+}
+document.addEventListener("DOMContentLoaded", () => {
+
+    const form = document.getElementById("clientForm");
+
+    if (!form) return;
+
+    form.addEventListener("submit", async (event) => {
+
+        event.preventDefault();
+
+        const clientData = {
+            name: document.getElementById("clientName").value.trim(),
+            phone: document.getElementById("clientPhone").value.trim(),
+            email: document.getElementById("clientEmail").value.trim()
+        };
+
+        if (!clientData.name || !clientData.phone) {
+            alert("Ном ва телефонро пур кунед!");
+            return;
+        }
+
+        const success = await saveClient(clientData);
+
+        if (success) {
+            form.reset();
+        }
+
+    });
+
+});
