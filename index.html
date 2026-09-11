@@ -1,1628 +1,552 @@
 <!DOCTYPE html>
 <html lang="tg">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
 
-    <meta
-        name="description"
-        content="SMM.TJ — маркетплейс барои ёфтани мутахассисони SMM ва фармоишҳои бизнес."
-    >
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-    <meta name="theme-color" content="#635bff">
+  <meta
+    name="description"
+    content="SMM.TJ — Платформаи касбии SMM дар Тоҷикистон"
+  >
 
-    <title>SMM.TJ — Мутахассиси SMM ёбед</title>
+  <title>SMM.TJ — Платформаи касбии SMM</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet"
-    >
-
-    <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
 
-<!-- =====================================================
-     HEADER
-===================================================== -->
+  <!-- ================= HEADER ================= -->
 
-<header class="header">
+  <header class="header">
 
-    <div class="container header-inner">
+    <a href="#" class="logo" id="logo">
+      <span>SMM</span><b>.TJ</b>
+    </a>
 
-        <a href="index.html" class="logo" aria-label="SMM.TJ">
-            <span>SMM</span><b>.TJ</b>
-        </a>
+    <nav class="navigation">
 
-        <nav class="nav" id="mainNav">
+      <a href="#home" data-i18n="home">Асосӣ</a>
 
-            <a href="#specialists">
-                Мутахассисон
-            </a>
+      <a href="#services" data-i18n="services">
+        Хизматрасониҳо
+      </a>
 
-            <a href="#cases">
-                Кейсҳо
-            </a>
+      <a href="#specialists" data-i18n="specialists">
+        Мутахассисон
+      </a>
 
-            <a href="#reviews">
-                Отзывҳо
-            </a>
+      <a href="#how" data-i18n="how">
+        Чӣ тавр кор мекунад
+      </a>
 
-            <a href="#how">
-                Чӣ тавр кор мекунад
-            </a>
+    </nav>
 
-        </nav>
+    <div class="header-actions">
 
-        <div class="header-actions">
+      <select id="languageSelector">
+        <option value="tj">Тоҷикӣ</option>
+        <option value="ru">Русский</option>
+        <option value="en">English</option>
+      </select>
 
-            <button
-                type="button"
-                class="icon-btn notification-btn"
-                id="notificationBtn"
-                aria-label="Огоҳиномаҳо"
-            >
-                🔔
-                <span
-                    class="notification-count"
-                    id="notificationCount"
-                    hidden
-                >
-                    0
-                </span>
-            </button>
+      <button
+        class="btn btn-outline"
+        id="loginButton"
+        data-i18n="login"
+      >
+        Ворид шудан
+      </button>
 
-            <button
-                type="button"
-                class="btn btn-outline"
-                onclick="openModal('loginModal')"
-            >
-                Даромадан
-            </button>
+      <button
+        class="btn btn-primary"
+        id="registerButton"
+        data-i18n="register"
+      >
+        Бақайдгирӣ
+      </button>
 
-            <button
-                type="button"
-                class="btn btn-primary"
-                onclick="openModal('registerModal')"
-            >
-                Сабти ном
-            </button>
-
-            <button
-                type="button"
-                class="mobile-menu-btn"
-                id="mobileMenuBtn"
-                aria-label="Меню"
-                aria-expanded="false"
-            >
-                ☰
-            </button>
-
-        </div>
+      <button
+        class="mobile-menu-button"
+        id="mobileMenuButton"
+        aria-label="Menu"
+      >
+        ☰
+      </button>
 
     </div>
 
-</header>
+  </header>
 
 
-<!-- =====================================================
-     HERO
-===================================================== -->
+  <!-- ================= MOBILE MENU ================= -->
 
-<main>
+  <div class="mobile-menu" id="mobileMenu">
 
-<section class="hero">
+    <a href="#home" data-i18n="home">Асосӣ</a>
 
-    <div class="container">
+    <a href="#services" data-i18n="services">
+      Хизматрасониҳо
+    </a>
 
-        <div class="hero-content">
+    <a href="#specialists" data-i18n="specialists">
+      Мутахассисон
+    </a>
 
-            <span class="hero-label">
-                🚀 Маркетплейси SMM дар Тоҷикистон
-            </span>
+    <a href="#how" data-i18n="how">
+      Чӣ тавр кор мекунад
+    </a>
 
-            <h1>
-                Мутахассиси дурусти
-                <span>SMM</span>-ро ёбед
-            </h1>
-
-            <p>
-                SMM.TJ бизнесҳоро бо мутахассисони SMM,
-                таргетологҳо, дизайнерҳо, Reels Maker-ҳо,
-                копирайтерҳо ва Video Editor-ҳо мепайвандад.
-            </p>
+  </div>
 
 
-            <!-- SEARCH -->
+  <!-- ================= HERO ================= -->
 
-            <form
-                class="search-box"
-                id="searchForm"
-            >
+  <main>
 
-                <span
-                    class="search-icon"
-                    aria-hidden="true"
-                >
-                    ⌕
-                </span>
+    <section class="hero" id="home">
 
-                <input
-                    type="search"
-                    id="searchInput"
-                    placeholder="SMM-мутахассис ёбед..."
-                    autocomplete="off"
-                >
+      <div class="hero-content">
 
-                <button type="submit">
-                    Ҷустуҷӯ
-                </button>
-
-            </form>
-
-
-            <!-- POPULAR -->
-
-            <div class="popular-searches">
-
-                <span>
-                    Ҷустуҷӯи маъмул:
-                </span>
-
-                <button
-                    type="button"
-                    onclick="filterCategory('SMM Manager')"
-                >
-                    SMM Manager
-                </button>
-
-                <button
-                    type="button"
-                    onclick="filterCategory('Targetolog')"
-                >
-                    Targetolog
-                </button>
-
-                <button
-                    type="button"
-                    onclick="filterCategory('Reels Maker')"
-                >
-                    Reels Maker
-                </button>
-
-                <button
-                    type="button"
-                    onclick="filterCategory('Designer')"
-                >
-                    Designer
-                </button>
-
-            </div>
-
+        <div class="hero-badge">
+          🇹🇯 Тоҷикистон • SMM Marketplace
         </div>
 
-
-        <!-- EMPTY / REAL PLATFORM STATUS -->
-
-        <div class="hero-platform-status">
-
-            <div class="status-card">
-
-                <span class="status-icon">
-                    ✨
-                </span>
-
-                <div>
-
-                    <strong>
-                        SMM.TJ нав оғоз шудааст
-                    </strong>
-
-                    <p>
-                        Мутахассисон ва бизнесҳо метавонанд
-                        профили худро аввалин шуда созанд.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     CATEGORIES
-===================================================== -->
-
-<section
-    class="section categories-section"
-    id="categories"
->
-
-    <div class="container">
-
-        <div class="section-heading">
-
-            <div>
-
-                <span class="eyebrow">
-                    ХИЗМАТРАСОНӢ
-                </span>
-
-                <h2>
-                    Мутахассисро аз рӯи хизмат ёбед
-                </h2>
-
-                <p>
-                    Самти лозимаро интихоб кунед.
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <div class="categories-grid">
-
-            <button
-                type="button"
-                class="category-card"
-                onclick="filterCategory('SMM Manager')"
-            >
-
-                <div class="category-icon">
-                    📱
-                </div>
-
-                <h3>
-                    SMM Manager
-                </h3>
-
-                <p>
-                    Идоракунии шабакаҳои иҷтимоӣ
-                </p>
-
-            </button>
-
-
-            <button
-                type="button"
-                class="category-card"
-                onclick="filterCategory('Targetolog')"
-            >
-
-                <div class="category-icon">
-                    🎯
-                </div>
-
-                <h3>
-                    Targetolog
-                </h3>
-
-                <p>
-                    Рекламаи мақсаднок
-                </p>
-
-            </button>
-
-
-            <button
-                type="button"
-                class="category-card"
-                onclick="filterCategory('Reels Maker')"
-            >
-
-                <div class="category-icon">
-                    🎬
-                </div>
-
-                <h3>
-                    Reels Maker
-                </h3>
-
-                <p>
-                    Сохтани Reels ва видеои кӯтоҳ
-                </p>
-
-            </button>
-
-
-            <button
-                type="button"
-                class="category-card"
-                onclick="filterCategory('Designer')"
-            >
-
-                <div class="category-icon">
-                    🎨
-                </div>
-
-                <h3>
-                    Designer
-                </h3>
-
-                <p>
-                    Дизайн барои бизнес
-                </p>
-
-            </button>
-
-
-            <button
-                type="button"
-                class="category-card"
-                onclick="filterCategory('Copywriter')"
-            >
-
-                <div class="category-icon">
-                    ✍️
-                </div>
-
-                <h3>
-                    Copywriter
-                </h3>
-
-                <p>
-                    Матн ва контент
-                </p>
-
-            </button>
-
-
-            <button
-                type="button"
-                class="category-card"
-                onclick="filterCategory('Video Editor')"
-            >
-
-                <div class="category-icon">
-                    🎞️
-                </div>
-
-                <h3>
-                    Video Editor
-                </h3>
-
-                <p>
-                    Монтажи видео
-                </p>
-
-            </button>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     SPECIALISTS
-===================================================== -->
-
-<section
-    class="section specialists-section"
-    id="specialists"
->
-
-    <div class="container">
-
-        <div class="section-heading">
-
-            <div>
-
-                <span class="eyebrow">
-                    МУТАХАССИСОН
-                </span>
-
-                <h2>
-                    Мутахассисони SMM
-                </h2>
-
-                <p>
-                    Ҳоло профилҳои аввалинро мо интизорем.
-                </p>
-
-            </div>
-
-
-            <div class="sort-box">
-
-                <select
-                    id="sortSelect"
-                    aria-label="Тартиб додан"
-                >
-
-                    <option value="rating">
-                        Аз рӯи рейтинг
-                    </option>
-
-                    <option value="reviews">
-                        Аз рӯи отзывҳо
-                    </option>
-
-                    <option value="experience">
-                        Аз рӯи таҷриба
-                    </option>
-
-                </select>
-
-            </div>
-
-        </div>
-
-
-        <!--
-
-            Мутахассисони сохта дар ин ҷо НЕСТАНД.
-
-            Вақте backend пайваст мешавад,
-            JavaScript аз API маълумоти воқеиро мегирад.
-
-        -->
-
-        <div
-            class="specialists-grid"
-            id="specialistsGrid"
-        >
-
-            <div class="empty-state">
-
-                <div class="empty-state-icon">
-                    👤
-                </div>
-
-                <h3>
-                    Ҳоло мутахассисон нестанд
-                </h3>
-
-                <p>
-                    SMM.TJ нав оғоз шудааст.
-                    Шумо метавонед аввалин мутахассис бошед.
-                </p>
-
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    onclick="openModal('registerModal')"
-                >
-                    Профили худро созед
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     CASES
-===================================================== -->
-
-<section
-    class="section cases-section"
-    id="cases"
->
-
-    <div class="container">
-
-        <div class="section-heading">
-
-            <div>
-
-                <span class="eyebrow">
-                    CASES
-                </span>
-
-                <h2>
-                    Кейсҳои воқеӣ
-                </h2>
-
-                <p>
-                    Танҳо натиҷаҳои тасдиқшуда дар ин ҷо нашр мешаванд.
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <div class="empty-content-card">
-
-            <div class="empty-content-icon">
-                📊
-            </div>
-
-            <h3>
-                Ҳоло кейсҳо нестанд
-            </h3>
-
-            <p>
-                Вақте мутахассисон натиҷаҳои худро илова мекунанд,
-                кейсҳо дар ин ҷо намоиш дода мешаванд.
-            </p>
-
-            <span class="content-rule">
-                ✓ Танҳо маълумоти воқеӣ
-            </span>
-
-            <span class="content-rule">
-                ✓ Натиҷаҳои тасдиқшаванда
-            </span>
-
-            <span class="content-rule">
-                ✓ «Пеш / Баъд»
-            </span>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     REVIEWS
-===================================================== -->
-
-<section
-    class="section reviews-section"
-    id="reviews"
->
-
-    <div class="container">
-
-        <div class="section-heading">
-
-            <div>
-
-                <span class="eyebrow">
-                    ОТЗЫВҲО
-                </span>
-
-                <h2>
-                    Фикри мизоҷон
-                </h2>
-
-                <p>
-                    Отзыв танҳо баъд аз анҷоми заказ гузошта мешавад.
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <div class="empty-content-card">
-
-            <div class="empty-content-icon">
-                ⭐
-            </div>
-
-            <h3>
-                Ҳоло отзыв нест
-            </h3>
-
-            <p>
-                Вақте аввалин заказҳо анҷом меёбанд,
-                мизоҷон метавонанд ба мутахассисон рейтинг ва отзыв диҳанд.
-            </p>
-
-            <span class="content-rule">
-                ✓ Танҳо баъд аз заказ
-            </span>
-
-            <span class="content-rule">
-                ✓ Рейтинг аз 1 то 5
-            </span>
-
-            <span class="content-rule">
-                ✓ Сифати кор
-            </span>
-
-            <span class="content-rule">
-                ✓ Риояи муҳлат
-            </span>
-
-            <span class="content-rule">
-                ✓ Коммуникация
-            </span>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     HOW IT WORKS
-===================================================== -->
-
-<section
-    class="section how-section"
-    id="how"
->
-
-    <div class="container">
-
-        <div class="section-heading centered">
-
-            <span class="eyebrow">
-                ЧӢ ТАВР КОР МЕКУНАД
-            </span>
-
-            <h2>
-                Аз вазифа то натиҷа
-            </h2>
-
-            <p>
-                Платформа барои ҳамкории мустақими бизнес ва SMM сохта шудааст.
-            </p>
-
-        </div>
-
-
-        <div class="steps">
-
-            <article class="step">
-
-                <div class="step-number">
-                    01
-                </div>
-
-                <div class="step-icon">
-                    📝
-                </div>
-
-                <h3>
-                    Заказ созед
-                </h3>
-
-                <p>
-                    Вазифа, соҳа, буҷет ва муҳлати корро нишон диҳед.
-                </p>
-
-            </article>
-
-
-            <article class="step">
-
-                <div class="step-number">
-                    02
-                </div>
-
-                <div class="step-icon">
-                    📩
-                </div>
-
-                <h3>
-                    Заявкаҳо гиред
-                </h3>
-
-                <p>
-                    Мутахассисони мувофиқ метавонанд ба заказ ҷавоб диҳанд.
-                </p>
-
-            </article>
-
-
-            <article class="step">
-
-                <div class="step-number">
-                    03
-                </div>
-
-                <div class="step-icon">
-                    🤝
-                </div>
-
-                <h3>
-                    Мутахассис интихоб кунед
-                </h3>
-
-                <p>
-                    Профил, портфолио, кейсҳо ва отзывҳои воқеиро муқоиса кунед.
-                </p>
-
-            </article>
-
-
-            <article class="step">
-
-                <div class="step-number">
-                    04
-                </div>
-
-                <div class="step-icon">
-                    ⭐
-                </div>
-
-                <h3>
-                    Отзыв гузоред
-                </h3>
-
-                <p>
-                    Пас аз анҷоми заказ ба мутахассис баҳои воқеӣ диҳед.
-                </p>
-
-            </article>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     FOR SMM
-===================================================== -->
-
-<section class="cta-section">
-
-    <div class="container">
-
-        <div class="cta-box">
-
-            <div class="cta-content">
-
-                <span class="eyebrow">
-                    БАРОИ SMM
-                </span>
-
-                <h2>
-                    Клиентҳои худро дар SMM.TJ ёбед
-                </h2>
-
-                <p>
-                    Профили худро созед, хизматрасониҳо,
-                    портфолио ва кейсҳои воқеиро илова кунед.
-                </p>
-
-            </div>
-
-            <button
-                type="button"
-                class="btn btn-white"
-                onclick="openModal('registerModal')"
-            >
-                Ман SMM ҳастам →
-            </button>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     FOR BUSINESS
-===================================================== -->
-
-<section class="business-section">
-
-    <div class="container">
-
-        <div class="business-card">
-
-            <div class="business-icon">
-                🏢
-            </div>
-
-            <div class="business-content">
-
-                <span class="eyebrow">
-                    БАРОИ БИЗНЕС
-                </span>
-
-                <h2>
-                    Ба шумо SMM лозим аст?
-                </h2>
-
-                <p>
-                    Вазифаи худро гузоред ва аз мутахассисон заявка гиред.
-                </p>
-
-            </div>
-
-            <button
-                type="button"
-                class="btn btn-primary"
-                onclick="openModal('orderModal')"
-            >
-                Заказ сохтан
-            </button>
-
-        </div>
-
-    </div>
-
-</section>
-
-</main>
-
-
-<!-- =====================================================
-     FOOTER
-===================================================== -->
-
-<footer class="footer">
-
-    <div class="container footer-grid">
-
-        <div class="footer-brand">
-
-            <a
-                href="index.html"
-                class="logo footer-logo"
-            >
-                <span>SMM</span><b>.TJ</b>
-            </a>
-
-            <p>
-                Маркетплейс барои SMM мутахассисон
-                ва бизнесҳо дар Тоҷикистон.
-            </p>
-
-        </div>
-
-
-        <div class="footer-column">
-
-            <h4>
-                Платформа
-            </h4>
-
-            <a href="#specialists">
-                Мутахассисон
-            </a>
-
-            <a href="#cases">
-                Кейсҳо
-            </a>
-
-            <a href="#reviews">
-                Отзывҳо
-            </a>
-
-            <a href="#how">
-                Чӣ тавр кор мекунад
-            </a>
-
-        </div>
-
-
-        <div class="footer-column">
-
-            <h4>
-                Барои корбарон
-            </h4>
-
-            <a
-                href="#"
-                onclick="openModal('registerModal'); return false;"
-            >
-                Ман SMM ҳастам
-            </a>
-
-            <a
-                href="#"
-                onclick="openModal('orderModal'); return false;"
-            >
-                Ман бизнес ҳастам
-            </a>
-
-            <a href="#">
-                Қоидаҳо
-            </a>
-
-            <a href="#">
-                Кӯмак
-            </a>
-
-        </div>
-
-
-        <div class="footer-column">
-
-            <h4>
-                Тамос
-            </h4>
-
-            <a href="mailto:info@smm.tj">
-                info@smm.tj
-            </a>
-
-            <a href="#">
-                Telegram
-            </a>
-
-            <a href="#">
-                Instagram
-            </a>
-
-        </div>
-
-    </div>
-
-
-    <div class="footer-bottom">
-
-        <div class="container">
-
-            © 2026 SMM.TJ. Ҳамаи ҳуқуқҳо ҳифз шудаанд.
-
-        </div>
-
-    </div>
-
-</footer>
-
-
-<!-- =====================================================
-     NOTIFICATION PANEL
-===================================================== -->
-
-<div
-    class="notification-panel"
-    id="notificationPanel"
-    aria-hidden="true"
->
-
-    <div class="panel-header">
-
-        <h3>
-            Огоҳиномаҳо
-        </h3>
-
-        <button
-            type="button"
-            onclick="closeNotifications()"
-            aria-label="Пӯшидан"
-        >
-            ×
-        </button>
-
-    </div>
-
-
-    <div class="empty-notifications">
-
-        <div>
-            🔔
-        </div>
-
-        <strong>
-            Ҳоло огоҳинома нест
-        </strong>
-
-        <p>
-            Вақте фаъолият дар аккаунти шумо пайдо мешавад,
-            огоҳиномаҳо дар ин ҷо нишон дода мешаванд.
+        <h1 data-i18n="heroTitle">
+          Платформаи касбии SMM дар Тоҷикистон
+        </h1>
+
+        <p data-i18n="heroDescription">
+          Беҳтарин мутахассиси SMM-ро пайдо кунед,
+          лоиҳаи худро оғоз кунед ва натиҷаро назорат намоед.
         </p>
 
-    </div>
+        <div class="hero-buttons">
 
-</div>
+          <button
+            class="btn btn-primary btn-large"
+            id="findSpecialistButton"
+            data-i18n="findSpecialist"
+          >
+            Мутахассиси SMM пайдо кунед
+          </button>
 
-
-<!-- =====================================================
-     LOGIN MODAL
-===================================================== -->
-
-<div
-    class="modal"
-    id="loginModal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="loginTitle"
->
-
-    <div class="modal-box">
-
-        <button
-            type="button"
-            class="modal-close"
-            onclick="closeModal('loginModal')"
-            aria-label="Пӯшидан"
-        >
-            ×
-        </button>
-
-        <div class="modal-logo">
-            SMM<span>.TJ</span>
-        </div>
-
-        <h2 id="loginTitle">
-            Даромадан
-        </h2>
-
-        <p>
-            Ба аккаунти худ ворид шавед.
-        </p>
-
-
-        <form id="loginForm">
-
-            <label for="loginEmail">
-                Email
-            </label>
-
-            <input
-                type="email"
-                id="loginEmail"
-                name="email"
-                placeholder="example@mail.com"
-                autocomplete="email"
-                required
-            >
-
-
-            <label for="loginPassword">
-                Парол
-            </label>
-
-            <input
-                type="password"
-                id="loginPassword"
-                name="password"
-                placeholder="••••••••"
-                autocomplete="current-password"
-                required
-            >
-
-
-            <button
-                type="submit"
-                class="btn btn-primary full-width"
-            >
-                Даромадан
-            </button>
-
-        </form>
-
-
-        <div class="modal-footer">
-
-            Ҳоло аккаунт надоред?
-
-            <button
-                type="button"
-                onclick="switchModal('loginModal', 'registerModal')"
-            >
-                Сабти ном
-            </button>
+          <button
+            class="btn btn-glass btn-large"
+            id="joinSpecialistButton"
+            data-i18n="joinSpecialist"
+          >
+            Ҳамчун SMM мутахассис ҳамроҳ шавед
+          </button>
 
         </div>
 
-    </div>
+        <div class="hero-stats">
 
-</div>
+          <div>
+            <strong>100+</strong>
+            <span data-i18n="specialistsStat">
+              Мутахассисон
+            </span>
+          </div>
 
+          <div>
+            <strong>500+</strong>
+            <span data-i18n="projectsStat">
+              Лоиҳаҳо
+            </span>
+          </div>
 
-<!-- =====================================================
-     REGISTER MODAL
-===================================================== -->
-
-<div
-    class="modal"
-    id="registerModal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="registerTitle"
->
-
-    <div class="modal-box">
-
-        <button
-            type="button"
-            class="modal-close"
-            onclick="closeModal('registerModal')"
-            aria-label="Пӯшидан"
-        >
-            ×
-        </button>
-
-
-        <div class="modal-logo">
-            SMM<span>.TJ</span>
-        </div>
-
-
-        <h2 id="registerTitle">
-            Аккаунт созед
-        </h2>
-
-        <p>
-            Аввал навъи аккаунти худро интихоб кунед.
-        </p>
-
-
-        <div class="account-types">
-
-            <button
-                type="button"
-                class="account-type active"
-                data-account-type="smm"
-            >
-
-                <span>
-                    👤
-                </span>
-
-                <strong>
-                    SMM мутахассис
-                </strong>
-
-                <small>
-                    Барои гирифтани заказ
-                </small>
-
-            </button>
-
-
-            <button
-                type="button"
-                class="account-type"
-                data-account-type="business"
-            >
-
-                <span>
-                    🏢
-                </span>
-
-                <strong>
-                    Бизнес
-                </strong>
-
-                <small>
-                    Барои ёфтани мутахассис
-                </small>
-
-            </button>
+          <div>
+            <strong>98%</strong>
+            <span data-i18n="satisfaction">
+              Қаноатмандӣ
+            </span>
+          </div>
 
         </div>
 
-
-        <form id="registerForm">
-
-            <input
-                type="hidden"
-                id="accountType"
-                name="accountType"
-                value="smm"
-            >
+      </div>
 
 
-            <label for="registerName">
-                Ном
-            </label>
+      <div class="hero-visual">
 
-            <input
-                type="text"
-                id="registerName"
-                name="name"
-                placeholder="Номи шумо"
-                autocomplete="name"
-                required
-            >
+        <div class="glow glow-one"></div>
+        <div class="glow glow-two"></div>
 
+        <div class="dashboard-preview">
 
-            <label for="registerEmail">
-                Email
-            </label>
+          <div class="preview-top">
 
-            <input
-                type="email"
-                id="registerEmail"
-                name="email"
-                placeholder="example@mail.com"
-                autocomplete="email"
-                required
-            >
+            <span class="mini-logo">
+              SMM.TJ
+            </span>
 
+            <span class="online">
+              ● Online
+            </span>
 
-            <label for="registerPassword">
-                Парол
-            </label>
+          </div>
 
-            <input
-                type="password"
-                id="registerPassword"
-                name="password"
-                placeholder="Ҳадди ақал 8 аломат"
-                autocomplete="new-password"
-                minlength="8"
-                required
-            >
+          <div class="preview-profile">
 
+            <div class="avatar">
+              SM
+            </div>
 
-            <button
-                type="submit"
-                class="btn btn-primary full-width"
-            >
-                Создани аккаунт
-            </button>
+            <div>
+              <strong>SMM Specialist</strong>
+              <span>⭐ 5.0 • 24 projects</span>
+            </div>
 
-        </form>
+          </div>
 
-    </div>
+          <div class="preview-chart">
 
-</div>
+            <div class="chart-bars">
 
+              <span style="height:35%"></span>
+              <span style="height:50%"></span>
+              <span style="height:42%"></span>
+              <span style="height:70%"></span>
+              <span style="height:62%"></span>
+              <span style="height:85%"></span>
+              <span style="height:96%"></span>
 
-<!-- =====================================================
-     ORDER MODAL
-===================================================== -->
+            </div>
 
-<div
-    class="modal"
-    id="orderModal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="orderTitle"
->
+          </div>
 
-    <div class="modal-box large-modal">
+          <div class="preview-bottom">
 
-        <button
-            type="button"
-            class="modal-close"
-            onclick="closeModal('orderModal')"
-            aria-label="Пӯшидан"
-        >
-            ×
-        </button>
+            <div>
+              <small>Reach</small>
+              <strong>124K</strong>
+            </div>
+
+            <div>
+              <small>Engagement</small>
+              <strong>8.7%</strong>
+            </div>
+
+            <div>
+              <small>Growth</small>
+              <strong>+32%</strong>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
 
 
-        <span class="eyebrow">
-            ЗАКАЗ
+    <!-- ================= SERVICES ================= -->
+
+    <section class="section" id="services">
+
+      <div class="section-heading">
+
+        <span class="section-label">
+          SMM.TJ
         </span>
 
-        <h2 id="orderTitle">
-            Вазифаи худро нависед
+        <h2 data-i18n="servicesTitle">
+          Ҳамаи хизматҳои SMM дар як платформа
         </h2>
 
-        <p>
-            Маълумоти бештар диҳед, то мутахассиси мувофиқро ёфтан осон шавад.
+        <p data-i18n="servicesDescription">
+          Аз контент то реклама — мутахассиси мувофиқро пайдо кунед.
         </p>
 
-
-        <form id="orderForm">
-
-            <div class="form-grid">
-
-                <div>
-
-                    <label for="businessCategory">
-                        Соҳаи бизнес
-                    </label>
-
-                    <select
-                        id="businessCategory"
-                        name="businessCategory"
-                        required
-                    >
-
-                        <option value="">
-                            Соҳа интихоб кунед
-                        </option>
-
-                        <option value="restaurant">
-                            Ресторан
-                        </option>
-
-                        <option value="beauty">
-                            Beauty / SPA
-                        </option>
-
-                        <option value="shop">
-                            Магазин
-                        </option>
-
-                        <option value="education">
-                            Маориф
-                        </option>
-
-                        <option value="real-estate">
-                            Недвижимость
-                        </option>
-
-                        <option value="other">
-                            Дигар
-                        </option>
-
-                    </select>
-
-                </div>
+      </div>
 
 
-                <div>
+      <div class="services-grid">
 
-                    <label for="service">
-                        Хизматрасонӣ
-                    </label>
+        <article class="service-card">
+          <div class="service-icon">◎</div>
+          <h3>Instagram</h3>
+          <p>Идоракунии саҳифа ва стратегия.</p>
+        </article>
 
-                    <select
-                        id="service"
-                        name="service"
-                        required
-                    >
+        <article class="service-card">
+          <div class="service-icon">▶</div>
+          <h3>TikTok</h3>
+          <p>Контент ва рушди аудитория.</p>
+        </article>
 
-                        <option value="">
-                            Хизмат интихоб кунед
-                        </option>
+        <article class="service-card">
+          <div class="service-icon">✦</div>
+          <h3>Reels</h3>
+          <p>Видеоҳои кӯтоҳи касбӣ.</p>
+        </article>
 
-                        <option value="smm">
-                            SMM Manager
-                        </option>
+        <article class="service-card">
+          <div class="service-icon">◆</div>
+          <h3>Design</h3>
+          <p>Дизайни пост, stories ва branding.</p>
+        </article>
 
-                        <option value="target">
-                            Targetolog
-                        </option>
+        <article class="service-card">
+          <div class="service-icon">⌁</div>
+          <h3>Target</h3>
+          <p>Рекламаи мақсаднок.</p>
+        </article>
 
-                        <option value="reels">
-                            Reels Maker
-                        </option>
+        <article class="service-card">
+          <div class="service-icon">▣</div>
+          <h3>Analytics</h3>
+          <p>Таҳлил ва ҳисоботи натиҷаҳо.</p>
+        </article>
 
-                        <option value="designer">
-                            Designer
-                        </option>
+      </div>
 
-                        <option value="copywriter">
-                            Copywriter
-                        </option>
-
-                        <option value="video">
-                            Video Editor
-                        </option>
-
-                    </select>
-
-                </div>
+    </section>
 
 
-                <div>
+    <!-- ================= SPECIALISTS ================= -->
 
-                    <label for="budget">
-                        Буҷет
-                    </label>
+    <section class="section specialists-section" id="specialists">
 
-                    <input
-                        type="number"
-                        id="budget"
-                        name="budget"
-                        min="0"
-                        placeholder="Масалан: 1500"
-                    >
+      <div class="section-heading">
 
-                </div>
+        <span class="section-label">
+          MARKETPLACE
+        </span>
 
+        <h2 data-i18n="specialistsTitle">
+          Мутахассисони SMM
+        </h2>
 
-                <div>
+        <p data-i18n="specialistsDescription">
+          Мутахассиси мувофиқро аз рӯи таҷриба, рейтинг ва хизмат интихоб кунед.
+        </p>
 
-                    <label for="deadline">
-                        Муҳлат
-                    </label>
-
-                    <input
-                        type="text"
-                        id="deadline"
-                        name="deadline"
-                        placeholder="Масалан: 1 моҳ"
-                    >
-
-                </div>
+      </div>
 
 
-                <div>
+      <div class="specialist-grid" id="specialistGrid">
 
-                    <label for="instagram">
-                        Instagram
-                    </label>
+        <!-- Specialists will be loaded here from API -->
 
-                    <input
-                        type="text"
-                        id="instagram"
-                        name="instagram"
-                        placeholder="@yourbusiness"
-                    >
+      </div>
 
-                </div>
+    </section>
 
 
-                <div>
+    <!-- ================= HOW IT WORKS ================= -->
 
-                    <label for="website">
-                        Website
-                    </label>
+    <section class="section" id="how">
 
-                    <input
-                        type="url"
-                        id="website"
-                        name="website"
-                        placeholder="https://example.tj"
-                    >
+      <div class="section-heading">
 
-                </div>
+        <span class="section-label">
+          SIMPLE
+        </span>
 
-            </div>
+        <h2 data-i18n="howTitle">
+          Чӣ тавр кор мекунад?
+        </h2>
 
-
-            <label for="taskDescription">
-                Шарҳи вазифа
-            </label>
-
-            <textarea
-                id="taskDescription"
-                name="description"
-                rows="6"
-                placeholder="Вазифаи худро муфассал нависед..."
-                required
-            ></textarea>
+      </div>
 
 
-            <button
-                type="submit"
-                class="btn btn-primary full-width"
-            >
-                Заказро сохтан
-            </button>
+      <div class="steps">
 
-        </form>
+        <div class="step">
 
-    </div>
+          <span>01</span>
 
-</div>
+          <h3 data-i18n="step1Title">
+            Лоиҳа созед
+          </h3>
 
-
-<!-- =====================================================
-     CHAT
-===================================================== -->
-
-<div
-    class="chat-widget"
-    id="chatWidget"
-    aria-hidden="true"
->
-
-    <div class="chat-header">
-
-        <div>
-
-            <strong>
-                Chat
-            </strong>
-
-            <span>
-                SMM.TJ
-            </span>
+          <p data-i18n="step1Text">
+            Вазифа ва буҷаи худро муайян кунед.
+          </p>
 
         </div>
 
-        <button
-            type="button"
-            onclick="toggleChat()"
-            aria-label="Пӯшидани chat"
-        >
-            ×
-        </button>
+        <div class="step">
 
-    </div>
+          <span>02</span>
 
+          <h3 data-i18n="step2Title">
+            Мутахассис интихоб кунед
+          </h3>
 
-    <div
-        class="chat-messages"
-        id="chatMessages"
-    >
-
-        <div class="chat-empty">
-
-            <span>
-                💬
-            </span>
-
-            <strong>
-                Chat ҳоло холӣ аст
-            </strong>
-
-            <p>
-                Баъд аз пайдо шудани заказ ё мутахассис
-                метавонед мустақиман муошират кунед.
-            </p>
+          <p data-i18n="step2Text">
+            Пешниҳодҳоро муқоиса кунед.
+          </p>
 
         </div>
 
+        <div class="step">
+
+          <span>03</span>
+
+          <h3 data-i18n="step3Title">
+            Корро оғоз кунед
+          </h3>
+
+          <p data-i18n="step3Text">
+            Chat, tasks ва content calendar истифода баред.
+          </p>
+
+        </div>
+
+        <div class="step">
+
+          <span>04</span>
+
+          <h3 data-i18n="step4Title">
+            Натиҷаро бинед
+          </h3>
+
+          <p data-i18n="step4Text">
+            Analytics ва review-ро истифода баред.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- ================= FOOTER ================= -->
+
+  <footer class="footer">
+
+    <div class="footer-logo">
+      SMM<span>.TJ</span>
     </div>
 
+    <p data-i18n="footer">
+      Платформаи касбии SMM дар Тоҷикистон
+    </p>
 
-    <form
-        class="chat-input"
-        id="chatForm"
-    >
+    <div class="footer-links">
+      <a href="#home">SMM.TJ</a>
+      <a href="#services" data-i18n="services">
+        Хизматрасониҳо
+      </a>
+      <a href="#specialists" data-i18n="specialists">
+        Мутахассисон
+      </a>
+    </div>
 
-        <button
-            type="button"
-            aria-label="Илова кардан"
-        >
-            ＋
-        </button>
+    <div class="copyright">
+      © <span id="currentYear"></span> SMM.TJ
+    </div>
 
-        <input
+  </footer>
+
+
+  <!-- ================= AUTH MODAL ================= -->
+
+  <div class="modal" id="authModal">
+
+    <div class="modal-box">
+
+      <button class="modal-close" id="closeModal">
+        ×
+      </button>
+
+      <div class="modal-logo">
+        SMM<span>.TJ</span>
+      </div>
+
+      <h2 id="modalTitle">
+        Ворид шудан
+      </h2>
+
+      <form id="authForm">
+
+        <div id="nameField" class="form-group hidden">
+
+          <label>Ном</label>
+
+          <input
             type="text"
-            id="chatInput"
-            placeholder="Паём нависед..."
-            autocomplete="off"
-        >
+            id="authName"
+            autocomplete="name"
+          >
+
+        </div>
+
+        <div class="form-group">
+
+          <label>Email</label>
+
+          <input
+            type="email"
+            id="authEmail"
+            required
+            autocomplete="email"
+          >
+
+        </div>
+
+        <div class="form-group">
+
+          <label>Парол</label>
+
+          <input
+            type="password"
+            id="authPassword"
+            required
+            minlength="8"
+            autocomplete="current-password"
+          >
+
+        </div>
+
+        <div id="roleField" class="form-group hidden">
+
+          <label>Нақш</label>
+
+          <select id="authRole">
+
+            <option value="CLIENT">
+              Муштарӣ
+            </option>
+
+            <option value="SPECIALIST">
+              SMM мутахассис
+            </option>
+
+          </select>
+
+        </div>
 
         <button
-            type="submit"
-            aria-label="Фиристодан"
+          type="submit"
+          class="btn btn-primary full"
+          id="authSubmit"
         >
-            ➤
+          Ворид шудан
         </button>
 
-    </form>
+        <p class="auth-message" id="authMessage"></p>
 
-</div>
+      </form>
+
+    </div>
+
+  </div>
 
 
-<button
-    type="button"
-    class="floating-chat"
-    id="floatingChat"
-    onclick="toggleChat()"
-    aria-label="Кушодани chat"
->
-    💬
-</button>
-
-<form id="clientForm">
-
-    <input
-        type="text"
-        id="clientName"
-        placeholder="Ном"
-        required
-    >
-
-    <input
-        type="text"
-        id="clientPhone"
-        placeholder="Телефон"
-        required
-    >
-
-    <input
-        type="email"
-        id="clientEmail"
-        placeholder="Email"
-    >
-
-    <button type="submit">
-        Сохранить
-    </button>
-
-</form>
-<!-- =====================================================
-     SCRIPT
-===================================================== -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js"></script>
-<script src="script.js"></script>
+  <script src="Script.js"></script>
 
 </body>
 </html>
