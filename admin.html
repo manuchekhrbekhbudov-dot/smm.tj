@@ -1,1592 +1,504 @@
 <!DOCTYPE html>
 <html lang="tg">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>SMM.TJ Admin Panel</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8">
 
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-body{
-    background:#07070b;
-    color:#fff;
-    font-family:Arial,sans-serif
-}
+  <title>SMM.TJ — Admin Panel</title>
 
-button,input{font:inherit}
-button{cursor:pointer}
-.hidden{display:none!important}
+  <link rel="stylesheet" href="index.css">
 
-/* LOGIN */
-#loginPage{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-}
+  <style>
 
-.login-box{
-    width:420px;
-    max-width:100%;
-    padding:35px;
-    background:#111118;
-    border:1px solid #302c3b;
-    border-radius:24px;
-    box-shadow:0 25px 90px #000;
-}
-
-.logo{
-    font-size:31px;
-    font-weight:900;
-    margin-bottom:25px
-}
-
-.logo span{color:#a348ff}
-
-.login-box h1{margin-bottom:10px}
-
-.login-box p{
-    color:#858592;
-    line-height:1.5;
-    margin-bottom:25px
-}
-
-label{
-    display:block;
-    color:#aaaab5;
-    margin:16px 0 7px
-}
-
-input{
-    width:100%;
-    padding:14px;
-    background:#08080d;
-    color:#fff;
-    border:1px solid #343440;
-    border-radius:11px;
-    outline:none
-}
-
-input:focus{
-    border-color:#984cff
-}
-
-.login-btn{
-    width:100%;
-    margin-top:22px;
-    padding:14px;
-    border:0;
-    border-radius:11px;
-    color:#fff;
-    font-weight:800;
-    background:linear-gradient(90deg,#7020e8,#ad4dff)
-}
-
-#error{
-    min-height:22px;
-    margin-top:14px;
-    color:#ff6877
-}
-
-/* ADMIN */
-#admin{
-    display:none
-}
-
-.sidebar{
-    position:fixed;
-    left:0;
-    top:0;
-    bottom:0;
-    width:240px;
-    padding:25px 15px;
-    background:#101017;
-    border-right:1px solid #292936
-}
-
-.sidebar-logo{
-    font-size:28px;
-    font-weight:900;
-    margin:0 10px 35px
-}
-
-.sidebar-logo span{color:#a348ff}
-
-.menu{
-    display:flex;
-    flex-direction:column;
-    gap:7px
-}
-
-.menu button{
-    border:0;
-    background:transparent;
-    color:#aaa8b5;
-    padding:14px;
-    border-radius:11px;
-    text-align:left
-}
-
-.menu button:hover,
-.menu button.active{
-    background:#30165a;
-    color:#fff
-}
-
-.logout{
-    position:absolute;
-    left:15px;
-    right:15px;
-    bottom:20px;
-    background:#35151d!important;
-    color:#ff7180!important
-}
-
-.main{
-    margin-left:240px;
-    min-height:100vh;
-    padding:30px
-}
-
-.header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:25px
-}
-
-.header h1{font-size:30px}
-
-.refresh{
-    border:1px solid #343440;
-    background:#171720;
-    color:#fff;
-    padding:11px 16px;
-    border-radius:10px
-}
-
-/* PAGES */
-.page{display:none}
-.page.active{display:block}
-
-/* STATS */
-.stats{
-    display:grid;
-    grid-template-columns:repeat(5,1fr);
-    gap:15px
-}
-
-.stat{
-    background:#111118;
-    border:1px solid #292936;
-    border-radius:16px;
-    padding:20px
-}
-
-.stat small{color:#858592}
-
-.stat strong{
-    display:block;
-    font-size:32px;
-    margin-top:10px
-}
-
-/* CARD */
-.card{
-    margin-top:20px;
-    background:#111118;
-    border:1px solid #292936;
-    border-radius:17px;
-    overflow:hidden
-}
-
-.card-head{
-    padding:20px;
-    border-bottom:1px solid #292936
-}
-
-.card-head h2{margin-bottom:5px}
-
-.card-head p{color:#777783}
-
-/* TABLE */
-.table{
-    overflow:auto
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    min-width:800px
-}
-
-th,td{
-    padding:14px;
-    border-bottom:1px solid #25252e;
-    text-align:left
-}
-
-th{
-    color:#858592;
-    font-size:12px
-}
-
-td{font-size:14px}
-
-.actions{
-    display:flex;
-    gap:7px
-}
-
-.accept,
-.reject{
-    border:0;
-    padding:8px 12px;
-    border-radius:9px;
-    color:#fff;
-    font-weight:800
-}
-
-.accept{
-    background:#123c29;
-    color:#5ee69c
-}
-
-.reject{
-    background:#42151e;
-    color:#ff7180
-}
-
-.status{
-    display:inline-block;
-    padding:6px 10px;
-    border-radius:20px;
-    background:#292936;
-    font-size:12px
-}
-
-.empty{
-    padding:45px;
-    text-align:center;
-    color:#777783
-}
-
-@media(max-width:850px){
-
-    .sidebar{
-        width:70px;
-        padding:20px 8px
+    .admin-page {
+      min-height: 100vh;
+      background: #050507;
     }
 
-    .sidebar-logo{
-        font-size:17px;
-        text-align:center;
-        margin-left:0
+    .admin-header {
+      height: 72px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 0 5%;
+
+      border-bottom: 1px solid rgba(255,255,255,.09);
+
+      background: rgba(8,8,12,.9);
+
+      backdrop-filter: blur(15px);
     }
 
-    .menu button{
-        font-size:0;
-        text-align:center
+    .admin-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    .menu button::first-letter{
-        font-size:20px
+    .admin-title strong {
+      font-size: 21px;
     }
 
-    .logout{
-        font-size:0
+    .admin-badge {
+      padding: 6px 10px;
+
+      border-radius: 999px;
+
+      font-size: 11px;
+
+      color: #d8b4fe;
+
+      background: rgba(124,58,237,.15);
     }
 
-    .logout:after{
-        content:"↪";
-        font-size:20px
+    .admin-layout {
+      display: grid;
+
+      grid-template-columns: 240px 1fr;
+
+      min-height: calc(100vh - 72px);
     }
 
-    .main{
-        margin-left:70px;
-        padding:18px
+    .admin-sidebar {
+      border-right: 1px solid rgba(255,255,255,.08);
+
+      padding: 25px 15px;
+
+      background: #08080c;
     }
 
-    .stats{
-        grid-template-columns:1fr 1fr
+    .admin-nav {
+      display: grid;
+      gap: 5px;
     }
-}
 
-@media(max-width:550px){
-    .stats{grid-template-columns:1fr}
+    .admin-nav button {
+      width: 100%;
 
-    .header{
-        flex-direction:column;
-        align-items:flex-start;
-        gap:15px
+      text-align: left;
+
+      padding: 13px;
+
+      color: #a1a1aa;
+
+      background: transparent;
+
+      border-radius: 10px;
+
+      transition: .2s;
     }
-}
-</style>
+
+    .admin-nav button:hover,
+    .admin-nav button.active {
+      color: white;
+
+      background:
+        rgba(124,58,237,.15);
+    }
+
+    .admin-main {
+      padding: 35px;
+
+      overflow-x: auto;
+    }
+
+    .admin-main h1 {
+      margin-bottom: 30px;
+
+      font-size: 34px;
+    }
+
+    .admin-stats {
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, 1fr);
+
+      gap: 15px;
+
+      margin-bottom: 30px;
+    }
+
+    .admin-stat {
+      padding: 22px;
+
+      border: 1px solid rgba(255,255,255,.08);
+
+      border-radius: 18px;
+
+      background: #111117;
+    }
+
+    .admin-stat small {
+      color: #71717a;
+    }
+
+    .admin-stat strong {
+      display: block;
+
+      margin-top: 8px;
+
+      font-size: 28px;
+    }
+
+    .admin-table-box {
+      padding: 20px;
+
+      border: 1px solid rgba(255,255,255,.08);
+
+      border-radius: 18px;
+
+      background: #111117;
+    }
+
+    .admin-table-header {
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      gap: 15px;
+
+      margin-bottom: 20px;
+    }
+
+    .admin-table-header input {
+      padding: 11px 13px;
+
+      color: white;
+
+      background: #17171f;
+
+      border: 1px solid rgba(255,255,255,.08);
+
+      border-radius: 9px;
+
+      outline: none;
+    }
+
+    .admin-table {
+      width: 100%;
+
+      border-collapse: collapse;
+
+      min-width: 700px;
+    }
+
+    .admin-table th,
+    .admin-table td {
+      text-align: left;
+
+      padding: 14px;
+
+      border-bottom:
+        1px solid rgba(255,255,255,.07);
+    }
+
+    .admin-table th {
+      color: #71717a;
+
+      font-size: 12px;
+    }
+
+    .admin-table td {
+      color: #d4d4d8;
+
+      font-size: 14px;
+    }
+
+    .admin-status {
+      display: inline-block;
+
+      padding: 5px 8px;
+
+      border-radius: 7px;
+
+      font-size: 11px;
+
+      background:
+        rgba(124,58,237,.13);
+
+      color: #d8b4fe;
+    }
+
+    .admin-action {
+      padding: 7px 10px;
+
+      border-radius: 8px;
+
+      color: white;
+
+      background: rgba(255,255,255,.06);
+
+      margin-right: 5px;
+    }
+
+    .admin-action:hover {
+      background: rgba(124,58,237,.2);
+    }
+
+    @media(max-width:900px) {
+
+      .admin-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-sidebar {
+        border-right: 0;
+
+        border-bottom:
+          1px solid rgba(255,255,255,.08);
+
+        overflow-x: auto;
+      }
+
+      .admin-nav {
+        display: flex;
+
+        min-width: max-content;
+      }
+
+      .admin-nav button {
+        width: auto;
+      }
+
+      .admin-stats {
+        grid-template-columns:
+          repeat(2,1fr);
+      }
+
+    }
+
+    @media(max-width:600px) {
+
+      .admin-main {
+        padding: 20px;
+      }
+
+      .admin-stats {
+        grid-template-columns: 1fr;
+      }
+
+    }
+
+  </style>
+
 </head>
+
 
 <body>
 
-<!-- ================= LOGIN ================= -->
+<div class="admin-page">
 
-<section id="loginPage">
+  <header class="admin-header">
 
-<div class="login-box">
+    <div class="admin-title">
 
-<div class="logo">
-SMM<span>.TJ</span>
-</div>
+      <div class="logo">
+        SMM<span>.TJ</span>
+      </div>
 
-<h1>🔐 Admin Panel</h1>
+      <span class="admin-badge">
+        ADMIN
+      </span>
 
-<p>
-Ба панели идоракунии SMM.TJ ворид шавед.
-</p>
+    </div>
 
-<label>Email</label>
+    <button
+      class="btn btn-outline"
+      id="adminLogout"
+    >
+      Баромадан
+    </button>
 
-<input
-    id="email"
-    type="email"
-    value="manuchekhrbekhbudov@gmail.com"
-    autocomplete="username"
->
-
-<label>Парол</label>
-
-<input
-    id="password"
-    type="password"
-    placeholder="Пароли Supabase"
-    autocomplete="current-password"
->
-
-<button
-    id="loginBtn"
-    class="login-btn"
->
-Даромадан
-</button>
-
-<div id="error"></div>
-
-</div>
-
-</section>
+  </header>
 
 
-<!-- ================= ADMIN ================= -->
+  <div class="admin-layout">
 
-<div id="admin">
+    <aside class="admin-sidebar">
 
-<aside class="sidebar">
+      <nav class="admin-nav">
 
-<div class="sidebar-logo">
-SMM<span>.TJ</span>
-</div>
+        <button class="active" data-admin-page="dashboard">
+          📊 Dashboard
+        </button>
 
-<div class="menu">
+        <button data-admin-page="users">
+          👥 Users
+        </button>
 
-<button class="active" data-page="dashboard">
-📊 Dashboard
-</button>
+        <button data-admin-page="projects">
+          📁 Projects
+        </button>
 
-<button data-page="specialists">
-👤 Мутахассисон
-</button>
+        <button data-admin-page="services">
+          ⚙ Services
+        </button>
 
-<button data-page="clients">
-👥 Мизоҷон
-</button>
+        <button data-admin-page="reviews">
+          ⭐ Reviews
+        </button>
 
-<button data-page="orders">
-📦 Заказҳо
-</button>
+        <button data-admin-page="payments">
+          💳 Payments
+        </button>
 
-<button data-page="requests">
-📩 Дархостҳо
-</button>
+        <button data-admin-page="settings">
+          ⚙ Settings
+        </button>
 
-<button data-page="reviews">
-⭐ Отзывҳо
-</button>
+      </nav>
 
-</div>
-
-<button
-    id="logout"
-    class="logout"
->
-🚪 Баромадан
-</button>
-
-</aside>
+    </aside>
 
 
-<main class="main">
+    <main class="admin-main">
 
-<div class="header">
-
-<h1 id="title">
-Dashboard
-</h1>
-
-<button
-    id="refresh"
-    class="refresh"
->
-🔄 Навсозӣ
-</button>
-
-</div>
+      <h1 id="adminPageTitle">
+        Dashboard
+      </h1>
 
 
-<!-- DASHBOARD -->
+      <section class="admin-stats">
 
-<section
-    id="dashboard"
-    class="page active"
->
+        <div class="admin-stat">
+          <small>Total Users</small>
+          <strong id="totalUsers">—</strong>
+        </div>
 
-<div class="stats">
+        <div class="admin-stat">
+          <small>Clients</small>
+          <strong id="totalClients">—</strong>
+        </div>
 
-<div class="stat">
-<small>👤 Мутахассисон</small>
-<strong id="c1">0</strong>
-</div>
+        <div class="admin-stat">
+          <small>Specialists</small>
+          <strong id="totalSpecialists">—</strong>
+        </div>
 
-<div class="stat">
-<small>👥 Мизоҷон</small>
-<strong id="c2">0</strong>
-</div>
+        <div class="admin-stat">
+          <small>Active Projects</small>
+          <strong id="activeProjects">—</strong>
+        </div>
 
-<div class="stat">
-<small>📦 Заказҳо</small>
-<strong id="c3">0</strong>
-</div>
+      </section>
 
-<div class="stat">
-<small>📩 Дархостҳо</small>
-<strong id="c4">0</strong>
-</div>
 
-<div class="stat">
-<small>⭐ Отзывҳо</small>
-<strong id="c5">0</strong>
-</div>
+      <section class="admin-table-box">
 
-</div>
+        <div class="admin-table-header">
 
-<div class="card">
+          <h2 id="tableTitle">
+            Users
+          </h2>
 
-<div class="card-head">
+          <input
+            type="search"
+            id="adminSearch"
+            placeholder="Ҷустуҷӯ..."
+          >
 
-<h2>
-Хуш омадед 👋
-</h2>
+        </div>
 
-<p>
-SMM.TJ Admin Panel
-</p>
+
+        <div style="overflow-x:auto">
+
+          <table class="admin-table">
+
+            <thead>
+
+              <tr>
+
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody id="adminTableBody">
+
+              <tr>
+
+                <td colspan="6">
+                  Loading...
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
 
 </div>
 
-<div class="empty">
-Панели Admin фаъол аст ✅
-</div>
 
-</div>
-
-</section>
-
-
-<!-- SPECIALISTS -->
-
-<section
-    id="specialists"
-    class="page"
->
-
-<div class="card">
-
-<div class="card-head">
-
-<h2>👤 Мутахассисон</h2>
-
-<p>
-Рӯйхати мутахассисон
-</p>
-
-</div>
-
-<div
-    id="specialistsData"
-    class="table"
-></div>
-
-</div>
-
-</section>
-
-
-<!-- CLIENTS -->
-
-<section
-    id="clients"
-    class="page"
->
-
-<div class="card">
-
-<div class="card-head">
-
-<h2>👥 Мизоҷон</h2>
-
-<p>
-Рӯйхати мизоҷон
-</p>
-
-</div>
-
-<div
-    id="clientsData"
-    class="table"
-></div>
-
-</div>
-
-</section>
-
-
-<!-- ORDERS -->
-
-<section
-    id="orders"
-    class="page"
->
-
-<div class="card">
-
-<div class="card-head">
-
-<h2>📦 Заказҳо</h2>
-
-<p>
-Заказҳои гирифташуда
-</p>
-
-</div>
-
-<div
-    id="ordersData"
-    class="table"
-></div>
-
-</div>
-
-</section>
-
-
-<!-- REQUESTS -->
-
-<section
-    id="requests"
-    class="page"
->
-
-<div class="card">
-
-<div class="card-head">
-
-<h2>📩 Дархостҳо</h2>
-
-<p>
-Қабул ё Отмена кардани дархост
-</p>
-
-</div>
-
-<div
-    id="requestsData"
-    class="table"
-></div>
-
-</div>
-
-</section>
-
-
-<!-- REVIEWS -->
-
-<section
-    id="reviews"
-    class="page"
->
-
-<div class="card">
-
-<div class="card-head">
-
-<h2>⭐ Отзывҳо</h2>
-
-<p>
-Рӯйхати отзывҳо
-</p>
-
-</div>
-
-<div
-    id="reviewsData"
-    class="table"
-></div>
-
-</div>
-
-</section>
-
-</main>
-
-</div>
-
+<script src="Script.js"></script>
 
 <script>
 
-/* =========================================
-   SUPABASE
-========================================= */
+  /*
+   * Admin panel intentionally does NOT invent users/projects.
+   * Script.js requests them from the real backend.
+   */
 
-const SUPABASE_URL =
-"https://lcldaingzicxbottlznq.supabase.co";
+  document
+    .querySelectorAll("[data-admin-page]")
+    .forEach(button => {
 
-const SUPABASE_KEY =
-"sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
+      button.addEventListener("click", () => {
 
-const db =
-window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
-
-
-/* =========================================
-   SAFE HTML
-========================================= */
-
-function safe(value){
-
-    if(
-        value === null ||
-        value === undefined
-    ){
-
-        return "—";
-
-    }
-
-    return String(value)
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
-
-}
-
-
-/* =========================================
-   LOGIN
-========================================= */
-
-document
-.getElementById("loginBtn")
-.addEventListener(
-"click",
-async function(){
-
-    const email =
         document
-        .getElementById("email")
-        .value
-        .trim();
+          .querySelectorAll("[data-admin-page]")
+          .forEach(item =>
+            item.classList.remove("active")
+          );
 
-    const password =
+        button.classList.add("active");
+
+        const page =
+          button.dataset.adminPage;
+
         document
-        .getElementById("password")
-        .value;
+          .getElementById("adminPageTitle")
+          .textContent = page;
 
-    const error =
         document
-        .getElementById("error");
-
-
-    error.textContent =
-        "⏳ Санҷида истодаем...";
-
-
-    const result =
-        await db.auth.signInWithPassword({
-
-            email:email,
-
-            password:password
-
-        });
-
-
-    if(result.error){
-
-        error.textContent =
-            result.error.message;
-
-        return;
-
-    }
-
-
-    /* ADMIN CHECK */
-
-    const admin =
-        await db
-        .from("admin_users")
-        .select("user_id")
-        .eq(
-            "user_id",
-            result.data.user.id
-        )
-        .maybeSingle();
-
-
-    if(admin.error){
-
-        await db.auth.signOut();
-
-        error.textContent =
-            admin.error.message;
-
-        return;
-
-    }
-
-
-    if(!admin.data){
-
-        await db.auth.signOut();
-
-        error.textContent =
-            "❌ Ин аккаунт Admin нест.";
-
-        return;
-
-    }
-
-
-    error.textContent = "";
-
-    document
-    .getElementById("loginPage")
-    .style
-    .display = "none";
-
-    document
-    .getElementById("admin")
-    .style
-    .display = "block";
-
-
-    await loadDashboard();
-
-});
-
-
-/* =========================================
-   COUNT
-========================================= */
-
-async function count(table){
-
-    const result =
-        await db
-        .from(table)
-        .select(
-            "*",
-            {
-                count:"exact",
-                head:true
-            }
-        );
-
-
-    if(result.error){
-
-        console.log(
-            table,
-            result.error
-        );
-
-        return 0;
-
-    }
-
-
-    return result.count || 0;
-
-}
-
-
-async function loadDashboard(){
-
-    document
-    .getElementById("c1")
-    .textContent =
-        await count(
-            "specialists"
-        );
-
-
-    document
-    .getElementById("c2")
-    .textContent =
-        await count(
-            "clients"
-        );
-
-
-    document
-    .getElementById("c3")
-    .textContent =
-        await count(
-            "orders"
-        );
-
-
-    document
-    .getElementById("c4")
-    .textContent =
-        await count(
-            "requests"
-        );
-
-
-    document
-    .getElementById("c5")
-    .textContent =
-        await count(
-            "reviews"
-        );
-
-}
-
-
-/* =========================================
-   LOAD TABLE
-========================================= */
-
-async function loadTable(table){
-
-    const box =
-        document
-        .getElementById(
-            table + "Data"
-        );
-
-
-    box.innerHTML =
-        `
-        <div class="empty">
-            ⏳ Бор шуда истодааст...
-        </div>
-        `;
-
-
-    const result =
-        await db
-        .from(table)
-        .select("*")
-        .limit(200);
-
-
-    if(result.error){
-
-        box.innerHTML =
-            `
-            <div class="empty">
-                ❌ ${safe(
-                    result.error.message
-                )}
-            </div>
-            `;
-
-        return;
-
-    }
-
-
-    const rows =
-        result.data;
-
-
-    if(
-        !rows ||
-        rows.length === 0
-    ){
-
-        box.innerHTML =
-            `
-            <div class="empty">
-                📭 Маълумот нест.
-            </div>
-            `;
-
-        return;
-
-    }
-
-
-    const columns =
-        Object.keys(
-            rows[0]
-        );
-
-
-    let html =
-        `
-        <table>
-
-        <thead>
-
-        <tr>
-        `;
-
-
-    columns.forEach(
-        column => {
-
-            html +=
-                `
-                <th>
-                    ${safe(column)}
-                </th>
-                `;
-
-        }
-    );
-
-
-    if(
-        table === "requests" ||
-        table === "orders"
-    ){
-
-        html +=
-            `
-            <th>
-                Амалиёт
-            </th>
-            `;
-
-    }
-
-
-    html +=
-        `
-        </tr>
-
-        </thead>
-
-        <tbody>
-        `;
-
-
-    rows.forEach(row => {
-
-        html += `<tr>`;
-
-
-        columns.forEach(
-            column => {
-
-                if(
-                    column === "status"
-                ){
-
-                    html +=
-                        `
-                        <td>
-                            <span class="status">
-                                ${safe(
-                                    row[column]
-                                )}
-                            </span>
-                        </td>
-                        `;
-
-                }
-                else{
-
-                    html +=
-                        `
-                        <td>
-                            ${safe(
-                                row[column]
-                            )}
-                        </td>
-                        `;
-
-                }
-
-            }
-        );
-
-
-        if(
-            table === "requests"
-        ){
-
-            const status =
-                String(
-                    row.status || "pending"
-                ).toLowerCase();
-
-
-            html +=
-                `
-                <td>
-
-                <div class="actions">
-
-                    <button
-                        class="accept"
-                        onclick="
-                            acceptRequest(
-                                '${row.id}'
-                            )
-                        "
-                    >
-                        ✅ ҚАБУЛ
-                    </button>
-
-                    <button
-                        class="reject"
-                        onclick="
-                            rejectRequest(
-                                '${row.id}'
-                            )
-                        "
-                    >
-                        ❌ ОТМЕНА
-                    </button>
-
-                </div>
-
-                </td>
-                `;
-
+          .getElementById("tableTitle")
+          .textContent = page;
+
+        if (
+          window.SMMTJ &&
+          typeof window.SMMTJ.loadAdminPage === "function"
+        ) {
+          window.SMMTJ.loadAdminPage(page);
         }
 
-
-        if(
-            table === "orders"
-        ){
-
-            html +=
-                `
-                <td>
-
-                <div class="actions">
-
-                    <button
-                        class="accept"
-                        onclick="
-                            acceptOrder(
-                                '${row.id}'
-                            )
-                        "
-                    >
-                        ✅ ҚАБУЛ
-                    </button>
-
-                    <button
-                        class="reject"
-                        onclick="
-                            rejectOrder(
-                                '${row.id}'
-                            )
-                        "
-                    >
-                        ❌ ОТМЕНА
-                    </button>
-
-                </div>
-
-                </td>
-                `;
-
-        }
-
-
-        html += `</tr>`;
+      });
 
     });
-
-
-    html +=
-        `
-        </tbody>
-
-        </table>
-        `;
-
-
-    box.innerHTML =
-        html;
-
-}
-
-
-/* =========================================
-   REQUEST → ACCEPT
-========================================= */
-
-async function acceptRequest(id){
-
-    if(
-        !confirm(
-            "Ин дархостро қабул мекунӣ?"
-        )
-    ){
-
-        return;
-
-    }
-
-
-    const result =
-        await db
-        .from("requests")
-        .update({
-            status:"approved"
-        })
-        .eq(
-            "id",
-            id
-        );
-
-
-    if(result.error){
-
-        alert(
-            "❌ ХАТО:\n\n" +
-            result.error.message
-        );
-
-        return;
-
-    }
-
-
-    alert(
-        "✅ Дархост қабул шуд!"
-    );
-
-
-    await loadTable(
-        "requests"
-    );
-
-    await loadDashboard();
-
-}
-
-
-/* =========================================
-   REQUEST → REJECT
-========================================= */
-
-async function rejectRequest(id){
-
-    if(
-        !confirm(
-            "Ин дархостро отмена мекунӣ?"
-        )
-    ){
-
-        return;
-
-    }
-
-
-    const result =
-        await db
-        .from("requests")
-        .update({
-            status:"rejected"
-        })
-        .eq(
-            "id",
-            id
-        );
-
-
-    if(result.error){
-
-        alert(
-            "❌ ХАТО:\n\n" +
-            result.error.message
-        );
-
-        return;
-
-    }
-
-
-    alert(
-        "❌ Дархост отмена шуд!"
-    );
-
-
-    await loadTable(
-        "requests"
-    );
-
-    await loadDashboard();
-
-}
-
-
-/* =========================================
-   ORDER → ACCEPT
-========================================= */
-
-async function acceptOrder(id){
-
-    if(
-        !confirm(
-            "Ин заказро қабул мекунӣ?"
-        )
-    ){
-
-        return;
-
-    }
-
-
-    const result =
-        await db
-        .from("orders")
-        .update({
-            status:"approved"
-        })
-        .eq(
-            "id",
-            id
-        );
-
-
-    if(result.error){
-
-        alert(
-            "❌ ХАТО:\n\n" +
-            result.error.message
-        );
-
-        return;
-
-    }
-
-
-    alert(
-        "✅ Заказ қабул шуд!"
-    );
-
-
-    await loadTable(
-        "orders"
-    );
-
-    await loadDashboard();
-
-}
-
-
-/* =========================================
-   ORDER → REJECT
-========================================= */
-
-async function rejectOrder(id){
-
-    if(
-        !confirm(
-            "Ин заказро отмена мекунӣ?"
-        )
-    ){
-
-        return;
-
-    }
-
-
-    const result =
-        await db
-        .from("orders")
-        .update({
-            status:"rejected"
-        })
-        .eq(
-            "id",
-            id
-        );
-
-
-    if(result.error){
-
-        alert(
-            "❌ ХАТО:\n\n" +
-            result.error.message
-        );
-
-        return;
-
-    }
-
-
-    alert(
-        "❌ Заказ отмена шуд!"
-    );
-
-
-    await loadTable(
-        "orders"
-    );
-
-    await loadDashboard();
-
-}
-
-
-/* =========================================
-   NAVIGATION
-========================================= */
-
-document
-.querySelectorAll(".menu button")
-.forEach(
-button => {
-
-    button.addEventListener(
-        "click",
-        async function(){
-
-            const page =
-                this.dataset.page;
-
-
-            document
-            .querySelectorAll(
-                ".menu button"
-            )
-            .forEach(
-                item =>
-                    item.classList.remove(
-                        "active"
-                    )
-            );
-
-
-            this.classList.add(
-                "active"
-            );
-
-
-            document
-            .querySelectorAll(
-                ".page"
-            )
-            .forEach(
-                item =>
-                    item.classList.remove(
-                        "active"
-                    )
-            );
-
-
-            document
-            .getElementById(page)
-            .classList.add(
-                "active"
-            );
-
-
-            const titles = {
-
-                dashboard:
-                    "Dashboard",
-
-                specialists:
-                    "Мутахассисон",
-
-                clients:
-                    "Мизоҷон",
-
-                orders:
-                    "Заказҳо",
-
-                requests:
-                    "Дархостҳо",
-
-                reviews:
-                    "Отзывҳо"
-
-            };
-
-
-            document
-            .getElementById("title")
-            .textContent =
-                titles[page];
-
-
-            if(
-                page === "dashboard"
-            ){
-
-                await loadDashboard();
-
-            }
-            else{
-
-                await loadTable(
-                    page
-                );
-
-            }
-
-        }
-    );
-
-});
-
-
-/* =========================================
-   REFRESH
-========================================= */
-
-document
-.getElementById("refresh")
-.addEventListener(
-    "click",
-    async function(){
-
-        const active =
-            document
-            .querySelector(
-                ".menu button.active"
-            )
-            .dataset.page;
-
-
-        if(
-            active === "dashboard"
-        ){
-
-            await loadDashboard();
-
-        }
-        else{
-
-            await loadTable(
-                active
-            );
-
-        }
-
-    }
-);
-
-
-/* =========================================
-   LOGOUT
-========================================= */
-
-document
-.getElementById("logout")
-.addEventListener(
-    "click",
-    async function(){
-
-        await db.auth.signOut();
-
-
-        document
-        .getElementById("admin")
-        .style
-        .display = "none";
-
-
-        document
-        .getElementById("loginPage")
-        .style
-        .display = "flex";
-
-
-        document
-        .getElementById("password")
-        .value = "";
-
-    }
-);
-
-
-/* =========================================
-   EXISTING SESSION
-========================================= */
-
-(async function(){
-
-    const result =
-        await db.auth.getSession();
-
-
-    if(
-        result.data.session
-    ){
-
-        const admin =
-            await db
-            .from("admin_users")
-            .select("user_id")
-            .eq(
-                "user_id",
-                result.data.session.user.id
-            )
-            .maybeSingle();
-
-
-        if(
-            admin.data
-        ){
-
-            document
-            .getElementById("loginPage")
-            .style
-            .display = "none";
-
-
-            document
-            .getElementById("admin")
-            .style
-            .display = "block";
-
-
-            await loadDashboard();
-
-        }
-
-    }
-
-})();
 
 </script>
 
