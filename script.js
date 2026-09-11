@@ -1,2262 +1,1727 @@
 "use strict";
 
-/* =========================================================
-   SUPABASE
-========================================================= */
+/*
+====================================================
+ SMM.TJ FRONTEND
+====================================================
 
-const SUPABASE_URL =
-    "https://lcldaingzicxbottlznq.supabase.co";
+IMPORTANT:
 
-const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt";
+This frontend does NOT fake authentication.
 
-const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_PUBLISHABLE_KEY
+When backend exists, change:
+
+API_URL
+
+to your real backend URL.
+
+Example:
+
+https://api.smm.tj/api
+
+====================================================
+*/
+
+
+const API_URL =
+  window.SMMTJ_API_URL ||
+  "http://localhost:4000/api";
+
+
+/* ==================================================
+   TRANSLATIONS
+================================================== */
+
+const translations = {
+
+  tj: {
+
+    home: "Асосӣ",
+    services: "Хизматрасониҳо",
+    specialists: "Мутахассисон",
+    how: "Чӣ тавр кор мекунад",
+
+    login: "Ворид шудан",
+    register: "Бақайдгирӣ",
+
+    heroTitle:
+      "Платформаи касбии SMM дар Тоҷикистон",
+
+    heroDescription:
+      "Беҳтарин мутахассиси SMM-ро пайдо кунед, лоиҳаи худро оғоз кунед ва натиҷаро назорат намоед.",
+
+    findSpecialist:
+      "Мутахассиси SMM пайдо кунед",
+
+    joinSpecialist:
+      "Ҳамчун SMM мутахассис ҳамроҳ шавед",
+
+    specialistsStat:
+      "Мутахассисон",
+
+    projectsStat:
+      "Лоиҳаҳо",
+
+    satisfaction:
+      "Қаноатмандӣ",
+
+    servicesTitle:
+      "Ҳамаи хизматҳои SMM дар як платформа",
+
+    servicesDescription:
+      "Аз контент то реклама — мутахассиси мувофиқро пайдо кунед.",
+
+    specialistsTitle:
+      "Мутахассисони SMM",
+
+    specialistsDescription:
+      "Мутахассиси мувофиқро аз рӯи таҷриба, рейтинг ва хизмат интихоб кунед.",
+
+    howTitle:
+      "Чӣ тавр кор мекунад?",
+
+    step1Title:
+      "Лоиҳа созед",
+
+    step1Text:
+      "Вазифа ва буҷаи худро муайян кунед.",
+
+    step2Title:
+      "Мутахассис интихоб кунед",
+
+    step2Text:
+      "Пешниҳодҳоро муқоиса кунед.",
+
+    step3Title:
+      "Корро оғоз кунед",
+
+    step3Text:
+      "Chat, tasks ва content calendar истифода баред.",
+
+    step4Title:
+      "Натиҷаро бинед",
+
+    step4Text:
+      "Analytics ва review-ро истифода баред.",
+
+    footer:
+      "Платформаи касбии SMM дар Тоҷикистон"
+
+  },
+
+
+  ru: {
+
+    home: "Главная",
+    services: "Услуги",
+    specialists: "Специалисты",
+    how: "Как это работает",
+
+    login: "Войти",
+    register: "Регистрация",
+
+    heroTitle:
+      "Профессиональная SMM-платформа в Таджикистане",
+
+    heroDescription:
+      "Найдите подходящего SMM-специалиста, создайте проект и контролируйте результат.",
+
+    findSpecialist:
+      "Найти SMM-специалиста",
+
+    joinSpecialist:
+      "Присоединиться как SMM-специалист",
+
+    specialistsStat:
+      "Специалистов",
+
+    projectsStat:
+      "Проектов",
+
+    satisfaction:
+      "Удовлетворённость",
+
+    servicesTitle:
+      "Все SMM-услуги на одной платформе",
+
+    servicesDescription:
+      "От контента до рекламы — найдите подходящего специалиста.",
+
+    specialistsTitle:
+      "SMM-специалисты",
+
+    specialistsDescription:
+      "Выбирайте специалиста по опыту, рейтингу и услугам.",
+
+    howTitle:
+      "Как это работает?",
+
+    step1Title:
+      "Создайте проект",
+
+    step1Text:
+      "Опишите задачу и бюджет.",
+
+    step2Title:
+      "Выберите специалиста",
+
+    step2Text:
+      "Сравните предложения.",
+
+    step3Title:
+      "Начните работу",
+
+    step3Text:
+      "Используйте чат, задачи и контент-календарь.",
+
+    step4Title:
+      "Смотрите результат",
+
+    step4Text:
+      "Используйте аналитику и отзывы.",
+
+    footer:
+      "Профессиональная SMM-платформа в Таджикистане"
+
+  },
+
+
+  en: {
+
+    home: "Home",
+    services: "Services",
+    specialists: "Specialists",
+    how: "How it works",
+
+    login: "Log in",
+    register: "Register",
+
+    heroTitle:
+      "Professional SMM platform in Tajikistan",
+
+    heroDescription:
+      "Find the right SMM specialist, create a project and track your results.",
+
+    findSpecialist:
+      "Find an SMM specialist",
+
+    joinSpecialist:
+      "Join as an SMM specialist",
+
+    specialistsStat:
+      "Specialists",
+
+    projectsStat:
+      "Projects",
+
+    satisfaction:
+      "Satisfaction",
+
+    servicesTitle:
+      "All SMM services in one platform",
+
+    servicesDescription:
+      "From content to advertising — find the right specialist.",
+
+    specialistsTitle:
+      "SMM Specialists",
+
+    specialistsDescription:
+      "Choose specialists by experience, rating and services.",
+
+    howTitle:
+      "How does it work?",
+
+    step1Title:
+      "Create a project",
+
+    step1Text:
+      "Describe your task and budget.",
+
+    step2Title:
+      "Choose a specialist",
+
+    step2Text:
+      "Compare proposals.",
+
+    step3Title:
+      "Start working",
+
+    step3Text:
+      "Use chat, tasks and content calendar.",
+
+    step4Title:
+      "See results",
+
+    step4Text:
+      "Use analytics and reviews.",
+
+    footer:
+      "Professional SMM platform in Tajikistan"
+
+  }
+
+};
+
+
+/* ==================================================
+   STATE
+================================================== */
+
+const state = {
+
+  language:
+    localStorage.getItem("smm_language") || "tj",
+
+  authMode:
+    "login",
+
+  user:
+    null,
+
+  specialists:
+    []
+
+};
+
+
+/* ==================================================
+   DOM READY
+================================================== */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    initLanguage();
+
+    initNavigation();
+
+    initAuth();
+
+    initMobileMenu();
+
+    initButtons();
+
+    initYear();
+
+    loadCurrentUser();
+
+    loadSpecialists();
+
+  }
+);
+
+
+/* ==================================================
+   LANGUAGE
+================================================== */
+
+function initLanguage() {
+
+  const selector =
+    document.getElementById(
+      "languageSelector"
     );
 
+  if (!selector) return;
 
-/* =========================================================
-   ELEMENTS
-========================================================= */
+  selector.value =
+    state.language;
 
-const searchForm =
-    document.getElementById("searchForm");
+  selector.addEventListener(
+    "change",
+    event => {
 
-const searchInput =
-    document.getElementById("searchInput");
+      state.language =
+        event.target.value;
 
-const specialistsGrid =
-    document.getElementById("specialistsGrid");
+      localStorage.setItem(
+        "smm_language",
+        state.language
+      );
 
-const notificationBtn =
-    document.getElementById("notificationBtn");
-
-const notificationPanel =
-    document.getElementById("notificationPanel");
-
-const mobileMenuBtn =
-    document.getElementById("mobileMenuBtn");
-
-const mainNav =
-    document.getElementById("mainNav");
-
-const loginForm =
-    document.getElementById("loginForm");
-
-const registerForm =
-    document.getElementById("registerForm");
-
-const orderForm =
-    document.getElementById("orderForm");
-
-const chatWidget =
-    document.getElementById("chatWidget");
-
-const floatingChat =
-    document.getElementById("floatingChat");
-
-const chatForm =
-    document.getElementById("chatForm");
-
-const chatInput =
-    document.getElementById("chatInput");
-
-const chatMessages =
-    document.getElementById("chatMessages");
-
-const accountTypeInput =
-    document.getElementById("accountType");
-
-const accountTypeButtons =
-    document.querySelectorAll(".account-type");
-
-const sortSelect =
-    document.getElementById("sortSelect");
-
-
-/* =========================================================
-   DATA
-========================================================= */
-
-let specialists = [];
-
-let currentUser = null;
-
-
-/* =========================================================
-   MODAL
-========================================================= */
-
-function openModal(modalId) {
-
-    const modal =
-        document.getElementById(modalId);
-
-    if (!modal) return;
-
-    modal.classList.add("active");
-
-    modal.setAttribute(
-        "aria-hidden",
-        "false"
-    );
-
-    document.body.classList.add(
-        "modal-open"
-    );
-
-}
-
-window.openModal =
-    openModal;
-
-
-function closeModal(modalId) {
-
-    const modal =
-        document.getElementById(modalId);
-
-    if (!modal) return;
-
-    modal.classList.remove("active");
-
-    modal.setAttribute(
-        "aria-hidden",
-        "true"
-    );
-
-    if (
-        !document.querySelector(
-            ".modal.active"
-        )
-    ) {
-
-        document.body.classList.remove(
-            "modal-open"
-        );
+      applyTranslations();
 
     }
+  );
+
+  applyTranslations();
 
 }
 
-window.closeModal =
-    closeModal;
 
+function applyTranslations() {
 
-function switchModal(
-    currentModal,
-    nextModal
-) {
+  const dictionary =
+    translations[state.language];
 
-    closeModal(currentModal);
+  if (!dictionary) return;
 
-    setTimeout(() => {
+  document
+    .querySelectorAll("[data-i18n]")
+    .forEach(element => {
 
-        openModal(nextModal);
+      const key =
+        element.dataset.i18n;
 
-    }, 150);
+      if (
+        Object.prototype.hasOwnProperty.call(
+          dictionary,
+          key
+        )
+      ) {
 
-}
+        element.textContent =
+          dictionary[key];
 
-window.switchModal =
-    switchModal;
-
-
-/* =========================================================
-   MODAL BACKDROP
-========================================================= */
-
-document
-    .querySelectorAll(".modal")
-    .forEach(modal => {
-
-        modal.addEventListener(
-            "click",
-            event => {
-
-                if (
-                    event.target === modal
-                ) {
-
-                    closeModal(
-                        modal.id
-                    );
-
-                }
-
-            }
-        );
+      }
 
     });
 
-
-/* =========================================================
-   ESC
-========================================================= */
-
-document.addEventListener(
-    "keydown",
-    event => {
-
-        if (event.key !== "Escape") {
-            return;
-        }
-
-        const activeModal =
-            document.querySelector(
-                ".modal.active"
-            );
-
-        if (activeModal) {
-
-            closeModal(
-                activeModal.id
-            );
-
-        }
-
-        closeNotifications();
-
-    }
-);
-
-
-/* =========================================================
-   ACCOUNT TYPE
-========================================================= */
-
-accountTypeButtons.forEach(
-    button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                accountTypeButtons.forEach(
-                    item => {
-
-                        item.classList.remove(
-                            "active"
-                        );
-
-                    }
-                );
-
-                button.classList.add(
-                    "active"
-                );
-
-                const type =
-                    button.dataset.accountType ||
-                    "smm";
-
-                if (accountTypeInput) {
-
-                    accountTypeInput.value =
-                        type;
-
-                }
-
-            }
-        );
-
-    }
-);
-
-
-/* =========================================================
-   AUTH — CURRENT USER
-========================================================= */
-
-async function loadCurrentUser() {
-
-    try {
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient.auth.getUser();
-
-        if (error) {
-
-            currentUser = null;
-
-            return null;
-
-        }
-
-        currentUser =
-            data?.user || null;
-
-        return currentUser;
-
-    } catch (error) {
-
-        console.error(
-            "GET USER ERROR:",
-            error
-        );
-
-        currentUser = null;
-
-        return null;
-
-    }
-
 }
 
 
-/* =========================================================
-   AUTH STATE
-========================================================= */
+/* ==================================================
+   NAVIGATION
+================================================== */
 
-supabaseClient.auth.onAuthStateChange(
-    (_event, session) => {
+function initNavigation() {
 
-        currentUser =
-            session?.user || null;
+  document
+    .querySelectorAll('a[href^="#"]')
+    .forEach(link => {
 
-        updateAuthUI();
-
-    }
-);
-
-
-/* =========================================================
-   AUTH UI
-========================================================= */
-
-function updateAuthUI() {
-
-    const headerActions =
-        document.querySelector(
-            ".header-actions"
-        );
-
-    if (!headerActions) return;
-
-
-    const oldBox =
-        document.getElementById(
-            "userAuthBox"
-        );
-
-    if (oldBox) {
-        oldBox.remove();
-    }
-
-
-    if (!currentUser) {
-        return;
-    }
-
-
-    const box =
-        document.createElement(
-            "div"
-        );
-
-    box.id =
-        "userAuthBox";
-
-    box.style.display =
-        "flex";
-
-    box.style.alignItems =
-        "center";
-
-    box.style.gap =
-        "8px";
-
-
-    box.innerHTML = `
-
-        <span
-            style="
-                max-width:160px;
-                overflow:hidden;
-                text-overflow:ellipsis;
-                white-space:nowrap;
-                font-size:13px;
-                font-weight:600;
-            "
-        >
-            ${escapeHTML(
-                currentUser.email || "User"
-            )}
-        </span>
-
-        <button
-            type="button"
-            class="btn btn-outline"
-            id="logoutButton"
-        >
-            Баромадан
-        </button>
-
-    `;
-
-
-    const mobileButton =
-        headerActions.querySelector(
-            ".mobile-menu-btn"
-        );
-
-
-    if (mobileButton) {
-
-        headerActions.insertBefore(
-            box,
-            mobileButton
-        );
-
-    } else {
-
-        headerActions.appendChild(
-            box
-        );
-
-    }
-
-
-    document
-        .getElementById(
-            "logoutButton"
-        )
-        ?.addEventListener(
-            "click",
-            logoutUser
-        );
-
-}
-
-
-/* =========================================================
-   LOGOUT
-========================================================= */
-
-async function logoutUser() {
-
-    try {
-
-        const {
-            error
-        } =
-            await supabaseClient.auth.signOut();
-
-        if (error) {
-            throw error;
-        }
-
-        currentUser = null;
-
-        updateAuthUI();
-
-        showToast(
-            "✅ Шумо аз аккаунт баромадед.",
-            "success"
-        );
-
-    } catch (error) {
-
-        console.error(
-            "LOGOUT ERROR:",
-            error
-        );
-
-        showToast(
-            "❌ Баромадан иҷро нашуд.",
-            "error"
-        );
-
-    }
-
-}
-
-window.logoutUser =
-    logoutUser;
-
-
-/* =========================================================
-   REGISTER
-========================================================= */
-
-if (registerForm) {
-
-    registerForm.addEventListener(
-        "submit",
-        async event => {
-
-            event.preventDefault();
-
-
-            const submitButton =
-                registerForm.querySelector(
-                    "button[type='submit']"
-                );
-
-
-            const originalText =
-                submitButton
-                    ? submitButton.textContent
-                    : "Создани аккаунт";
-
-
-            const formData =
-                new FormData(
-                    registerForm
-                );
-
-
-            const name =
-                String(
-                    formData.get("name") || ""
-                ).trim();
-
-
-            const email =
-                String(
-                    formData.get("email") || ""
-                ).trim();
-
-
-            const password =
-                String(
-                    formData.get("password") || ""
-                );
-
-
-            const accountType =
-                String(
-                    formData.get(
-                        "accountType"
-                    ) || "smm"
-                );
-
-
-            if (!name) {
-
-                showToast(
-                    "Номро ворид кунед.",
-                    "error"
-                );
-
-                return;
-
-            }
-
-
-            if (!email) {
-
-                showToast(
-                    "Email-ро ворид кунед.",
-                    "error"
-                );
-
-                return;
-
-            }
-
-
-            if (password.length < 8) {
-
-                showToast(
-                    "Парол бояд ҳадди ақал 8 аломат бошад.",
-                    "error"
-                );
-
-                return;
-
-            }
-
-
-            setButtonLoading(
-                submitButton,
-                "Сабт шуда истодааст..."
-            );
-
-
-            try {
-
-                const {
-                    data,
-                    error
-                } =
-                    await supabaseClient.auth.signUp({
-
-                        email:
-                            email,
-
-                        password:
-                            password,
-
-                        options: {
-
-                            data: {
-
-                                name:
-                                    name,
-
-                                account_type:
-                                    accountType
-
-                            }
-
-                        }
-
-                    });
-
-
-                if (error) {
-                    throw error;
-                }
-
-
-                registerForm.reset();
-
-                closeModal(
-                    "registerModal"
-                );
-
-
-                if (data?.session) {
-
-                    showToast(
-                        "✅ Аккаунт сохта шуд!",
-                        "success"
-                    );
-
-                } else {
-
-                    showToast(
-                        "✅ Аккаунт сохта шуд. Email-ро тасдиқ кунед.",
-                        "success"
-                    );
-
-                }
-
-
-                await loadCurrentUser();
-
-                updateAuthUI();
-
-
-            } catch (error) {
-
-                console.error(
-                    "REGISTER ERROR:",
-                    error
-                );
-
-
-                showToast(
-                    "❌ " +
-                    (
-                        error?.message ||
-                        "Регистрация иҷро нашуд."
-                    ),
-                    "error"
-                );
-
-
-            } finally {
-
-                setButtonLoading(
-                    submitButton,
-                    originalText
-                );
-
-            }
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   LOGIN
-========================================================= */
-
-if (loginForm) {
-
-    loginForm.addEventListener(
-        "submit",
-        async event => {
-
-            event.preventDefault();
-
-
-            const submitButton =
-                loginForm.querySelector(
-                    "button[type='submit']"
-                );
-
-
-            const originalText =
-                submitButton
-                    ? submitButton.textContent
-                    : "Даромадан";
-
-
-            const formData =
-                new FormData(
-                    loginForm
-                );
-
-
-            const email =
-                String(
-                    formData.get("email") || ""
-                ).trim();
-
-
-            const password =
-                String(
-                    formData.get("password") || ""
-                );
-
-
-            if (!email || !password) {
-
-                showToast(
-                    "Email ва паролро пур кунед.",
-                    "error"
-                );
-
-                return;
-
-            }
-
-
-            setButtonLoading(
-                submitButton,
-                "Даромада истодааст..."
-            );
-
-
-            try {
-
-                const {
-                    data,
-                    error
-                } =
-                    await supabaseClient.auth
-                        .signInWithPassword({
-
-                            email:
-                                email,
-
-                            password:
-                                password
-
-                        });
-
-
-                if (error) {
-                    throw error;
-                }
-
-
-                currentUser =
-                    data?.user || null;
-
-
-                loginForm.reset();
-
-                closeModal(
-                    "loginModal"
-                );
-
-                updateAuthUI();
-
-
-                showToast(
-                    "✅ Хуш омадед!",
-                    "success"
-                );
-
-
-            } catch (error) {
-
-                console.error(
-                    "LOGIN ERROR:",
-                    error
-                );
-
-
-                showToast(
-                    "❌ " +
-                    (
-                        error?.message ||
-                        "Email ё парол нодуруст аст."
-                    ),
-                    "error"
-                );
-
-
-            } finally {
-
-                setButtonLoading(
-                    submitButton,
-                    originalText
-                );
-
-            }
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   LOAD SPECIALISTS
-========================================================= */
-
-async function loadSpecialists() {
-
-    try {
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-                .from("specialists")
-                .select("*")
-                .order(
-                    "rating",
-                    {
-                        ascending: false
-                    }
-                );
-
-
-        if (error) {
-            throw error;
-        }
-
-
-        specialists =
-            Array.isArray(data)
-                ? data
-                : [];
-
-
-        renderSpecialists(
-            specialists
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "SPECIALISTS ERROR:",
-            error
-        );
-
-        specialists = [];
-
-        renderSpecialists([]);
-
-    }
-
-}
-
-
-/* =========================================================
-   SEARCH
-========================================================= */
-
-if (searchForm) {
-
-    searchForm.addEventListener(
-        "submit",
-        event => {
-
-            event.preventDefault();
-
-            searchSpecialists();
-
-        }
-    );
-
-}
-
-
-function searchSpecialists() {
-
-    const query =
-        searchInput
-            ? searchInput.value
-                .trim()
-                .toLowerCase()
-            : "";
-
-
-    if (!query) {
-
-        renderSpecialists(
-            specialists
-        );
-
-        scrollToSpecialists();
-
-        return;
-
-    }
-
-
-    const filtered =
-        specialists.filter(
-            specialist => {
-
-                const name =
-                    String(
-                        specialist.name || ""
-                    ).toLowerCase();
-
-
-                const city =
-                    String(
-                        specialist.city || ""
-                    ).toLowerCase();
-
-
-                const category =
-                    String(
-                        specialist.category || ""
-                    ).toLowerCase();
-
-
-                const service =
-                    String(
-                        specialist.service || ""
-                    ).toLowerCase();
-
-
-                return (
-                    name.includes(query) ||
-                    city.includes(query) ||
-                    category.includes(query) ||
-                    service.includes(query)
-                );
-
-            }
-        );
-
-
-    renderSpecialists(
-        filtered
-    );
-
-
-    scrollToSpecialists();
-
-}
-
-
-/* =========================================================
-   FILTER CATEGORY
-========================================================= */
-
-function filterCategory(
-    category
-) {
-
-    if (!category) return;
-
-
-    const value =
-        String(category)
-            .trim()
-            .toLowerCase();
-
-
-    const filtered =
-        specialists.filter(
-            specialist => {
-
-                return (
-                    String(
-                        specialist.category ||
-                        specialist.service ||
-                        ""
-                    )
-                    .toLowerCase() ===
-                    value
-                );
-
-            }
-        );
-
-
-    if (searchInput) {
-
-        searchInput.value =
-            category;
-
-    }
-
-
-    renderSpecialists(
-        filtered
-    );
-
-
-    scrollToSpecialists();
-
-}
-
-window.filterCategory =
-    filterCategory;
-
-
-/* =========================================================
-   SORT
-========================================================= */
-
-if (sortSelect) {
-
-    sortSelect.addEventListener(
-        "change",
-        sortSpecialists
-    );
-
-}
-
-
-function sortSpecialists() {
-
-    const type =
-        sortSelect
-            ? sortSelect.value
-            : "rating";
-
-
-    const sorted =
-        [...specialists];
-
-
-    if (type === "rating") {
-
-        sorted.sort(
-            (a, b) =>
-                Number(
-                    b.rating || 0
-                ) -
-                Number(
-                    a.rating || 0
-                )
-        );
-
-    }
-
-
-    if (type === "reviews") {
-
-        sorted.sort(
-            (a, b) =>
-                Number(
-                    b.reviews || 0
-                ) -
-                Number(
-                    a.reviews || 0
-                )
-        );
-
-    }
-
-
-    if (type === "experience") {
-
-        sorted.sort(
-            (a, b) =>
-                Number(
-                    b.experience || 0
-                ) -
-                Number(
-                    a.experience || 0
-                )
-        );
-
-    }
-
-
-    renderSpecialists(
-        sorted
-    );
-
-}
-
-
-/* =========================================================
-   RENDER SPECIALISTS
-========================================================= */
-
-function renderSpecialists(
-    data
-) {
-
-    if (!specialistsGrid) {
-        return;
-    }
-
-
-    if (
-        !Array.isArray(data) ||
-        data.length === 0
-    ) {
-
-        specialistsGrid.innerHTML = `
-
-            <div class="empty-state">
-
-                <div class="empty-state-icon">
-                    👤
-                </div>
-
-                <h3>
-                    Ҳоло мутахассисон нестанд
-                </h3>
-
-                <p>
-                    Мутахассисони аввалини
-                    SMM.TJ метавонанд профили худро созанд.
-                </p>
-
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    onclick="openModal('registerModal')"
-                >
-                    Профили худро созед
-                </button>
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    specialistsGrid.innerHTML =
-        data
-            .map(
-                createSpecialistCard
-            )
-            .join("");
-
-}
-
-
-/* =========================================================
-   SPECIALIST CARD
-========================================================= */
-
-function createSpecialistCard(
-    specialist
-) {
-
-    const name =
-        escapeHTML(
-            specialist.name ||
-            "Мутахассис"
-        );
-
-
-    const city =
-        escapeHTML(
-            specialist.city ||
-            "Тоҷикистон"
-        );
-
-
-    const category =
-        escapeHTML(
-            specialist.category ||
-            specialist.service ||
-            "SMM"
-        );
-
-
-    const experience =
-        Number(
-            specialist.experience || 0
-        );
-
-
-    const rating =
-        Number(
-            specialist.rating || 0
-        );
-
-
-    const reviews =
-        Number(
-            specialist.reviews || 0
-        );
-
-
-    const price =
-        escapeHTML(
-            specialist.price ||
-            "Нарх мувофиқа мешавад"
-        );
-
-
-    const initial =
-        escapeHTML(
-            String(
-                specialist.name ||
-                "М"
-            )
-            .charAt(0)
-            .toUpperCase()
-        );
-
-
-    return `
-
-        <article class="specialist-card">
-
-            <div class="specialist-top">
-
-                <div class="specialist-avatar">
-                    ${initial}
-                </div>
-
-                <div class="specialist-info">
-
-                    <h3>
-                        ${name}
-                    </h3>
-
-                    <div class="specialist-location">
-                        📍 ${city}
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="rating-row">
-
-                <span class="stars">
-                    ${createStars(rating)}
-                </span>
-
-                <strong>
-                    ${
-                        rating > 0
-                            ? rating.toFixed(1)
-                            : "—"
-                    }
-                </strong>
-
-                <span>
-                    (${reviews} отзыв)
-                </span>
-
-            </div>
-
-
-            <div class="service-tags">
-
-                <span class="service-tag">
-                    ${category}
-                </span>
-
-            </div>
-
-
-            <p class="specialist-experience">
-
-                Таҷриба:
-
-                <strong>
-                    ${experience} сол
-                </strong>
-
-            </p>
-
-
-            <div class="specialist-bottom">
-
-                <div class="price">
-
-                    ${price}
-
-                    <small>
-                        / моҳ
-                    </small>
-
-                </div>
-
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    onclick="openSpecialistProfile('${escapeAttribute(
-                        specialist.id || ""
-                    )}')"
-                >
-                    Профил
-                </button>
-
-            </div>
-
-        </article>
-
-    `;
-
-}
-
-
-/* =========================================================
-   STARS
-========================================================= */
-
-function createStars(
-    rating
-) {
-
-    const value =
-        Number(rating);
-
-
-    if (
-        !value ||
-        value <= 0
-    ) {
-
-        return "☆☆☆☆☆";
-
-    }
-
-
-    const rounded =
-        Math.round(value);
-
-
-    return (
-        "★".repeat(
-            Math.min(
-                5,
-                Math.max(
-                    0,
-                    rounded
-                )
-            )
-        ) +
-        "☆".repeat(
-            Math.max(
-                0,
-                5 - rounded
-            )
-        )
-    );
-
-}
-
-
-/* =========================================================
-   SPECIALIST PROFILE
-========================================================= */
-
-function openSpecialistProfile(
-    id
-) {
-
-    const specialist =
-        specialists.find(
-            item =>
-                String(item.id) ===
-                String(id)
-        );
-
-
-    if (!specialist) {
-
-        showToast(
-            "Мутахассис пайдо нашуд.",
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    const old =
-        document.getElementById(
-            "specialistProfileModal"
-        );
-
-
-    if (old) {
-        old.remove();
-    }
-
-
-    const name =
-        escapeHTML(
-            specialist.name ||
-            "Мутахассис"
-        );
-
-
-    const city =
-        escapeHTML(
-            specialist.city ||
-            "Тоҷикистон"
-        );
-
-
-    const category =
-        escapeHTML(
-            specialist.category ||
-            specialist.service ||
-            "SMM"
-        );
-
-
-    const rating =
-        Number(
-            specialist.rating || 0
-        );
-
-
-    const experience =
-        Number(
-            specialist.experience || 0
-        );
-
-
-    const modal =
-        document.createElement(
-            "div"
-        );
-
-
-    modal.id =
-        "specialistProfileModal";
-
-    modal.className =
-        "modal active";
-
-
-    modal.innerHTML = `
-
-        <div class="modal-box">
-
-            <button
-                type="button"
-                class="modal-close"
-                id="specialistClose"
-            >
-                ×
-            </button>
-
-            <div class="specialist-avatar">
-                ${escapeHTML(
-                    name.charAt(0)
-                )}
-            </div>
-
-            <h2>
-                ${name}
-            </h2>
-
-            <p>
-                📍 ${city}
-            </p>
-
-            <p>
-                💼 ${category}
-            </p>
-
-            <p>
-                ⭐ ${
-                    rating > 0
-                        ? rating.toFixed(1)
-                        : "—"
-                }
-            </p>
-
-            <p>
-                📈 Таҷриба:
-                ${experience} сол
-            </p>
-
-            <button
-                type="button"
-                class="btn btn-primary full-width"
-                id="specialistOrder"
-            >
-                Заказ додан
-            </button>
-
-        </div>
-
-    `;
-
-
-    document.body.appendChild(
-        modal
-    );
-
-
-    document
-        .getElementById(
-            "specialistClose"
-        )
-        ?.addEventListener(
-            "click",
-            () => modal.remove()
-        );
-
-
-    document
-        .getElementById(
-            "specialistOrder"
-        )
-        ?.addEventListener(
-            "click",
-            () => {
-
-                modal.remove();
-
-                openModal(
-                    "orderModal"
-                );
-
-            }
-        );
-
-}
-
-
-window.openSpecialistProfile =
-    openSpecialistProfile;
-
-
-/* =========================================================
-   ORDER — SUPABASE
-========================================================= */
-
-if (orderForm) {
-
-    orderForm.addEventListener(
-        "submit",
-        async event => {
-
-            event.preventDefault();
-
-
-            if (!currentUser) {
-
-                closeModal(
-                    "orderModal"
-                );
-
-                openModal(
-                    "loginModal"
-                );
-
-                showToast(
-                    "Аввал ба аккаунт дароед.",
-                    "info"
-                );
-
-                return;
-
-            }
-
-
-            const submitButton =
-                orderForm.querySelector(
-                    "button[type='submit']"
-                );
-
-
-            const originalText =
-                submitButton
-                    ? submitButton.textContent
-                    : "Заказро сохтан";
-
-
-            const formData =
-                new FormData(
-                    orderForm
-                );
-
-
-            const payload = {
-
-                client_id:
-                    currentUser.id,
-
-                business_category:
-                    formData.get(
-                        "businessCategory"
-                    ),
-
-                service:
-                    formData.get(
-                        "service"
-                    ),
-
-                budget:
-                    formData.get(
-                        "budget"
-                    ) || null,
-
-                deadline:
-                    formData.get(
-                        "deadline"
-                    ) || null,
-
-                instagram:
-                    formData.get(
-                        "instagram"
-                    ) || null,
-
-                website:
-                    formData.get(
-                        "website"
-                    ) || null,
-
-                description:
-                    formData.get(
-                        "description"
-                    )
-
-            };
-
-
-            setButtonLoading(
-                submitButton,
-                "Сабт шуда истодааст..."
-            );
-
-
-            try {
-
-                const {
-                    error
-                } =
-                    await supabaseClient
-                        .from("orders")
-                        .insert(
-                            payload
-                        );
-
-
-                if (error) {
-                    throw error;
-                }
-
-
-                orderForm.reset();
-
-                closeModal(
-                    "orderModal"
-                );
-
-
-                showToast(
-                    "✅ Заказ бомуваффақият сабт шуд!",
-                    "success"
-                );
-
-
-            } catch (error) {
-
-                console.error(
-                    "ORDER ERROR:",
-                    error
-                );
-
-
-                showToast(
-                    "❌ Заказ сабт нашуд: " +
-                    (
-                        error?.message ||
-                        "хатои database"
-                    ),
-                    "error"
-                );
-
-
-            } finally {
-
-                setButtonLoading(
-                    submitButton,
-                    originalText
-                );
-
-            }
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   NOTIFICATIONS
-========================================================= */
-
-if (notificationBtn) {
-
-    notificationBtn.addEventListener(
+      link.addEventListener(
         "click",
         event => {
 
-            event.stopPropagation();
+          const id =
+            link.getAttribute("href");
 
-            toggleNotifications();
+          if (
+            !id ||
+            id === "#"
+          ) return;
 
-        }
-    );
+          const target =
+            document.querySelector(id);
 
-}
+          if (!target) return;
 
+          event.preventDefault();
 
-function toggleNotifications() {
+          target.scrollIntoView({
+            behavior: "smooth"
+          });
 
-    if (!notificationPanel) {
-        return;
-    }
+          const mobileMenu =
+            document.getElementById(
+              "mobileMenu"
+            );
 
+          if (mobileMenu) {
 
-    notificationPanel.classList.toggle(
-        "active"
-    );
+            mobileMenu.classList.remove(
+              "active"
+            );
 
-
-    const isOpen =
-        notificationPanel.classList.contains(
-            "active"
-        );
-
-
-    notificationPanel.setAttribute(
-        "aria-hidden",
-        String(!isOpen)
-    );
-
-}
-
-window.toggleNotifications =
-    toggleNotifications;
-
-
-function closeNotifications() {
-
-    if (!notificationPanel) {
-        return;
-    }
-
-
-    notificationPanel.classList.remove(
-        "active"
-    );
-
-
-    notificationPanel.setAttribute(
-        "aria-hidden",
-        "true"
-    );
-
-}
-
-window.closeNotifications =
-    closeNotifications;
-
-
-/* =========================================================
-   CHAT
-========================================================= */
-
-function toggleChat() {
-
-    if (!chatWidget) {
-        return;
-    }
-
-
-    const isOpen =
-        chatWidget.classList.toggle(
-            "active"
-        );
-
-
-    chatWidget.setAttribute(
-        "aria-hidden",
-        String(!isOpen)
-    );
-
-
-    if (floatingChat) {
-
-        floatingChat.style.display =
-            isOpen
-                ? "none"
-                : "grid";
-
-    }
-
-
-    if (
-        isOpen &&
-        chatInput
-    ) {
-
-        setTimeout(
-            () => chatInput.focus(),
-            100
-        );
-
-    }
-
-}
-
-window.toggleChat =
-    toggleChat;
-
-
-if (chatForm) {
-
-    chatForm.addEventListener(
-        "submit",
-        event => {
-
-            event.preventDefault();
-
-            sendMessage();
+          }
 
         }
-    );
+      );
+
+    });
 
 }
 
 
-function sendMessage() {
+/* ==================================================
+   MOBILE MENU
+================================================== */
 
-    if (
-        !chatInput ||
-        !chatMessages
-    ) {
-        return;
+function initMobileMenu() {
+
+  const button =
+    document.getElementById(
+      "mobileMenuButton"
+    );
+
+  const menu =
+    document.getElementById(
+      "mobileMenu"
+    );
+
+  if (!button || !menu) return;
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      menu.classList.toggle(
+        "active"
+      );
+
+    }
+  );
+
+}
+
+
+/* ==================================================
+   AUTH MODAL
+================================================== */
+
+function initAuth() {
+
+  const modal =
+    document.getElementById(
+      "authModal"
+    );
+
+  const close =
+    document.getElementById(
+      "closeModal"
+    );
+
+  const login =
+    document.getElementById(
+      "loginButton"
+    );
+
+  const register =
+    document.getElementById(
+      "registerButton"
+    );
+
+  const form =
+    document.getElementById(
+      "authForm"
+    );
+
+  if (!modal) return;
+
+
+  login?.addEventListener(
+    "click",
+    () => {
+
+      state.authMode =
+        "login";
+
+      openAuthModal();
+
+    }
+  );
+
+
+  register?.addEventListener(
+    "click",
+    () => {
+
+      state.authMode =
+        "register";
+
+      openAuthModal();
+
+    }
+  );
+
+
+  close?.addEventListener(
+    "click",
+    closeAuthModal
+  );
+
+
+  modal.addEventListener(
+    "click",
+    event => {
+
+      if (
+        event.target === modal
+      ) {
+
+        closeAuthModal();
+
+      }
+
+    }
+  );
+
+
+  form?.addEventListener(
+    "submit",
+    handleAuthSubmit
+  );
+
+}
+
+
+function openAuthModal() {
+
+  const modal =
+    document.getElementById(
+      "authModal"
+    );
+
+  const title =
+    document.getElementById(
+      "modalTitle"
+    );
+
+  const submit =
+    document.getElementById(
+      "authSubmit"
+    );
+
+  const nameField =
+    document.getElementById(
+      "nameField"
+    );
+
+  const roleField =
+    document.getElementById(
+      "roleField"
+    );
+
+  const message =
+    document.getElementById(
+      "authMessage"
+    );
+
+
+  if (!modal) return;
+
+
+  const dictionary =
+    translations[state.language];
+
+
+  if (
+    state.authMode ===
+    "register"
+  ) {
+
+    title.textContent =
+      dictionary.register;
+
+    submit.textContent =
+      dictionary.register;
+
+    nameField.classList.remove(
+      "hidden"
+    );
+
+    roleField.classList.remove(
+      "hidden"
+    );
+
+  } else {
+
+    title.textContent =
+      dictionary.login;
+
+    submit.textContent =
+      dictionary.login;
+
+    nameField.classList.add(
+      "hidden"
+    );
+
+    roleField.classList.add(
+      "hidden"
+    );
+
+  }
+
+
+  message.textContent = "";
+
+  modal.classList.add(
+    "active"
+  );
+
+}
+
+
+function closeAuthModal() {
+
+  const modal =
+    document.getElementById(
+      "authModal"
+    );
+
+  modal?.classList.remove(
+    "active"
+  );
+
+}
+
+
+/* ==================================================
+   REAL AUTH REQUEST
+================================================== */
+
+async function handleAuthSubmit(
+  event
+) {
+
+  event.preventDefault();
+
+
+  const email =
+    document.getElementById(
+      "authEmail"
+    ).value.trim();
+
+  const password =
+    document.getElementById(
+      "authPassword"
+    ).value;
+
+  const name =
+    document.getElementById(
+      "authName"
+    ).value.trim();
+
+  const role =
+    document.getElementById(
+      "authRole"
+    ).value;
+
+  const message =
+    document.getElementById(
+      "authMessage"
+    );
+
+
+  if (!email || !password) {
+
+    message.textContent =
+      "Маълумотҳоро пур кунед.";
+
+    return;
+
+  }
+
+
+  try {
+
+    message.textContent =
+      "Пайвастшавӣ...";
+
+
+    const endpoint =
+      state.authMode ===
+      "register"
+        ? "/auth/register"
+        : "/auth/login";
+
+
+    const body =
+      state.authMode ===
+      "register"
+        ? {
+            name,
+            email,
+            password,
+            role
+          }
+        : {
+            email,
+            password
+          };
+
+
+    const response =
+      await fetch(
+        API_URL + endpoint,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify(body)
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.error ||
+        "REQUEST_FAILED"
+      );
+
     }
 
 
-    const text =
-        chatInput.value.trim();
+    if (!data.token) {
 
+      throw new Error(
+        "AUTH_TOKEN_MISSING"
+      );
 
-    if (!text) {
-        return;
     }
 
 
-    const empty =
-        chatMessages.querySelector(
-            ".chat-empty"
-        );
+    localStorage.setItem(
+      "smm_token",
+      data.token
+    );
 
 
-    if (empty) {
-        empty.remove();
-    }
+    state.user =
+      data.user;
 
 
-    const message =
-        document.createElement(
-            "div"
-        );
+    closeAuthModal();
 
 
-    message.className =
-        "message sent";
+    redirectByRole(
+      data.user.role
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "SMM.TJ auth error:",
+      error
+    );
 
 
     message.textContent =
-        text;
+      "Ба сервер пайваст шудан имкон нашуд ё маълумот нодуруст аст.";
 
-
-    const time =
-        document.createElement(
-            "small"
-        );
-
-
-    time.textContent =
-        "ҳозир";
-
-
-    message.appendChild(
-        time
-    );
-
-
-    chatMessages.appendChild(
-        message
-    );
-
-
-    chatInput.value =
-        "";
-
-
-    chatMessages.scrollTop =
-        chatMessages.scrollHeight;
+  }
 
 }
 
 
-/* =========================================================
-   MOBILE MENU
-========================================================= */
+/* ==================================================
+   CURRENT USER
+================================================== */
 
-if (mobileMenuBtn) {
+async function loadCurrentUser() {
 
-    mobileMenuBtn.addEventListener(
-        "click",
-        () => {
+  const token =
+    localStorage.getItem(
+      "smm_token"
+    );
 
-            if (!mainNav) {
-                return;
-            }
-
-
-            const isOpen =
-                mainNav.classList.toggle(
-                    "mobile-open"
-                );
+  if (!token) return;
 
 
-            mobileMenuBtn.setAttribute(
-                "aria-expanded",
-                String(isOpen)
+  try {
+
+    const response =
+      await fetch(
+        API_URL + "/me",
+        {
+          headers: {
+            Authorization:
+              "Bearer " + token
+          }
+        }
+      );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "SESSION_EXPIRED"
+      );
+
+    }
+
+
+    state.user =
+      await response.json();
+
+
+  } catch {
+
+    localStorage.removeItem(
+      "smm_token"
+    );
+
+    state.user =
+      null;
+
+  }
+
+}
+
+
+/* ==================================================
+   ROLE REDIRECT
+================================================== */
+
+function redirectByRole(
+  role
+) {
+
+  if (role === "ADMIN") {
+
+    window.location.href =
+      "Admin.panel";
+
+    return;
+
+  }
+
+
+  /*
+   * These pages should be created:
+   *
+   * client.html
+   * specialist.html
+   *
+   * They will be connected to the same API.
+   */
+
+  if (role === "CLIENT") {
+
+    window.location.href =
+      "client.html";
+
+    return;
+
+  }
+
+
+  if (role === "SPECIALIST") {
+
+    window.location.href =
+      "specialist.html";
+
+  }
+
+}
+
+
+/* ==================================================
+   SPECIALISTS
+================================================== */
+
+async function loadSpecialists() {
+
+  const container =
+    document.getElementById(
+      "specialistGrid"
+    );
+
+  if (!container) return;
+
+
+  try {
+
+    const response =
+      await fetch(
+        API_URL +
+        "/specialists?limit=6"
+      );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "SPECIALISTS_REQUEST_FAILED"
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    state.specialists =
+      data.items || [];
+
+
+    renderSpecialists();
+
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+
+    /*
+     * Do NOT insert fake specialists.
+     */
+
+    container.innerHTML = `
+      <div class="specialist-card">
+        <strong>SMM.TJ</strong>
+        <p>
+          Барои дидани мутахассисони воқеӣ
+          сервери SMM.TJ бояд фаъол бошад.
+        </p>
+      </div>
+    `;
+
+  }
+
+}
+
+
+function renderSpecialists() {
+
+  const container =
+    document.getElementById(
+      "specialistGrid"
+    );
+
+  if (!container) return;
+
+
+  if (
+    !state.specialists.length
+  ) {
+
+    container.innerHTML = `
+      <div class="specialist-card">
+        <strong>SMM.TJ</strong>
+        <p>
+          Ҳоло мутахассис пайдо нашуд.
+        </p>
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    state.specialists
+      .map(
+        specialist => {
+
+          const user =
+            specialist.user || {};
+
+          const name =
+            escapeHTML(
+              user.name ||
+              "SMM Specialist"
             );
+
+          const skills =
+            escapeHTML(
+              specialist.skills ||
+              "SMM"
+            );
+
+          const rating =
+            Number(
+              specialist.rating || 0
+            ).toFixed(1);
+
+          const projects =
+            Number(
+              specialist.completedProjects || 0
+            );
+
+          const price =
+            Number(
+              specialist.startingPrice || 0
+            );
+
+
+          const initial =
+            name
+              .charAt(0)
+              .toUpperCase();
+
+
+          return `
+
+            <article
+              class="specialist-card"
+            >
+
+              <div
+                class="specialist-top"
+              >
+
+                <div
+                  class="specialist-avatar"
+                >
+                  ${initial}
+                </div>
+
+                <div
+                  class="specialist-info"
+                >
+
+                  <strong>
+                    ${name}
+                  </strong>
+
+                  <span>
+                    ⭐ ${rating}
+                    · ${projects}
+                    projects
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <p>
+                ${skills}
+              </p>
+
+
+              <div
+                class="specialist-meta"
+              >
+
+                <span class="tag">
+                  Verified
+                </span>
+
+                <span class="tag">
+                  TJ
+                </span>
+
+              </div>
+
+
+              <div
+                style="
+                  display:flex;
+                  justify-content:space-between;
+                  align-items:center;
+                  gap:10px;
+                "
+              >
+
+                <strong>
+                  ${price} TJS
+                </strong>
+
+                <button
+                  class="btn btn-primary"
+                  onclick="
+                    window.SMMTJ.openSpecialist(
+                      ${Number(specialist.id)}
+                    )
+                  "
+                >
+                  View
+                </button>
+
+              </div>
+
+            </article>
+
+          `;
 
         }
-    );
+      )
+      .join("");
 
 }
 
 
-if (mainNav) {
+/* ==================================================
+   SPECIALIST ACTION
+================================================== */
 
-    mainNav
-        .querySelectorAll("a")
-        .forEach(link => {
+function openSpecialist(
+  specialistId
+) {
 
-            link.addEventListener(
-                "click",
-                () => {
+  /*
+   * This intentionally calls the backend
+   * instead of pretending a profile exists.
+   */
 
-                    mainNav.classList.remove(
-                        "mobile-open"
-                    );
+  window.location.hash =
+    "specialist-" +
+    specialistId;
 
-                    if (mobileMenuBtn) {
+}
 
-                        mobileMenuBtn.setAttribute(
-                            "aria-expanded",
-                            "false"
-                        );
 
-                    }
+/* ==================================================
+   MAIN BUTTONS
+================================================== */
 
-                }
-            );
+function initButtons() {
+
+  const find =
+    document.getElementById(
+      "findSpecialistButton"
+    );
+
+  const join =
+    document.getElementById(
+      "joinSpecialistButton"
+    );
+
+
+  find?.addEventListener(
+    "click",
+    () => {
+
+      document
+        .getElementById(
+          "specialists"
+        )
+        ?.scrollIntoView({
+          behavior: "smooth"
+        });
+
+    }
+  );
+
+
+  join?.addEventListener(
+    "click",
+    () => {
+
+      state.authMode =
+        "register";
+
+      openAuthModal();
+
+    }
+  );
+
+}
+
+
+/* ==================================================
+   YEAR
+================================================== */
+
+function initYear() {
+
+  const year =
+    document.getElementById(
+      "currentYear"
+    );
+
+  if (year) {
+
+    year.textContent =
+      new Date()
+        .getFullYear()
+        .toString();
+
+  }
+
+}
+
+
+/* ==================================================
+   LOGOUT
+================================================== */
+
+function logout() {
+
+  localStorage.removeItem(
+    "smm_token"
+  );
+
+  state.user =
+    null;
+
+  window.location.href =
+    "index.html";
+
+}
+
+
+/* ==================================================
+   ADMIN API
+================================================== */
+
+async function adminRequest(
+  endpoint,
+  options = {}
+) {
+
+  const token =
+    localStorage.getItem(
+      "smm_token"
+    );
+
+
+  if (!token) {
+
+    throw new Error(
+      "UNAUTHORIZED"
+    );
+
+  }
+
+
+  const response =
+    await fetch(
+      API_URL + endpoint,
+      {
+        ...options,
+
+        headers: {
+          "Content-Type":
+            "application/json",
+
+          ...(options.headers || {}),
+
+          Authorization:
+            "Bearer " + token
+        }
+      }
+    );
+
+
+  const data =
+    await response
+      .json()
+      .catch(() => ({}));
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      data.error ||
+      "ADMIN_REQUEST_FAILED"
+    );
+
+  }
+
+
+  return data;
+
+}
+
+
+/* ==================================================
+   ADMIN STATS
+================================================== */
+
+async function loadAdminStats() {
+
+  try {
+
+    const stats =
+      await adminRequest(
+        "/admin/stats"
+      );
+
+
+    setText(
+      "totalUsers",
+      stats.users
+    );
+
+    setText(
+      "totalClients",
+      stats.clients
+    );
+
+    setText(
+      "totalSpecialists",
+      stats.specialists
+    );
+
+    setText(
+      "activeProjects",
+      stats.active
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Admin stats:",
+      error
+    );
+
+  }
+
+}
+
+
+/* ==================================================
+   ADMIN PAGE
+================================================== */
+
+async function loadAdminPage(
+  page
+) {
+
+  const table =
+    document.getElementById(
+      "adminTableBody"
+    );
+
+  if (!table) return;
+
+
+  table.innerHTML = `
+    <tr>
+      <td colspan="6">
+        Loading...
+      </td>
+    </tr>
+  `;
+
+
+  try {
+
+    if (page === "dashboard") {
+
+      await loadAdminStats();
+
+      return;
+
+    }
+
+
+    /*
+     * These endpoints are expected to be
+     * implemented by the backend.
+     */
+
+    let endpoint;
+
+
+    switch (page) {
+
+      case "users":
+        endpoint = "/admin/users";
+        break;
+
+      case "projects":
+        endpoint = "/admin/projects";
+        break;
+
+      case "services":
+        endpoint = "/admin/services";
+        break;
+
+      case "reviews":
+        endpoint = "/admin/reviews";
+        break;
+
+      case "payments":
+        endpoint = "/admin/payments";
+        break;
+
+      case "settings":
+        endpoint = "/admin/settings";
+        break;
+
+      default:
+        return;
+
+    }
+
+
+    const data =
+      await adminRequest(
+        endpoint
+      );
+
+
+    renderAdminTable(
+      data
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+
+    table.innerHTML = `
+      <tr>
+        <td colspan="6">
+          Backend endpoint ҳоло дастрас нест.
+        </td>
+      </tr>
+    `;
+
+  }
+
+}
+
+
+/* ==================================================
+   ADMIN TABLE
+================================================== */
+
+function renderAdminTable(
+  data
+) {
+
+  const table =
+    document.getElementById(
+      "adminTableBody"
+    );
+
+  if (!table) return;
+
+
+  const items =
+    Array.isArray(data)
+      ? data
+      : data.items || [];
+
+
+  if (!items.length) {
+
+    table.innerHTML = `
+      <tr>
+        <td colspan="6">
+          Маълумот нест.
+        </td>
+      </tr>
+    `;
+
+    return;
+
+  }
+
+
+  table.innerHTML =
+    items
+      .map(
+        item => {
+
+          return `
+
+            <tr>
+
+              <td>
+                ${escapeHTML(
+                  String(
+                    item.id ?? "—"
+                  )
+                )}
+              </td>
+
+              <td>
+                ${escapeHTML(
+                  item.name ||
+                  item.title ||
+                  "—"
+                )}
+              </td>
+
+              <td>
+                ${escapeHTML(
+                  item.email ||
+                  "—"
+                )}
+              </td>
+
+              <td>
+                ${escapeHTML(
+                  item.role ||
+                  item.status ||
+                  "—"
+                )}
+              </td>
+
+              <td>
+
+                <span
+                  class="admin-status"
+                >
+                  ${escapeHTML(
+                    item.status ||
+                    "ACTIVE"
+                  )}
+                </span>
+
+              </td>
+
+              <td>
+
+                <button
+                  class="admin-action"
+                  onclick="
+                    window.SMMTJ.adminView(
+                      ${Number(item.id)}
+                    )
+                  "
+                >
+                  View
+                </button>
+
+              </td>
+
+            </tr>
+
+          `;
+
+        }
+      )
+      .join("");
+
+}
+
+
+/* ==================================================
+   ADMIN VIEW
+================================================== */
+
+function adminView(
+  id
+) {
+
+  console.log(
+    "Admin selected:",
+    id
+  );
+
+}
+
+
+/* ==================================================
+   ADMIN LOGOUT
+================================================== */
+
+const adminLogout =
+  document.getElementById(
+    "adminLogout"
+  );
+
+adminLogout?.addEventListener(
+  "click",
+  logout
+);
+
+
+/* ==================================================
+   SEARCH
+================================================== */
+
+document
+  .getElementById(
+    "adminSearch"
+  )
+  ?.addEventListener(
+    "input",
+    event => {
+
+      const query =
+        event.target.value
+          .toLowerCase()
+          .trim();
+
+
+      document
+        .querySelectorAll(
+          "#adminTableBody tr"
+        )
+        .forEach(row => {
+
+          row.style.display =
+            row.textContent
+              .toLowerCase()
+              .includes(query)
+                ? ""
+                : "none";
 
         });
 
-}
+    }
+  );
 
 
-/* =========================================================
-   TOAST
-========================================================= */
+/* ==================================================
+   UTILITIES
+================================================== */
 
-function showToast(
-    message,
-    type = "info"
+function setText(
+  id,
+  value
 ) {
 
-    let container =
-        document.getElementById(
-            "toastContainer"
-        );
+  const element =
+    document.getElementById(id);
 
+  if (element) {
 
-    if (!container) {
+    element.textContent =
+      String(value ?? "—");
 
-        container =
-            document.createElement(
-                "div"
-            );
-
-
-        container.id =
-            "toastContainer";
-
-
-        container.style.position =
-            "fixed";
-
-        container.style.right =
-            "20px";
-
-        container.style.bottom =
-            "20px";
-
-        container.style.zIndex =
-            "99999";
-
-        container.style.display =
-            "flex";
-
-        container.style.flexDirection =
-            "column";
-
-        container.style.gap =
-            "10px";
-
-
-        document.body.appendChild(
-            container
-        );
-
-    }
-
-
-    const toast =
-        document.createElement(
-            "div"
-        );
-
-
-    toast.textContent =
-        message;
-
-
-    toast.style.padding =
-        "14px 18px";
-
-    toast.style.borderRadius =
-        "14px";
-
-    toast.style.background =
-        "#4f46e5";
-
-    toast.style.color =
-        "#fff";
-
-    toast.style.fontSize =
-        "14px";
-
-    toast.style.fontWeight =
-        "600";
-
-    toast.style.maxWidth =
-        "360px";
-
-    toast.style.boxShadow =
-        "0 15px 40px rgba(0,0,0,.2)";
-
-
-    if (type === "success") {
-
-        toast.style.background =
-            "#16a34a";
-
-    }
-
-
-    if (type === "error") {
-
-        toast.style.background =
-            "#dc2626";
-
-    }
-
-
-    container.appendChild(
-        toast
-    );
-
-
-    setTimeout(
-        () => {
-
-            toast.remove();
-
-        },
-        4000
-    );
+  }
 
 }
 
-window.showToast =
-    showToast;
-
-
-/* =========================================================
-   BUTTON LOADING
-========================================================= */
-
-function setButtonLoading(
-    button,
-    text
-) {
-
-    if (!button) {
-        return;
-    }
-
-
-    button.textContent =
-        text;
-
-
-    button.disabled =
-        text.includes(
-            "истодааст"
-        );
-
-
-    button.style.opacity =
-        button.disabled
-            ? "0.7"
-            : "1";
-
-}
-
-
-/* =========================================================
-   SCROLL
-========================================================= */
-
-function scrollToSpecialists() {
-
-    const section =
-        document.getElementById(
-            "specialists"
-        );
-
-
-    if (!section) {
-        return;
-    }
-
-
-    section.scrollIntoView({
-        behavior:
-            "smooth",
-
-        block:
-            "start"
-    });
-
-}
-
-
-/* =========================================================
-   HELPERS
-========================================================= */
 
 function escapeHTML(
-    value
+  value
 ) {
 
-    return String(value)
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 
 }
 
 
-function escapeAttribute(
-    value
+/* ==================================================
+   PUBLIC API
+================================================== */
+
+window.SMMTJ = {
+
+  state,
+
+  API_URL,
+
+  openSpecialist,
+
+  loadAdminPage,
+
+  loadAdminStats,
+
+  adminView,
+
+  logout
+
+};
+
+
+/* ==================================================
+   AUTO ADMIN LOAD
+================================================== */
+
+if (
+  document.getElementById(
+    "adminTableBody"
+  )
 ) {
 
-    return escapeHTML(
-        value
-    );
+  loadAdminStats();
 
 }
-
-
-/* =========================================================
-   START
-========================================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    async () => {
-
-        console.log(
-            "SMM.TJ started"
-        );
-
-
-        await loadCurrentUser();
-
-
-        updateAuthUI();
-
-
-        await loadSpecialists();
-
-
-        if (notificationPanel) {
-
-            notificationPanel.setAttribute(
-                "aria-hidden",
-                "true"
-            );
-
-        }
-
-
-        if (chatWidget) {
-
-            chatWidget.setAttribute(
-                "aria-hidden",
-                "true"
-            );
-
-        }
-
-    }
-);
