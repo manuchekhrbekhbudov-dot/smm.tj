@@ -1,7 +1,7 @@
 /* =========================================================
-   SMM.TJ — SCRIPT.JS
-   Frontend Controller
-   ========================================================= */
+   SMM.TJ — MAIN JAVASCRIPT
+   Real API + UI + Modals + Navigation + Filters
+========================================================= */
 
 "use strict";
 
@@ -10,45 +10,57 @@
 ========================================================= */
 
 const CONFIG = {
-    API_BASE_URL: "http://localhost:5000/api",
+    API_BASE: "http://localhost:5000/api",
 
-    ACCESS_TOKEN_KEY: "smm_tj_access_token",
-    REFRESH_TOKEN_KEY: "smm_tj_refresh_token",
+    TOKEN_KEY: "smm_tj_access_token",
+    REFRESH_KEY: "smm_tj_refresh_token",
     USER_KEY: "smm_tj_user",
 
-    ANIMATION_DURATION: 500,
+    DEFAULT_IMAGE:
+        "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=80",
 
-    FALLBACK_IMAGE:
-        "https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=900&q=80"
+    REQUEST_TIMEOUT: 15000
 };
 
 
 /* =========================================================
-   GLOBAL STATE
+   STATE
 ========================================================= */
 
 const state = {
     user: null,
 
     accessToken:
-        localStorage.getItem(CONFIG.ACCESS_TOKEN_KEY) || null,
+        localStorage.getItem(CONFIG.TOKEN_KEY) || null,
 
     refreshToken:
-        localStorage.getItem(CONFIG.REFRESH_TOKEN_KEY) || null,
+        localStorage.getItem(CONFIG.REFRESH_KEY) || null,
 
-    services: [],
-    products: [],
-    specialists: [],
-    jobs: [],
-    projects: [],
-    realEstate: [],
-    reviews: [],
-    notifications: [],
+    currentMarketType: "services",
+
+    currentRealEstateType: "",
+
+    currentConversationId: null,
+
     conversations: [],
 
-    activeConversation: null,
-    activeMarketplace: "services",
-    activeRealEstateType: "sale",
+    specialists: [],
+
+    services: [],
+
+    products: [],
+
+    jobs: [],
+
+    projects: [],
+
+    realEstate: [],
+
+    reviews: [],
+
+    notifications: [],
+
+    searchResults: [],
 
     loading: false
 };
@@ -64,65 +76,91 @@ const $ = (selector, parent = document) =>
 const $$ = (selector, parent = document) =>
     [...parent.querySelectorAll(selector)];
 
-const getById = id =>
-    document.getElementById(id);
+
+function get(id) {
+    return document.getElementById(id);
+}
+
+
+function exists(id) {
+    return !!document.getElementById(id);
+}
 
 
 /* =========================================================
-   INITIALIZATION
+   STORAGE
 ========================================================= */
 
-document.addEventListener("DOMContentLoaded", async () => {
+function saveAuth(data) {
+    if (!data) return;
 
-    initLoadingScreen();
+    const access =
+        data.accessToken ||
+        data.access_token ||
+        data.token ||
+        null;
 
-    initNavigation();
-    initModals();
-    initForms();
-    initFilters();
-    initTabs();
-    initSearch();
-    initCounters();
-    initScrollAnimations();
-    initFavoriteButtons();
+    const refresh =
+        data.refreshToken ||
+        data.refresh_token ||
+        null;
 
-    restoreUser();
+    const user =
+        data.user ||
+        data.profile ||
+        null;
 
-    await loadInitialData();
+    if (access) {
+        state.accessToken = access;
+        localStorage.setItem(
+            CONFIG.TOKEN_KEY,
+            access
+        );
+    }
+
+    if (refresh) {
+        state.refreshToken = refresh;
+        localStorage.setItem(
+            CONFIG.REFRESH_KEY,
+            refresh
+        );
+    }
+
+    if (user) {
+        state.user = user;
+
+        localStorage.setItem(
+            CONFIG.USER_KEY,
+            JSON.stringify(user)
+        );
+    }
+}
+
+
+function loadStoredUser() {
+    try {
+        const user =
+            localStorage.getItem(CONFIG.USER_KEY);
+
+        if (user) {
+            state.user = JSON.parse(user);
+        }
+    } catch {
+        state.user = null;
+    }
+}
+
+
+function clearAuth() {
+    state.user = null;
+    state.accessToken = null;
+    state.refreshToken = null;
+
+    localStorage.removeItem(CONFIG.TOKEN_KEY);
+    localStorage.removeItem(CONFIG.REFRESH_KEY);
+    localStorage.removeItem(CONFIG.USER_KEY);
 
     updateAuthUI();
-
-    window.SMMTJ = {
-        state,
-        apiRequest,
-        openModal,
-        closeModal,
-        toast,
-        loadInitialData
-    };
-
-});
-
-
-/* =========================================================
-   LOADING SCREEN
-========================================================= */
-
-function initLoadingScreen() {
-
-    const screen = getById("loadingScreen");
-
-    if (!screen) return;
-
-    setTimeout(() => {
-
-        screen.classList.add("hidden");
-
-        setTimeout(() => {
-            screen.remove();
-        }, 700);
-
-    }, 1000);
 }
 
 
@@ -135,225 +173,450 @@ async function apiRequest(
     options = {},
     retry = true
 ) {
+    const controller =
+        new AbortController();
 
-    const config = {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            ...(options.headers || {})
-        },
-        ...options
+    const timeout =
+        setTimeout(
+            () => controller.abort(),
+            CONFIG.REQUEST_TIMEOUT
+        );
+
+    const headers = {
+        ...(options.headers || {})
     };
 
-
-    if (state.accessToken) {
-
-        config.headers.Authorization =
-            `Bearer ${state.accessToken}`;
-
+    if (!(options.body instanceof FormData)) {
+        headers["Content-Type"] =
+            "application/json";
     }
 
+    if (state.accessToken) {
+        headers.Authorization =
+            `Bearer ${state.accessToken}`;
+    }
 
     try {
-
-        const response =
-            await fetch(
-                `${CONFIG.API_BASE_URL}${endpoint}`,
-                config
-            );
-
+        const response = await fetch(
+            `${CONFIG.API_BASE}${endpoint}`,
+            {
+                ...options,
+                headers,
+                signal: controller.signal
+            }
+        );
 
         if (
             response.status === 401 &&
             retry &&
             state.refreshToken
         ) {
-
             const refreshed =
                 await refreshAccessToken();
 
             if (refreshed) {
-
                 return apiRequest(
                     endpoint,
                     options,
                     false
                 );
-
             }
-
         }
 
+        const text =
+            await response.text();
 
-        const contentType =
-            response.headers.get("content-type") || "";
+        let data = {};
 
-
-        const data =
-            contentType.includes("application/json")
-                ? await response.json()
-                : await response.text();
-
+        try {
+            data = text
+                ? JSON.parse(text)
+                : {};
+        } catch {
+            data = {
+                message: text
+            };
+        }
 
         if (!response.ok) {
-
             throw new Error(
-                data?.message ||
-                data?.error ||
-                "Хатогӣ ҳангоми иҷрои дархост."
+                data.message ||
+                data.error ||
+                `HTTP ${response.status}`
             );
-
         }
 
-
         return data;
-
-    } catch (error) {
-
-        console.error("API Error:", error);
-
-        throw error;
-
+    } finally {
+        clearTimeout(timeout);
     }
-
 }
 
 
-/* =========================================================
-   REFRESH TOKEN
-========================================================= */
-
 async function refreshAccessToken() {
+    if (!state.refreshToken) {
+        return false;
+    }
 
     try {
-
-        const response = await fetch(
-            `${CONFIG.API_BASE_URL}/auth/refresh`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    refreshToken: state.refreshToken
-                })
-            }
-        );
-
+        const response =
+            await fetch(
+                `${CONFIG.API_BASE}/auth/refresh`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        refreshToken:
+                            state.refreshToken
+                    })
+                }
+            );
 
         if (!response.ok) {
-
-            logout(false);
-
+            clearAuth();
             return false;
-
         }
-
 
         const data =
             await response.json();
 
-
-        state.accessToken =
-            data.accessToken ||
-            data.access_token;
-
-
-        localStorage.setItem(
-            CONFIG.ACCESS_TOKEN_KEY,
-            state.accessToken
-        );
-
+        saveAuth(data);
 
         return true;
-
     } catch {
-
-        logout(false);
-
+        clearAuth();
         return false;
-
     }
-
 }
 
 
 /* =========================================================
-   AUTH STORAGE
+   API SHORTCUTS
 ========================================================= */
 
-function restoreUser() {
-
-    try {
-
-        const saved =
-            localStorage.getItem(
-                CONFIG.USER_KEY
-            );
-
-        if (saved) {
-
-            state.user =
-                JSON.parse(saved);
-
-        }
-
-    } catch {
-
-        state.user = null;
-
-    }
-
+async function apiGet(endpoint) {
+    return apiRequest(endpoint, {
+        method: "GET"
+    });
 }
 
 
-function saveAuth(data) {
-
-    state.accessToken =
-        data.accessToken ||
-        data.access_token ||
-        null;
-
-    state.refreshToken =
-        data.refreshToken ||
-        data.refresh_token ||
-        null;
-
-    state.user =
-        data.user ||
-        data.profile ||
-        null;
+async function apiPost(endpoint, body) {
+    return apiRequest(endpoint, {
+        method: "POST",
+        body:
+            body instanceof FormData
+                ? body
+                : JSON.stringify(body)
+    });
+}
 
 
-    if (state.accessToken) {
+async function apiPatch(endpoint, body) {
+    return apiRequest(endpoint, {
+        method: "PATCH",
+        body:
+            body instanceof FormData
+                ? body
+                : JSON.stringify(body)
+    });
+}
 
-        localStorage.setItem(
-            CONFIG.ACCESS_TOKEN_KEY,
-            state.accessToken
+
+async function apiPut(endpoint, body) {
+    return apiRequest(endpoint, {
+        method: "PUT",
+        body:
+            body instanceof FormData
+                ? body
+                : JSON.stringify(body)
+    });
+}
+
+
+async function apiDelete(endpoint) {
+    return apiRequest(endpoint, {
+        method: "DELETE"
+    });
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function toast(
+    message,
+    type = "info"
+) {
+    const container =
+        get("toastContainer");
+
+    if (!container) return;
+
+    const item =
+        document.createElement("div");
+
+    item.className =
+        `toast toast-${type}`;
+
+    const icon =
+        type === "success"
+            ? "✓"
+            : type === "error"
+                ? "!"
+                : "i";
+
+    item.innerHTML = `
+        <span class="toast-icon">${icon}</span>
+        <span class="toast-text"></span>
+        <button type="button" class="toast-close">×</button>
+    `;
+
+    $(".toast-text", item).textContent =
+        message;
+
+    $(".toast-close", item)
+        .addEventListener(
+            "click",
+            () => item.remove()
         );
 
-    }
+    container.appendChild(item);
 
+    requestAnimationFrame(() => {
+        item.classList.add("show");
+    });
 
-    if (state.refreshToken) {
+    setTimeout(() => {
+        item.classList.remove("show");
 
-        localStorage.setItem(
-            CONFIG.REFRESH_TOKEN_KEY,
-            state.refreshToken
+        setTimeout(
+            () => item.remove(),
+            300
         );
+    }, 4500);
+}
 
-    }
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+function openModal(id) {
+    const modal = get(id);
+
+    if (!modal) return;
+
+    modal.classList.add("open");
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+    document.body.classList.add(
+        "modal-open"
+    );
+}
 
 
-    if (state.user) {
+function closeModal(id) {
+    const modal = get(id);
 
-        localStorage.setItem(
-            CONFIG.USER_KEY,
-            JSON.stringify(state.user)
+    if (!modal) return;
+
+    modal.classList.remove("open");
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    if (
+        !$(".modal.open")
+    ) {
+        document.body.classList.remove(
+            "modal-open"
         );
-
     }
+}
 
+
+function closeAllModals() {
+    $$(".modal.open").forEach(
+        modal => {
+            modal.classList.remove("open");
+            modal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+        }
+    );
+
+    document.body.classList.remove(
+        "modal-open"
+    );
+}
+
+
+/* =========================================================
+   MODAL CLOSE EVENTS
+========================================================= */
+
+document.addEventListener(
+    "click",
+    event => {
+        const close =
+            event.target.closest(
+                "[data-close-modal]"
+            );
+
+        if (close) {
+            closeModal(
+                close.dataset.closeModal
+            );
+        }
+
+        if (
+            event.target.classList.contains(
+                "modal"
+            )
+        ) {
+            closeModal(
+                event.target.id
+            );
+        }
+    }
+);
+
+
+document.addEventListener(
+    "keydown",
+    event => {
+        if (event.key === "Escape") {
+            closeAllModals();
+        }
+    }
+);
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function scrollToSection(id) {
+    const section = get(id);
+
+    if (!section) return;
+
+    closeMobileMenu();
+
+    section.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+
+    setActiveNav(id);
+}
+
+
+function setActiveNav(sectionId) {
+    $$("[data-section]").forEach(
+        button => {
+            button.classList.toggle(
+                "active",
+                button.dataset.section ===
+                    sectionId
+            );
+        }
+    );
+}
+
+
+$$("[data-section]").forEach(
+    button => {
+        button.addEventListener(
+            "click",
+            () => {
+                scrollToSection(
+                    button.dataset.section
+                );
+            }
+        );
+    }
+);
+
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+[
+    "logoBtn",
+    "footerLogoBtn"
+].forEach(id => {
+    const button = get(id);
+
+    if (button) {
+        button.addEventListener(
+            "click",
+            () => scrollToSection("home")
+        );
+    }
+});
+
+
+/* =========================================================
+   MOBILE MENU
+========================================================= */
+
+function toggleMobileMenu() {
+    const menu =
+        get("mobileNav");
+
+    const button =
+        get("mobileMenuBtn");
+
+    if (!menu || !button) return;
+
+    const opened =
+        menu.classList.toggle("open");
+
+    button.setAttribute(
+        "aria-expanded",
+        String(opened)
+    );
+}
+
+
+function closeMobileMenu() {
+    const menu =
+        get("mobileNav");
+
+    const button =
+        get("mobileMenuBtn");
+
+    if (!menu) return;
+
+    menu.classList.remove("open");
+
+    if (button) {
+        button.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+    }
+}
+
+
+if (exists("mobileMenuBtn")) {
+    get("mobileMenuBtn")
+        .addEventListener(
+            "click",
+            toggleMobileMenu
+        );
 }
 
 
@@ -362,176 +625,40 @@ function saveAuth(data) {
 ========================================================= */
 
 function updateAuthUI() {
+    const logged =
+        !!state.user;
 
-    const loginBtn =
-        getById("loginBtn");
-
-    const registerBtn =
-        getById("registerBtn");
-
-    const userMenuBtn =
-        getById("userMenuBtn");
-
-
-    if (state.user) {
-
-        if (loginBtn)
-            loginBtn.hidden = true;
-
-        if (registerBtn)
-            registerBtn.hidden = true;
-
-        if (userMenuBtn) {
-
-            userMenuBtn.hidden = false;
-
-            userMenuBtn.textContent =
-                getInitials(state.user);
-
-        }
-
-
-        updateUserMenu();
-
-    } else {
-
-        if (loginBtn)
-            loginBtn.hidden = false;
-
-        if (registerBtn)
-            registerBtn.hidden = false;
-
-        if (userMenuBtn)
-            userMenuBtn.hidden = true;
-
+    if (exists("loginBtn")) {
+        get("loginBtn").hidden =
+            logged;
     }
 
-}
-
-
-/* =========================================================
-   REGISTER
-========================================================= */
-
-async function handleRegister(event) {
-
-    event.preventDefault();
-
-    const form = event.currentTarget;
-
-    const firstName =
-        getById("registerFirstName")?.value.trim();
-
-    const lastName =
-        getById("registerLastName")?.value.trim();
-
-    const username =
-        getById("registerUsername")?.value.trim();
-
-    const phone =
-        getById("registerPhone")?.value.trim();
-
-    const email =
-        getById("registerEmail")?.value.trim();
-
-    const role =
-        getById("registerRole")?.value;
-
-    const region =
-        getById("registerRegion")?.value;
-
-    const city =
-        getById("registerCity")?.value.trim();
-
-    const password =
-        getById("registerPassword")?.value;
-
-    const confirmPassword =
-        getById("registerConfirmPassword")?.value;
-
-
-    if (password !== confirmPassword) {
-
-        toast(
-            "Паролҳо мувофиқ нестанд.",
-            "error"
-        );
-
-        return;
-
+    if (exists("registerBtn")) {
+        get("registerBtn").hidden =
+            logged;
     }
 
-
-    if (password.length < 6) {
-
-        toast(
-            "Парол бояд ҳадди ақал 6 аломат дошта бошад.",
-            "error"
-        );
-
-        return;
-
+    if (exists("profileBtn")) {
+        get("profileBtn").hidden =
+            !logged;
     }
 
-
-    const submit =
-        $("button[type='submit']", form);
-
-
-    setButtonLoading(submit, true);
-
-
-    try {
-
-        const data =
-            await apiRequest(
-                "/auth/register",
-                {
-                    method: "POST",
-
-                    body: JSON.stringify({
-                        firstName,
-                        lastName,
-                        username,
-                        phone,
-                        email,
-                        password,
-                        confirmPassword,
-                        role,
-                        region,
-                        city
-                    })
-                }
-            );
-
-
-        saveAuth(data);
-
-        closeModal("registerModal");
-
-        updateAuthUI();
-
-        toast(
-            "Аккаунти шумо бомуваффақият сохта шуд.",
-            "success"
-        );
-
-
-        await loadInitialData();
-
-    } catch (error) {
-
-        toast(
-            error.message,
-            "error"
-        );
-
-    } finally {
-
-        setButtonLoading(submit, false);
-
+    if (exists("profileName")) {
+        get("profileName").textContent =
+            state.user
+                ? (
+                    state.user.firstName ||
+                    state.user.username ||
+                    state.user.name ||
+                    "Профил"
+                )
+                : "Профил";
     }
 
+    if (exists("profileDot")) {
+        get("profileDot").textContent =
+            logged ? "●" : "○";
+    }
 }
 
 
@@ -540,66 +667,220 @@ async function handleRegister(event) {
 ========================================================= */
 
 async function handleLogin(event) {
-
     event.preventDefault();
 
     const identifier =
-        getById("loginIdentifier")?.value.trim();
+        get("loginIdentifier")?.value.trim();
 
     const password =
-        getById("loginPassword")?.value;
+        get("loginPassword")?.value;
+
+    if (!identifier || !password) {
+        toast(
+            "Ҳамаи майдонҳоро пур кунед.",
+            "error"
+        );
+
+        return;
+    }
+
+    const button =
+        get("loginSubmitBtn");
+
+    setButtonLoading(
+        button,
+        true,
+        "Ворид шуда истодааст..."
+    );
+
+    try {
+        const data =
+            await apiPost(
+                "/auth/login",
+                {
+                    identifier,
+                    email: identifier,
+                    phone: identifier,
+                    password
+                }
+            );
+
+        saveAuth(data);
+
+        if (data.user) {
+            state.user = data.user;
+        }
+
+        updateAuthUI();
+
+        closeModal("loginModal");
+
+        get("loginForm")?.reset();
+
+        toast(
+            "Ба ҳисоби шумо бомуваффақият ворид шудед.",
+            "success"
+        );
+
+        await loadAllData();
+
+    } catch (error) {
+        showFormError(
+            "loginError",
+            error.message ||
+            "Ворид шудан имконнопазир аст."
+        );
+    } finally {
+        setButtonLoading(
+            button,
+            false,
+            "Ворид шудан"
+        );
+    }
+}
 
 
-    const submit =
-        $("button[type='submit']", event.currentTarget);
+/* =========================================================
+   REGISTER
+========================================================= */
+
+async function handleRegister(event) {
+    event.preventDefault();
+
+    const firstName =
+        get("registerFirstName")?.value.trim();
+
+    const lastName =
+        get("registerLastName")?.value.trim();
+
+    const username =
+        get("registerUsername")?.value.trim();
+
+    const phone =
+        get("registerPhone")?.value.trim();
+
+    const email =
+        get("registerEmail")?.value.trim();
+
+    const password =
+        get("registerPassword")?.value;
+
+    const confirmPassword =
+        get("registerConfirmPassword")?.value;
+
+    const region =
+        get("registerRegion")?.value;
+
+    const city =
+        get("registerCity")?.value.trim();
+
+    const role =
+        get("registerRole")?.value;
 
 
-    setButtonLoading(submit, true);
+    if (
+        !firstName ||
+        !lastName ||
+        !username ||
+        !phone ||
+        !password ||
+        !confirmPassword ||
+        !region ||
+        !city ||
+        !role
+    ) {
+        showFormError(
+            "registerError",
+            "Лутфан ҳамаи майдонҳои заруриро пур кунед."
+        );
+
+        return;
+    }
+
+
+    if (password !== confirmPassword) {
+        showFormError(
+            "registerError",
+            "Паролҳо мувофиқат намекунанд."
+        );
+
+        return;
+    }
+
+
+    if (password.length < 8) {
+        showFormError(
+            "registerError",
+            "Парол бояд ҳадди ақал 8 символ дошта бошад."
+        );
+
+        return;
+    }
+
+
+    const button =
+        get("registerSubmitBtn");
+
+    setButtonLoading(
+        button,
+        true,
+        "Ҳисоб сохта шуда истодааст..."
+    );
 
 
     try {
-
         const data =
-            await apiRequest(
-                "/auth/login",
+            await apiPost(
+                "/auth/register",
                 {
-                    method: "POST",
-
-                    body: JSON.stringify({
-                        identifier,
-                        password
-                    })
+                    firstName,
+                    lastName,
+                    username,
+                    phone,
+                    email: email || undefined,
+                    password,
+                    confirmPassword,
+                    region,
+                    city,
+                    role
                 }
             );
 
 
         saveAuth(data);
 
-        closeModal("loginModal");
+        if (data.user) {
+            state.user = data.user;
+        }
+
 
         updateAuthUI();
 
+        closeModal("registerModal");
+
+        get("registerForm")?.reset();
+
         toast(
-            "Хуш омадед ба SMM.TJ!",
+            "Ҳисоби шумо бомуваффақият сохта шуд.",
             "success"
         );
 
 
-        await loadInitialData();
+        await loadAllData();
 
     } catch (error) {
-
-        toast(
-            error.message,
-            "error"
+        showFormError(
+            "registerError",
+            error.message ||
+            "Бақайдгирӣ иҷро нашуд."
         );
-
     } finally {
-
-        setButtonLoading(submit, false);
-
+        setButtonLoading(
+            button,
+            false,
+            "Ҳисоб сохтан"
+        );
     }
-
 }
 
 
@@ -607,57 +888,29 @@ async function handleLogin(event) {
    LOGOUT
 ========================================================= */
 
-async function logout(showToast = true) {
-
+async function logout() {
     try {
-
-        if (state.accessToken) {
-
-            await apiRequest(
+        if (state.refreshToken) {
+            await apiPost(
                 "/auth/logout",
                 {
-                    method: "POST"
+                    refreshToken:
+                        state.refreshToken
                 }
             );
-
         }
-
     } catch {
-
-        // local logout continues
+        // logout locally anyway
     }
 
+    clearAuth();
 
-    state.user = null;
-    state.accessToken = null;
-    state.refreshToken = null;
+    closeAllModals();
 
-
-    localStorage.removeItem(
-        CONFIG.ACCESS_TOKEN_KEY
+    toast(
+        "Шумо аз ҳисоби худ баромадед.",
+        "success"
     );
-
-    localStorage.removeItem(
-        CONFIG.REFRESH_TOKEN_KEY
-    );
-
-    localStorage.removeItem(
-        CONFIG.USER_KEY
-    );
-
-
-    updateAuthUI();
-
-
-    if (showToast) {
-
-        toast(
-            "Шумо аз аккаунт баромадед.",
-            "success"
-        );
-
-    }
-
 }
 
 
@@ -666,65 +919,773 @@ async function logout(showToast = true) {
 ========================================================= */
 
 async function handleForgotPassword(event) {
-
     event.preventDefault();
 
     const identifier =
-        getById("forgotIdentifier")?.value.trim();
+        get("forgotIdentifier")?.value.trim();
 
+    if (!identifier) {
+        showFormError(
+            "forgotError",
+            "Телефон ё email-ро ворид кунед."
+        );
+
+        return;
+    }
+
+    const button =
+        get("forgotSubmitBtn");
+
+    setButtonLoading(
+        button,
+        true,
+        "Ирсол шуда истодааст..."
+    );
 
     try {
-
-        await apiRequest(
+        await apiPost(
             "/auth/forgot-password",
             {
-                method: "POST",
-
-                body: JSON.stringify({
-                    identifier
-                })
+                identifier,
+                email: identifier,
+                phone: identifier
             }
         );
 
+        closeModal(
+            "forgotPasswordModal"
+        );
 
-        closeModal("forgotModal");
+        get("forgotPasswordForm")?.reset();
 
         toast(
-            "Агар аккаунт мавҷуд бошад, маълумоти барқарорсозӣ фиристода шуд.",
+            "Агар ҳисоб вуҷуд дошта бошад, маълумоти барқароркунӣ фиристода шуд.",
             "success"
         );
 
     } catch (error) {
-
-        toast(
-            error.message,
-            "error"
+        showFormError(
+            "forgotError",
+            error.message ||
+            "Хатогӣ ҳангоми барқароркунӣ."
         );
-
+    } finally {
+        setButtonLoading(
+            button,
+            false,
+            "Ирсол кардан"
+        );
     }
-
 }
 
 
 /* =========================================================
-   INITIAL DATA
+   FORM ERRORS
 ========================================================= */
 
-async function loadInitialData() {
+function showFormError(id, message) {
+    const element = get(id);
 
-    await Promise.allSettled([
+    if (!element) {
+        toast(message, "error");
+        return;
+    }
 
-        loadSpecialists(),
-        loadServices(),
-        loadProducts(),
-        loadJobs(),
-        loadProjects(),
-        loadRealEstate(),
-        loadReviews(),
-        loadNotifications()
+    element.textContent = message;
+    element.hidden = false;
+}
 
-    ]);
 
+function hideFormError(id) {
+    const element = get(id);
+
+    if (!element) return;
+
+    element.hidden = true;
+    element.textContent = "";
+}
+
+
+/* =========================================================
+   BUTTON LOADING
+========================================================= */
+
+function setButtonLoading(
+    button,
+    loading,
+    text
+) {
+    if (!button) return;
+
+    if (loading) {
+        button.dataset.originalText =
+            button.innerHTML;
+
+        button.disabled = true;
+
+        button.innerHTML = `
+            <span class="btn-spinner"></span>
+            ${text}
+        `;
+    } else {
+        button.disabled = false;
+
+        button.innerHTML =
+            button.dataset.originalText ||
+            text;
+    }
+}
+
+
+/* =========================================================
+   LOGIN / REGISTER BUTTONS
+========================================================= */
+
+get("loginBtn")?.addEventListener(
+    "click",
+    () => {
+        hideFormError("loginError");
+        openModal("loginModal");
+    }
+);
+
+
+get("registerBtn")?.addEventListener(
+    "click",
+    () => {
+        hideFormError("registerError");
+        openModal("registerModal");
+    }
+);
+
+
+get("openRegisterFromLogin")
+    ?.addEventListener(
+        "click",
+        () => {
+            closeModal("loginModal");
+            openModal("registerModal");
+        }
+    );
+
+
+get("openLoginFromRegister")
+    ?.addEventListener(
+        "click",
+        () => {
+            closeModal("registerModal");
+            openModal("loginModal");
+        }
+    );
+
+
+get("forgotPasswordBtn")
+    ?.addEventListener(
+        "click",
+        () => {
+            closeModal("loginModal");
+            openModal(
+                "forgotPasswordModal"
+            );
+        }
+    );
+
+
+get("loginForm")
+    ?.addEventListener(
+        "submit",
+        handleLogin
+    );
+
+
+get("registerForm")
+    ?.addEventListener(
+        "submit",
+        handleRegister
+    );
+
+
+get("forgotPasswordForm")
+    ?.addEventListener(
+        "submit",
+        handleForgotPassword
+    );
+
+
+get("logoutBtn")
+    ?.addEventListener(
+        "click",
+        logout
+    );
+
+
+/* =========================================================
+   PROFILE MENU
+========================================================= */
+
+function toggleProfileMenu() {
+    const menu =
+        get("profileMenu");
+
+    if (!menu) return;
+
+    menu.classList.toggle("open");
+}
+
+
+get("profileBtn")
+    ?.addEventListener(
+        "click",
+        event => {
+            event.stopPropagation();
+            toggleProfileMenu();
+        }
+    );
+
+
+document.addEventListener(
+    "click",
+    event => {
+        const menu =
+            get("profileMenu");
+
+        const profile =
+            get("profileBtn");
+
+        if (!menu) return;
+
+        if (
+            !menu.contains(event.target) &&
+            !profile?.contains(event.target)
+        ) {
+            menu.classList.remove("open");
+        }
+    }
+);
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+async function openProfile() {
+    if (!state.user) {
+        openModal("loginModal");
+        return;
+    }
+
+    const content =
+        get("profileContent");
+
+    if (!content) return;
+
+    openModal("profileModal");
+
+    content.innerHTML = `
+        <div class="loading-block">
+            <div class="loader-ring small"></div>
+            <p>Профил бор шуда истодааст...</p>
+        </div>
+    `;
+
+    try {
+        let data;
+
+        try {
+            data =
+                await apiGet(
+                    `/users/${state.user.id}`
+                );
+        } catch {
+            data = state.user;
+        }
+
+        renderProfile(
+            data.user ||
+            data.profile ||
+            data
+        );
+
+    } catch (error) {
+        content.innerHTML = `
+            <div class="empty-state">
+                ${escapeHTML(
+                    error.message ||
+                    "Профил кушода нашуд."
+                )}
+            </div>
+        `;
+    }
+}
+
+
+function renderProfile(user) {
+    const content =
+        get("profileContent");
+
+    if (!content) return;
+
+    const name =
+        user.firstName ||
+        user.name ||
+        user.username ||
+        "Корбар";
+
+    const lastName =
+        user.lastName || "";
+
+    const avatar =
+        user.avatar ||
+        user.profile?.avatar ||
+        CONFIG.DEFAULT_IMAGE;
+
+    const role =
+        user.role ||
+        "USER";
+
+    content.innerHTML = `
+        <div class="profile-detail">
+
+            <div class="profile-cover"></div>
+
+            <div class="profile-main">
+
+                <img
+                    class="profile-avatar"
+                    src="${safeUrl(avatar)}"
+                    alt="${escapeHTML(name)}"
+                >
+
+                <div class="profile-info">
+
+                    <span class="tag">
+                        ${escapeHTML(role)}
+                    </span>
+
+                    <h2>
+                        ${escapeHTML(
+                            name + " " + lastName
+                        )}
+                    </h2>
+
+                    <p>
+                        ${escapeHTML(
+                            user.bio ||
+                            "Профили SMM.TJ"
+                        )}
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="profile-stats">
+
+                <div>
+                    <strong>
+                        ${user.rating || "—"}
+                    </strong>
+                    <span>Рейтинг</span>
+                </div>
+
+                <div>
+                    <strong>
+                        ${user.experience || "—"}
+                    </strong>
+                    <span>Таҷриба</span>
+                </div>
+
+                <div>
+                    <strong>
+                        ${user.city || "—"}
+                    </strong>
+                    <span>Шаҳр</span>
+                </div>
+
+            </div>
+
+            <div class="profile-actions">
+
+                <button
+                    id="profileEditBtn"
+                    class="btn btn-primary"
+                    type="button"
+                >
+                    ✏️ Таҳрири профил
+                </button>
+
+                <button
+                    id="profileChatBtn"
+                    class="btn btn-ghost"
+                    type="button"
+                >
+                    💬 Паём
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+
+    get("profileEditBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+                toast(
+                    "Функсияи таҳрири профилро баъди пайваст кардани endpoint /profiles фаъол мекунем.",
+                    "info"
+                );
+            }
+        );
+}
+
+
+/* =========================================================
+   PROFILE MENU ACTIONS
+========================================================= */
+
+get("profileMenuBtn")
+    ?.addEventListener(
+        "click",
+        openProfile
+    );
+
+
+get("profileMessagesBtn")
+    ?.addEventListener(
+        "click",
+        () => {
+            openChat();
+        }
+    );
+
+
+get("profileNotificationsBtn")
+    ?.addEventListener(
+        "click",
+        () => {
+            openNotifications();
+        }
+    );
+
+
+get("profileProjectsBtn")
+    ?.addEventListener(
+        "click",
+        () => {
+            scrollToSection("projects");
+        }
+    );
+
+
+get("profileSettingsBtn")
+    ?.addEventListener(
+        "click",
+        () => {
+            toast(
+                "Танзимоти профил дар dashboard дастрас мешавад.",
+                "info"
+            );
+        }
+    );
+
+
+get("bottomProfileBtn")
+    ?.addEventListener(
+        "click",
+        () => {
+            if (state.user) {
+                openProfile();
+            } else {
+                openModal("loginModal");
+            }
+        }
+    );
+
+
+get("footerProfileBtn")
+    ?.addEventListener(
+        "click",
+        () => {
+            if (state.user) {
+                openProfile();
+            } else {
+                openModal("loginModal");
+            }
+        }
+    );
+
+
+/* =========================================================
+   HERO SEARCH
+========================================================= */
+
+get("heroSearchForm")
+    ?.addEventListener(
+        "submit",
+        event => {
+            event.preventDefault();
+
+            const query =
+                get("heroSearchInput")
+                    ?.value
+                    .trim();
+
+            const category =
+                get("heroCategory")
+                    ?.value;
+
+            if (query) {
+                get("specialistSearch").value =
+                    query;
+            }
+
+            if (category) {
+                get("specialistCategory").value =
+                    category;
+
+                get("marketCategory").value =
+                    category;
+            }
+
+            scrollToSection(
+                "specialists"
+            );
+
+            loadSpecialists();
+        }
+    );
+
+
+/* =========================================================
+   GLOBAL SEARCH
+========================================================= */
+
+get("globalSearchBtn")
+    ?.addEventListener(
+        "click",
+        () => {
+            openModal("searchModal");
+
+            setTimeout(
+                () =>
+                    get(
+                        "globalSearchInput"
+                    )?.focus(),
+                100
+            );
+        }
+    );
+
+
+get("globalSearchForm")
+    ?.addEventListener(
+        "submit",
+        handleGlobalSearch
+    );
+
+
+async function handleGlobalSearch(event) {
+    event.preventDefault();
+
+    const query =
+        get("globalSearchInput")
+            ?.value
+            .trim();
+
+    if (!query) {
+        toast(
+            "Матни ҷустуҷӯро ворид кунед.",
+            "error"
+        );
+
+        return;
+    }
+
+    const results =
+        get("globalSearchResults");
+
+    if (!results) return;
+
+    results.innerHTML = `
+        <div class="loading-block">
+            <div class="loader-ring small"></div>
+            <p>Ҷустуҷӯ...</p>
+        </div>
+    `;
+
+    try {
+        const data =
+            await apiGet(
+                `/search?q=${encodeURIComponent(query)}`
+            );
+
+        const items =
+            data.results ||
+            data.data ||
+            [];
+
+        state.searchResults = items;
+
+        renderSearchResults(items);
+
+    } catch {
+        results.innerHTML = `
+            <div class="search-fallback">
+
+                <button
+                    type="button"
+                    class="search-result"
+                    data-search-section="specialists"
+                >
+                    <span>👨‍💻</span>
+                    <strong>
+                        Мутахассисон
+                    </strong>
+                </button>
+
+                <button
+                    type="button"
+                    class="search-result"
+                    data-search-section="marketplace"
+                >
+                    <span>🛍️</span>
+                    <strong>
+                        Marketplace
+                    </strong>
+                </button>
+
+                <button
+                    type="button"
+                    class="search-result"
+                    data-search-section="jobs"
+                >
+                    <span>💼</span>
+                    <strong>
+                        Ҷойҳои корӣ
+                    </strong>
+                </button>
+
+                <button
+                    type="button"
+                    class="search-result"
+                    data-search-section="projects"
+                >
+                    <span>📋</span>
+                    <strong>
+                        Лоиҳаҳо
+                    </strong>
+                </button>
+
+            </div>
+        `;
+
+        $$(
+            "[data-search-section]",
+            results
+        ).forEach(button => {
+            button.addEventListener(
+                "click",
+                () => {
+                    closeModal(
+                        "searchModal"
+                    );
+
+                    scrollToSection(
+                        button.dataset
+                            .searchSection
+                    );
+                }
+            );
+        });
+    }
+}
+
+
+function renderSearchResults(items) {
+    const container =
+        get("globalSearchResults");
+
+    if (!container) return;
+
+    if (!items.length) {
+        container.innerHTML = `
+            <div class="empty-state">
+                Ягон натиҷа ёфт нашуд.
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML =
+        items
+            .slice(0, 20)
+            .map(item => `
+                <button
+                    type="button"
+                    class="search-result"
+                    data-result-id="${escapeHTML(
+                        String(item.id || "")
+                    )}"
+                >
+
+                    <span>
+                        ${item.image
+                            ? `<img src="${safeUrl(item.image)}" alt="">`
+                            : "🔎"
+                        }
+                    </span>
+
+                    <div>
+                        <strong>
+                            ${escapeHTML(
+                                item.title ||
+                                item.name ||
+                                "Натиҷа"
+                            )}
+                        </strong>
+
+                        <small>
+                            ${escapeHTML(
+                                item.type ||
+                                item.category ||
+                                ""
+                            )}
+                        </small>
+                    </div>
+
+                </button>
+            `)
+            .join("");
+
+
+    $$(".search-result", container)
+        .forEach(button => {
+            button.addEventListener(
+                "click",
+                () => {
+                    const id =
+                        button.dataset.resultId;
+
+                    const item =
+                        state.searchResults
+                            .find(
+                                x =>
+                                    String(x.id) ===
+                                    String(id)
+                            );
+
+                    if (item) {
+                        openDetail(
+                            item,
+                            item.type
+                        );
+                    }
+                }
+            );
+        });
 }
 
 
@@ -733,486 +1694,624 @@ async function loadInitialData() {
 ========================================================= */
 
 async function loadSpecialists() {
-
     const grid =
-        getById("specialistsGrid");
+        get("specialistsGrid");
 
     if (!grid) return;
 
+    showSkeleton(
+        grid,
+        6
+    );
 
-    showSkeleton(grid, 6);
+    const params =
+        new URLSearchParams();
+
+    const search =
+        get("specialistSearch")
+            ?.value.trim();
+
+    const category =
+        get("specialistCategory")
+            ?.value;
+
+    const region =
+        get("specialistRegion")
+            ?.value;
+
+    const sort =
+        get("specialistSort")
+            ?.value;
+
+    if (search)
+        params.set("search", search);
+
+    if (category)
+        params.set("category", category);
+
+    if (region)
+        params.set("region", region);
+
+    if (sort)
+        params.set("sort", sort);
 
 
     try {
-
         const data =
-            await apiRequest(
-                "/smm"
+            await apiGet(
+                `/smm?${params.toString()}`
             );
 
+        const items =
+            normalizeList(data);
 
-        state.specialists =
-            normalizeArray(data);
+        state.specialists = items;
 
+        renderSpecialists(items);
 
-        renderSpecialists();
-
-    } catch {
-
-        renderEmpty(
-            grid,
-            "Мутахассисон ҳоло дастрас нестанд."
+        updateStat(
+            "statSpecialists",
+            data.total ||
+            data.count ||
+            items.length
         );
 
+    } catch (error) {
+        renderError(
+            grid,
+            "Мутахассисонро аз сервер гирифтан имконнопазир аст."
+        );
     }
-
 }
 
 
-function renderSpecialists(
-    list = state.specialists
-) {
-
+function renderSpecialists(items) {
     const grid =
-        getById("specialistsGrid");
+        get("specialistsGrid");
 
     if (!grid) return;
 
+    if (!items.length) {
+        renderEmpty(
+            grid,
+            "Ҳоло мутахассис ёфт нашуд."
+        );
+
+        return;
+    }
 
     grid.innerHTML = "";
 
-
-    if (!list.length) {
-
-        showEmpty("specialistsEmpty");
-
-        return;
-
-    }
-
-
-    hideEmpty("specialistsEmpty");
-
-
-    list.forEach(item => {
-
-        const card =
-            createSpecialistCard(item);
-
-        grid.appendChild(card);
-
-        requestAnimationFrame(() => {
-
-            card.classList.add("reveal");
-
-        });
-
-    });
-
-}
-
-
-function createSpecialistCard(item) {
-
     const template =
-        getById(
-            "specialistCardTemplate"
-        );
+        get("specialistCardTemplate");
 
-    const card =
-        template.content
-            .firstElementChild
-            .cloneNode(true);
+    items.forEach(item => {
+        const node =
+            template
+                .content
+                .cloneNode(true);
 
+        const article =
+            $("article", node);
 
-    const name =
-        fullName(item) ||
-        item.username ||
-        "Мутахассис";
+        const avatar =
+            $(".specialist-avatar", node);
 
+        const name =
+            $(".specialist-name", node);
 
-    const avatar =
-        item.avatar ||
-        item.photo ||
-        item.image ||
-        CONFIG.FALLBACK_IMAGE;
+        const bio =
+            $(".specialist-bio", node);
 
+        const role =
+            $(".specialist-role", node);
 
-    $(".specialist-name", card).textContent =
-        name;
+        const rating =
+            $(".specialist-rating", node);
 
-    $(".specialist-role", card).textContent =
-        item.title ||
-        item.specialization ||
-        "SMM Specialist";
+        const location =
+            $(".specialist-location", node);
 
-    $(".specialist-bio", card).textContent =
-        item.bio ||
-        item.description ||
-        "Мутахассиси касбӣ дар SMM.TJ";
+        const experience =
+            $(".specialist-experience", node);
 
+        const profileBtn =
+            $(".specialist-profile-btn", node);
 
-    const image =
-        $(".specialist-avatar img", card);
-
-    image.src = avatar;
-    image.alt = name;
+        const contactBtn =
+            $(".specialist-contact-btn", node);
 
 
-    const rating =
-        Number(
-            item.rating ||
-            item.averageRating ||
-            5
-        );
+        const fullName =
+            [
+                item.firstName,
+                item.lastName
+            ]
+                .filter(Boolean)
+                .join(" ") ||
+            item.name ||
+            item.username ||
+            "Мутахассис";
 
 
-    $(".rating-value", card).textContent =
-        rating.toFixed(1);
-
-
-    $(".review-count", card).textContent =
-        `(${item.reviewCount || 0})`;
-
-
-    $(".specialist-location", card).textContent =
-        `◉ ${item.city || "Тоҷикистон"}`;
-
-
-    $(".specialist-experience", card).textContent =
-        item.experience
-            ? `${item.experience} сол таҷриба`
-            : "Мутахассиси касбӣ";
-
-
-    const tags =
-        $(".specialist-tags", card);
-
-
-    const skills =
-        normalizeArray(
-            item.skills ||
-            item.specialties
-        );
-
-
-    skills.slice(0, 4).forEach(skill => {
-
-        const tag =
-            document.createElement("span");
-
-        tag.textContent =
-            typeof skill === "string"
-                ? skill
-                : skill.name;
-
-        tags.appendChild(tag);
-
-    });
-
-
-    $(".specialist-view", card)
-        .addEventListener("click", () => {
-
-            openProfile(item);
-
-        });
-
-
-    $(".favorite-btn", card)
-        .addEventListener("click", () => {
-
-            toggleFavorite(
-                item.id,
-                "smm"
+        avatar.src =
+            safeUrl(
+                item.avatar ||
+                item.photo ||
+                item.profilePhoto ||
+                CONFIG.DEFAULT_IMAGE
             );
 
-        });
+        avatar.alt =
+            fullName;
 
 
-    return card;
+        name.textContent =
+            fullName;
 
+
+        bio.textContent =
+            item.bio ||
+            item.description ||
+            "SMM Specialist";
+
+
+        role.textContent =
+            item.category ||
+            item.specialization ||
+            "SMM";
+
+
+        rating.textContent =
+            `★ ${formatNumber(
+                item.rating ||
+                item.averageRating ||
+                0
+            )}`;
+
+
+        location.textContent =
+            `📍 ${
+                item.city ||
+                item.region ||
+                "Тоҷикистон"
+            }`;
+
+
+        experience.textContent =
+            `⌛ ${
+                item.experience ||
+                "Таҷриба нишон дода нашудааст"
+            }`;
+
+
+        profileBtn.addEventListener(
+            "click",
+            () => openSpecialist(
+                item
+            )
+        );
+
+
+        contactBtn.addEventListener(
+            "click",
+            () => contactSpecialist(
+                item
+            )
+        );
+
+
+        article.dataset.id =
+            item.id || "";
+
+
+        grid.appendChild(node);
+    });
 }
 
 
 /* =========================================================
-   SERVICES
+   SPECIALIST FILTER
 ========================================================= */
 
-async function loadServices() {
-
-    const grid =
-        getById("servicesGrid");
-
-    if (!grid) return;
-
-
-    showSkeleton(grid, 8);
-
-
-    try {
-
-        const data =
-            await apiRequest(
-                "/services"
-            );
-
-
-        state.services =
-            normalizeArray(data);
-
-
-        renderServices();
-
-    } catch {
-
-        renderEmpty(
-            grid,
-            "Хизматрасониҳо ҳоло дастрас нестанд."
-        );
-
-    }
-
-}
-
-
-function renderServices(
-    list = state.services
-) {
-
-    const grid =
-        getById("servicesGrid");
-
-    if (!grid) return;
-
-
-    grid.innerHTML = "";
-
-
-    list.slice(0, 12).forEach(item => {
-
-        const card =
-            createServiceCard(item);
-
-        grid.appendChild(card);
-
-    });
-
-}
-
-
-function createServiceCard(item) {
-
-    const template =
-        getById(
-            "serviceCardTemplate"
-        );
-
-
-    const card =
-        template.content
-            .firstElementChild
-            .cloneNode(true);
-
-
-    const image =
-        $(".card-image img", card);
-
-
-    image.src =
-        item.image ||
-        item.cover ||
-        item.thumbnail ||
-        CONFIG.FALLBACK_IMAGE;
-
-
-    $(".service-title", card).textContent =
-        item.title ||
-        item.name ||
-        "Хизматрасонӣ";
-
-
-    $(".service-description", card).textContent =
-        item.description ||
-        "Хизматрасонии касбӣ";
-
-
-    $(".seller-name", card).textContent =
-        fullName(item.user || item.owner) ||
-        item.username ||
-        "SMM Specialist";
-
-
-    $(".service-price", card).textContent =
-        formatPrice(
-            item.price
-        );
-
-
-    $(".card-category", card).textContent =
-        categoryName(
-            item.category
-        );
-
-
-    $(".card-rating strong", card).textContent =
-        Number(item.rating || 5).toFixed(1);
-
-
-    $(".card-rating span", card).textContent =
-        `(${item.reviewCount || 0})`;
-
-
-    $(".favorite-btn", card)
-        .addEventListener("click", () => {
-
-            toggleFavorite(
-                item.id,
-                "service"
-            );
-
-        });
-
-
-    const viewButton =
-        $(".card-footer .btn", card);
-
-
-    viewButton?.addEventListener(
-        "click",
-        () => openService(item)
+get("specialistFilterForm")
+    ?.addEventListener(
+        "submit",
+        event => {
+            event.preventDefault();
+            loadSpecialists();
+        }
     );
 
 
-    return card;
+get("allSpecialistsBtn")
+    ?.addEventListener(
+        "click",
+        () => {
+            get("specialistSearch").value = "";
+            get("specialistCategory").value = "";
+            get("specialistRegion").value = "";
 
-}
+            scrollToSection(
+                "specialists"
+            );
+
+            loadSpecialists();
+        }
+    );
+
+
+get("findSpecialistBtn")
+    ?.addEventListener(
+        "click",
+        () => {
+            scrollToSection(
+                "specialists"
+            );
+        }
+    );
 
 
 /* =========================================================
-   PRODUCTS
+   MARKETPLACE
 ========================================================= */
 
-async function loadProducts() {
-
-    const grid =
-        getById("productsGrid");
-
-    if (!grid) return;
-
-
-    try {
-
-        const data =
-            await apiRequest(
-                "/products"
-            );
-
-
-        state.products =
-            normalizeArray(data);
-
-
-        renderProducts();
-
-    } catch {
-
-        renderEmpty(
-            grid,
-            "Маҳсулотҳо ҳоло дастрас нестанд."
-        );
-
+async function loadMarketplace() {
+    if (
+        state.currentMarketType ===
+        "products"
+    ) {
+        await loadProducts();
+    } else {
+        await loadServices();
     }
-
 }
 
 
-function renderProducts(
-    list = state.products
-) {
-
+async function loadServices() {
     const grid =
-        getById("productsGrid");
+        get("servicesGrid");
 
     if (!grid) return;
+
+    showSkeleton(
+        grid,
+        6
+    );
+
+    const params =
+        buildMarketParams();
+
+
+    try {
+        const data =
+            await apiGet(
+                `/services?${params.toString()}`
+            );
+
+        const items =
+            normalizeList(data);
+
+        state.services = items;
+
+        renderMarketplace(
+            items,
+            "services"
+        );
+
+        updateStat(
+            "statServices",
+            data.total ||
+            data.count ||
+            items.length
+        );
+
+    } catch {
+        renderError(
+            grid,
+            "Хизматрасониҳоро гирифтан имконнопазир аст."
+        );
+    }
+}
+
+
+async function loadProducts() {
+    const grid =
+        get("productsGrid");
+
+    if (!grid) return;
+
+    showSkeleton(
+        grid,
+        6
+    );
+
+    const params =
+        buildMarketParams();
+
+
+    try {
+        const data =
+            await apiGet(
+                `/products?${params.toString()}`
+            );
+
+        const items =
+            normalizeList(data);
+
+        state.products = items;
+
+        renderMarketplace(
+            items,
+            "products"
+        );
+
+    } catch {
+        renderError(
+            grid,
+            "Маҳсулотро гирифтан имконнопазир аст."
+        );
+    }
+}
+
+
+function buildMarketParams() {
+    const params =
+        new URLSearchParams();
+
+    const search =
+        get("marketSearch")
+            ?.value.trim();
+
+    const category =
+        get("marketCategory")
+            ?.value;
+
+    const region =
+        get("marketRegion")
+            ?.value;
+
+    const sort =
+        get("marketSort")
+            ?.value;
+
+
+    if (search)
+        params.set("search", search);
+
+    if (category)
+        params.set("category", category);
+
+    if (region)
+        params.set("region", region);
+
+    if (sort)
+        params.set("sort", sort);
+
+
+    return params;
+}
+
+
+function renderMarketplace(
+    items,
+    type
+) {
+    const grid =
+        get(
+            type === "products"
+                ? "productsGrid"
+                : "servicesGrid"
+        );
+
+    if (!grid) return;
+
+    if (!items.length) {
+        renderEmpty(
+            grid,
+            type === "products"
+                ? "Ҳоло маҳсулот нест."
+                : "Ҳоло хизматрасонӣ нест."
+        );
+
+        return;
+    }
 
 
     grid.innerHTML = "";
 
-
-    list.slice(0, 12).forEach(item => {
-
-        const card =
-            createProductCard(item);
-
-        grid.appendChild(card);
-
-    });
-
-}
-
-
-function createProductCard(item) {
-
     const template =
-        getById(
-            "productCardTemplate"
+        get("marketCardTemplate");
+
+
+    items.forEach(item => {
+        const node =
+            template
+                .content
+                .cloneNode(true);
+
+        const image =
+            $(".market-image", node);
+
+        const title =
+            $(".market-title", node);
+
+        const description =
+            $(".market-description", node);
+
+        const category =
+            $(".market-category", node);
+
+        const rating =
+            $(".market-rating", node);
+
+        const region =
+            $(".market-region", node);
+
+        const price =
+            $(".market-price", node);
+
+        const view =
+            $(".market-view-btn", node);
+
+        const favorite =
+            $(".favorite-btn", node);
+
+
+        image.src =
+            safeUrl(
+                item.image ||
+                item.cover ||
+                item.thumbnail ||
+                (
+                    Array.isArray(
+                        item.images
+                    )
+                        ? item.images[0]
+                        : null
+                ) ||
+                CONFIG.DEFAULT_IMAGE
+            );
+
+
+        title.textContent =
+            item.title ||
+            item.name ||
+            "Хизматрасонӣ";
+
+
+        description.textContent =
+            item.description ||
+            "Тавсиф нест.";
+
+
+        category.textContent =
+            item.category ||
+            type === "products"
+                ? "Маҳсулот"
+                : "Хизмат";
+
+
+        rating.textContent =
+            `★ ${formatNumber(
+                item.rating ||
+                item.averageRating ||
+                0
+            )}`;
+
+
+        region.textContent =
+            `📍 ${
+                item.city ||
+                item.region ||
+                "Тоҷикистон"
+            }`;
+
+
+        price.textContent =
+            formatPrice(
+                item.price
+            );
+
+
+        view.addEventListener(
+            "click",
+            () =>
+                openDetail(
+                    item,
+                    type === "products"
+                        ? "product"
+                        : "service"
+                )
         );
 
 
-    const card =
-        template.content
-            .firstElementChild
-            .cloneNode(true);
+        favorite.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+
+                toggleFavorite(
+                    item.id,
+                    type === "products"
+                        ? "PRODUCT"
+                        : "SERVICE",
+                    favorite
+                );
+            }
+        );
 
 
-    $("img", card).src =
-        item.image ||
-        item.thumbnail ||
-        CONFIG.FALLBACK_IMAGE;
+        grid.appendChild(node);
+    });
+}
 
 
-    $(".product-title", card).textContent =
-        item.title ||
-        item.name ||
-        "Маҳсулот";
+/* =========================================================
+   MARKET TABS
+========================================================= */
 
+$$(
+    "[data-market-type]"
+).forEach(button => {
+    button.addEventListener(
+        "click",
+        () => {
+            state.currentMarketType =
+                button.dataset.marketType;
 
-    $(".product-description", card).textContent =
-        item.description ||
-        "Маҳсулоти нав";
-
-
-    $(".product-price", card).textContent =
-        formatPrice(item.price);
-
-
-    $(".product-category", card).textContent =
-        categoryName(item.category);
-
-
-    $(".favorite-btn", card)
-        .addEventListener("click", () => {
-
-            toggleFavorite(
-                item.id,
-                "product"
+            $$(
+                "[data-market-type]"
+            ).forEach(
+                b =>
+                    b.classList.toggle(
+                        "active",
+                        b === button
+                    )
             );
 
-        });
+
+            if (
+                state.currentMarketType ===
+                "products"
+            ) {
+                get("servicesGrid").hidden =
+                    true;
+
+                get("productsGrid").hidden =
+                    false;
+
+                loadProducts();
+
+            } else {
+                get("servicesGrid").hidden =
+                    false;
+
+                get("productsGrid").hidden =
+                    true;
+
+                loadServices();
+            }
+        }
+    );
+});
 
 
-    $(".card-footer .btn", card)
-        .addEventListener("click", () => {
+get("marketFilterForm")
+    ?.addEventListener(
+        "submit",
+        event => {
+            event.preventDefault();
+            loadMarketplace();
+        }
+    );
 
-            openProduct(item);
 
-        });
-
-
-    return card;
-
-}
+get("addServiceBtn")
+    ?.addEventListener(
+        "click",
+        openServiceModal
+    );
 
 
 /* =========================================================
@@ -1220,151 +2319,205 @@ function createProductCard(item) {
 ========================================================= */
 
 async function loadJobs() {
-
     const grid =
-        getById("jobsGrid");
+        get("jobsGrid");
 
     if (!grid) return;
 
+    showSkeleton(
+        grid,
+        6
+    );
 
-    showSkeleton(grid, 5);
+
+    const params =
+        new URLSearchParams();
+
+    const search =
+        get("jobSearch")
+            ?.value.trim();
+
+    const type =
+        get("jobEmploymentType")
+            ?.value;
+
+    const region =
+        get("jobRegion")
+            ?.value;
+
+    const sort =
+        get("jobSort")
+            ?.value;
+
+
+    if (search)
+        params.set("search", search);
+
+    if (type)
+        params.set("employmentType", type);
+
+    if (region)
+        params.set("region", region);
+
+    if (sort)
+        params.set("sort", sort);
 
 
     try {
-
         const data =
-            await apiRequest(
-                "/jobs"
+            await apiGet(
+                `/jobs?${params.toString()}`
             );
 
+        const items =
+            normalizeList(data);
 
-        state.jobs =
-            normalizeArray(data);
+        state.jobs = items;
 
+        renderJobs(items);
 
-        renderJobs();
-
-    } catch {
-
-        renderEmpty(
-            grid,
-            "Ҷойҳои корӣ дастрас нестанд."
+        updateStat(
+            "statJobs",
+            data.total ||
+            data.count ||
+            items.length
         );
 
+    } catch {
+        renderError(
+            grid,
+            "Вакансияҳоро гирифтан имконнопазир аст."
+        );
     }
-
 }
 
 
-function renderJobs(
-    list = state.jobs
-) {
-
+function renderJobs(items) {
     const grid =
-        getById("jobsGrid");
+        get("jobsGrid");
 
     if (!grid) return;
+
+    if (!items.length) {
+        renderEmpty(
+            grid,
+            "Ҳоло вакансия нест."
+        );
+
+        return;
+    }
 
 
     grid.innerHTML = "";
 
-
-    list.slice(0, 10).forEach(item => {
-
-        const card =
-            createJobCard(item);
-
-        grid.appendChild(card);
-
-    });
-
-}
-
-
-function createJobCard(item) {
-
     const template =
-        getById(
-            "jobCardTemplate"
-        );
+        get("jobCardTemplate");
 
 
-    const card =
-        template.content
-            .firstElementChild
-            .cloneNode(true);
+    items.forEach(item => {
+        const node =
+            template
+                .content
+                .cloneNode(true);
 
 
-    $(".job-company", card).textContent =
-        item.company ||
-        item.employer?.name ||
-        "Компания";
+        $(".job-type", node)
+            .textContent =
+            translateJobType(
+                item.employmentType ||
+                item.type
+            );
 
 
-    $(".job-title", card).textContent =
-        item.title ||
-        "Ҷойи корӣ";
+        $(".job-salary", node)
+            .textContent =
+            item.salary ||
+            "Музд мувофиқа мешавад";
 
 
-    $(".job-description", card).textContent =
-        item.description ||
-        "";
+        $(".job-title", node)
+            .textContent =
+            item.title ||
+            "Вакансия";
 
 
-    $(".job-type", card).textContent =
-        item.employmentType ||
-        item.type ||
-        "Full-time";
+        $(".job-company", node)
+            .textContent =
+            item.company ||
+            "Ширкат";
 
 
-    $(".job-location", card).textContent =
-        item.city ||
-        item.region ||
-        "Тоҷикистон";
+        $(".job-description", node)
+            .textContent =
+            item.description ||
+            "";
 
 
-    $(".job-salary", card).textContent =
-        item.salary
-            ? formatPrice(item.salary)
-            : "Созишӣ";
+        $(".job-region", node)
+            .textContent =
+            `📍 ${
+                item.city ||
+                item.region ||
+                "Тоҷикистон"
+            }`;
 
 
-    $(".job-deadline", card).textContent =
-        formatDate(item.deadline);
+        $(".job-experience", node)
+            .textContent =
+            `⌛ ${
+                item.experience ||
+                "Таҷриба нишон дода нашудааст"
+            }`;
 
 
-    const skills =
-        $(".job-skills", card);
+        $(".job-view-btn", node)
+            .addEventListener(
+                "click",
+                () =>
+                    openDetail(
+                        item,
+                        "job"
+                    )
+            );
 
 
-    normalizeArray(item.skills)
-        .slice(0, 4)
-        .forEach(skill => {
-
-            const span =
-                document.createElement("span");
-
-            span.textContent =
-                typeof skill === "string"
-                    ? skill
-                    : skill.name;
-
-            skills.appendChild(span);
-
-        });
+        $(".job-apply-btn", node)
+            .addEventListener(
+                "click",
+                () =>
+                    applyToJob(
+                        item
+                    )
+            );
 
 
-    $(".job-bottom .btn", card)
-        .addEventListener("click", () => {
-
-            applyToJob(item.id);
-
-        });
-
-
-    return card;
-
+        grid.appendChild(node);
+    });
 }
+
+
+get("jobFilterForm")
+    ?.addEventListener(
+        "submit",
+        event => {
+            event.preventDefault();
+            loadJobs();
+        }
+    );
+
+
+get("addJobBtn")
+    ?.addEventListener(
+        "click",
+        () => {
+            if (!state.user) {
+                openModal("loginModal");
+                return;
+            }
+
+            openModal("jobModal");
+        }
+    );
 
 
 /* =========================================================
@@ -1372,132 +2525,220 @@ function createJobCard(item) {
 ========================================================= */
 
 async function loadProjects() {
-
     const grid =
-        getById("projectsGrid");
+        get("projectsGrid");
 
     if (!grid) return;
 
+    showSkeleton(
+        grid,
+        6
+    );
 
-    showSkeleton(grid, 6);
+
+    const params =
+        new URLSearchParams();
+
+    const search =
+        get("projectSearch")
+            ?.value.trim();
+
+    const category =
+        get("projectCategory")
+            ?.value;
+
+    const status =
+        get("projectStatus")
+            ?.value;
+
+    const sort =
+        get("projectSort")
+            ?.value;
+
+
+    if (search)
+        params.set("search", search);
+
+    if (category)
+        params.set("category", category);
+
+    if (status)
+        params.set("status", status);
+
+    if (sort)
+        params.set("sort", sort);
 
 
     try {
-
         const data =
-            await apiRequest(
-                "/projects"
+            await apiGet(
+                `/projects?${params.toString()}`
             );
 
+        const items =
+            normalizeList(data);
 
-        state.projects =
-            normalizeArray(data);
+        state.projects = items;
 
+        renderProjects(items);
 
-        renderProjects();
-
-    } catch {
-
-        renderEmpty(
-            grid,
-            "Лоиҳаҳо ҳоло дастрас нестанд."
+        updateStat(
+            "statProjects",
+            data.total ||
+            data.count ||
+            items.length
         );
 
+    } catch {
+        renderError(
+            grid,
+            "Лоиҳаҳоро гирифтан имконнопазир аст."
+        );
     }
-
 }
 
 
-function renderProjects(
-    list = state.projects
-) {
-
+function renderProjects(items) {
     const grid =
-        getById("projectsGrid");
+        get("projectsGrid");
 
     if (!grid) return;
+
+    if (!items.length) {
+        renderEmpty(
+            grid,
+            "Ҳоло лоиҳа нест."
+        );
+
+        return;
+    }
 
 
     grid.innerHTML = "";
 
+    const template =
+        get("projectCardTemplate");
 
-    list.slice(0, 12).forEach(item => {
 
-        const card =
-            createProjectCard(item);
+    items.forEach(item => {
+        const node =
+            template
+                .content
+                .cloneNode(true);
 
-        grid.appendChild(card);
 
+        $(".project-status", node)
+            .textContent =
+            translateProjectStatus(
+                item.status
+            );
+
+
+        $(".project-budget", node)
+            .textContent =
+            formatPrice(
+                item.budget
+            );
+
+
+        $(".project-title", node)
+            .textContent =
+            item.title ||
+            "Лоиҳа";
+
+
+        $(".project-description", node)
+            .textContent =
+            item.description ||
+            "";
+
+
+        $(".project-category", node)
+            .textContent =
+            item.category ||
+            "—";
+
+
+        $(".project-region", node)
+            .textContent =
+            `📍 ${
+                item.city ||
+                item.region ||
+                "Тоҷикистон"
+            }`;
+
+
+        $(".project-deadline", node)
+            .textContent =
+            item.deadline
+                ? `📅 ${formatDate(
+                    item.deadline
+                )}`
+                : "Deadline нест";
+
+
+        $(".project-view-btn", node)
+            .addEventListener(
+                "click",
+                () =>
+                    openDetail(
+                        item,
+                        "project"
+                    )
+            );
+
+
+        $(".project-proposal-btn", node)
+            .addEventListener(
+                "click",
+                () =>
+                    sendProposal(
+                        item
+                    )
+            );
+
+
+        grid.appendChild(node);
     });
-
 }
 
 
-function createProjectCard(item) {
+get("projectFilterForm")
+    ?.addEventListener(
+        "submit",
+        event => {
+            event.preventDefault();
+            loadProjects();
+        }
+    );
 
-    const template =
-        getById(
-            "projectCardTemplate"
+
+[
+    "createProjectBtn",
+    "newProjectBtn",
+    "ctaProjectBtn",
+    "footerAddProjectBtn"
+].forEach(id => {
+    get(id)?.addEventListener(
+        "click",
+        openProjectModal
+    );
+});
+
+
+function openProjectModal() {
+    if (!state.user) {
+        openModal("loginModal");
+
+        toast(
+            "Барои сохтани лоиҳа аввал ворид шавед.",
+            "info"
         );
 
+        return;
+    }
 
-    const card =
-        template.content
-            .firstElementChild
-            .cloneNode(true);
-
-
-    $(".project-category", card).textContent =
-        categoryName(item.category);
-
-
-    $(".project-status", card).textContent =
-        statusName(item.status);
-
-
-    $(".project-title", card).textContent =
-        item.title ||
-        "Лоиҳа";
-
-
-    $(".project-description", card).textContent =
-        item.description ||
-        "";
-
-
-    $(".project-budget", card).textContent =
-        formatPrice(item.budget);
-
-
-    $(".project-deadline", card).textContent =
-        formatDate(item.deadline);
-
-
-    $(".project-owner-name", card).textContent =
-        fullName(
-            item.client ||
-            item.owner ||
-            item.user
-        ) ||
-        "Client";
-
-
-    $(".project-location", card).textContent =
-        item.city ||
-        item.region ||
-        "Тоҷикистон";
-
-
-    $(".project-view", card)
-        .addEventListener("click", () => {
-
-            openProject(item);
-
-        });
-
-
-    return card;
-
+    openModal("projectModal");
 }
 
 
@@ -1506,163 +2747,334 @@ function createProjectCard(item) {
 ========================================================= */
 
 async function loadRealEstate() {
-
     const grid =
-        getById("realEstateGrid");
+        get("realEstateGrid");
 
     if (!grid) return;
 
+    showSkeleton(
+        grid,
+        6
+    );
 
-    showSkeleton(grid, 6);
+
+    const params =
+        new URLSearchParams();
+
+    const search =
+        get("realEstateSearch")
+            ?.value.trim();
+
+    const type =
+        get("realEstateType")
+            ?.value;
+
+    const region =
+        get("realEstateRegion")
+            ?.value;
+
+    const rooms =
+        get("realEstateRooms")
+            ?.value;
+
+
+    if (search)
+        params.set("search", search);
+
+    if (type)
+        params.set("type", type);
+
+    if (region)
+        params.set("region", region);
+
+    if (rooms)
+        params.set("rooms", rooms);
+
+    if (state.currentRealEstateType) {
+        params.set(
+            "dealType",
+            state.currentRealEstateType
+        );
+    }
 
 
     try {
-
         const data =
-            await apiRequest(
-                "/real-estate"
+            await apiGet(
+                `/real-estate?${params.toString()}`
             );
 
+        const items =
+            normalizeList(data);
 
-        state.realEstate =
-            normalizeArray(data);
+        state.realEstate = items;
 
-
-        renderRealEstate();
+        renderRealEstate(items);
 
     } catch {
-
-        renderEmpty(
+        renderError(
             grid,
-            "Эълонҳои амвол дастрас нестанд."
+            "Эълонҳои манзилро гирифтан имконнопазир аст."
         );
-
     }
-
 }
 
 
-function renderRealEstate(
-    list = state.realEstate
-) {
-
+function renderRealEstate(items) {
     const grid =
-        getById("realEstateGrid");
+        get("realEstateGrid");
 
     if (!grid) return;
+
+    if (!items.length) {
+        renderEmpty(
+            grid,
+            "Ҳоло эълони манзил нест."
+        );
+
+        return;
+    }
 
 
     grid.innerHTML = "";
 
-
-    const filtered =
-        list.filter(item => {
-
-            const type =
-                item.type ||
-                item.operationType ||
-                "sale";
-
-            return type ===
-                state.activeRealEstateType;
-
-        });
+    const template =
+        get("realEstateCardTemplate");
 
 
-    filtered.slice(0, 12).forEach(item => {
+    items.forEach(item => {
+        const node =
+            template
+                .content
+                .cloneNode(true);
 
-        grid.appendChild(
-            createRealEstateCard(item)
+
+        const image =
+            $(".realestate-image", node);
+
+
+        image.src =
+            safeUrl(
+                item.image ||
+                (
+                    Array.isArray(
+                        item.images
+                    )
+                        ? item.images[0]
+                        : null
+                ) ||
+                CONFIG.DEFAULT_IMAGE
+            );
+
+
+        $(".realestate-deal", node)
+            .textContent =
+            item.dealType === "SALE"
+                ? "Фурӯш"
+                : "Иҷора";
+
+
+        $(".realestate-price", node)
+            .textContent =
+            formatPrice(
+                item.price
+            );
+
+
+        $(".realestate-title", node)
+            .textContent =
+            item.title ||
+            "Манзил";
+
+
+        $(".realestate-description", node)
+            .textContent =
+            item.description ||
+            "";
+
+
+        $(".realestate-type", node)
+            .textContent =
+            translateRealEstateType(
+                item.type
+            );
+
+
+        $(".realestate-rooms", node)
+            .textContent =
+            item.rooms
+                ? `🚪 ${item.rooms} ҳуҷра`
+                : "";
+
+
+        $(".realestate-area", node)
+            .textContent =
+            item.area
+                ? `📐 ${item.area} м²`
+                : "";
+
+
+        $(".realestate-region", node)
+            .textContent =
+            `📍 ${
+                item.city ||
+                item.region ||
+                "Тоҷикистон"
+            }`;
+
+
+        $(".realestate-view-btn", node)
+            .addEventListener(
+                "click",
+                () =>
+                    openDetail(
+                        item,
+                        "realestate"
+                    )
+            );
+
+
+        grid.appendChild(node);
+    });
+}
+
+
+/* =========================================================
+   REAL ESTATE TABS
+========================================================= */
+
+$$(
+    "[data-realestate-type]"
+).forEach(button => {
+    button.addEventListener(
+        "click",
+        () => {
+
+            state.currentRealEstateType =
+                button.dataset
+                    .realestateType;
+
+            $$(
+                "[data-realestate-type]"
+            ).forEach(
+                b =>
+                    b.classList.toggle(
+                        "active",
+                        b === button
+                    )
+            );
+
+            loadRealEstate();
+        }
+    );
+});
+
+
+get("realEstateFilterForm")
+    ?.addEventListener(
+        "submit",
+        event => {
+            event.preventDefault();
+            loadRealEstate();
+        }
+    );
+
+
+get("addRealEstateBtn")
+    ?.addEventListener(
+        "click",
+        () => {
+
+            if (!state.user) {
+                openModal("loginModal");
+
+                toast(
+                    "Барои эълон гузоштан аввал ворид шавед.",
+                    "info"
+                );
+
+                return;
+            }
+
+            openModal(
+                "realEstateModal"
+            );
+        }
+    );
+
+
+/* =========================================================
+   REGIONS
+========================================================= */
+
+$$(".region-card")
+    .forEach(card => {
+
+        card.addEventListener(
+            "click",
+            () => {
+
+                const region =
+                    card.dataset.region;
+
+                if (
+                    get(
+                        "specialistRegion"
+                    )
+                ) {
+                    get(
+                        "specialistRegion"
+                    ).value =
+                        region;
+                }
+
+                if (
+                    get(
+                        "marketRegion"
+                    )
+                ) {
+                    get(
+                        "marketRegion"
+                    ).value =
+                        region;
+                }
+
+                if (
+                    get(
+                        "jobRegion"
+                    )
+                ) {
+                    get(
+                        "jobRegion"
+                    ).value =
+                        region;
+                }
+
+                if (
+                    get(
+                        "realEstateRegion"
+                    )
+                ) {
+                    get(
+                        "realEstateRegion"
+                    ).value =
+                        region;
+                }
+
+                scrollToSection(
+                    "specialists"
+                );
+
+                loadSpecialists();
+
+                toast(
+                    `Минтақа: ${card.querySelector("b")?.textContent || region}`,
+                    "success"
+                );
+            }
         );
 
     });
-
-}
-
-
-function createRealEstateCard(item) {
-
-    const template =
-        getById(
-            "realEstateCardTemplate"
-        );
-
-
-    const card =
-        template.content
-            .firstElementChild
-            .cloneNode(true);
-
-
-    $("img", card).src =
-        item.image ||
-        item.images?.[0] ||
-        CONFIG.FALLBACK_IMAGE;
-
-
-    $(".real-type", card).textContent =
-        item.type === "rent"
-            ? "Иҷора"
-            : "Фурӯш";
-
-
-    $(".real-property-type", card).textContent =
-        propertyName(
-            item.propertyType ||
-            item.category
-        );
-
-
-    $(".real-title", card).textContent =
-        item.title ||
-        "Амвол";
-
-
-    $(".real-description", card).textContent =
-        item.description ||
-        "";
-
-
-    $(".real-rooms", card).textContent =
-        item.rooms || 0;
-
-
-    $(".real-area", card).textContent =
-        item.area || 0;
-
-
-    $(".real-price", card).textContent =
-        formatPrice(item.price);
-
-
-    $(".real-location span", card).textContent =
-        item.city ||
-        item.region ||
-        "Тоҷикистон";
-
-
-    $(".favorite-btn", card)
-        .addEventListener("click", () => {
-
-            toggleFavorite(
-                item.id,
-                "real-estate"
-            );
-
-        });
-
-
-    $(".real-bottom .btn", card)
-        .addEventListener("click", () => {
-
-            openRealEstate(item);
-
-        });
-
-
-    return card;
-
-}
 
 
 /* =========================================================
@@ -1670,101 +3082,126 @@ function createRealEstateCard(item) {
 ========================================================= */
 
 async function loadReviews() {
-
     const grid =
-        getById("reviewsGrid");
+        get("reviewsGrid");
 
     if (!grid) return;
+
+    showSkeleton(
+        grid,
+        3
+    );
 
 
     try {
-
         const data =
-            await apiRequest(
-                "/reviews"
+            await apiGet(
+                "/reviews?limit=6"
             );
 
+        const items =
+            normalizeList(data);
 
-        state.reviews =
-            normalizeArray(data);
+        state.reviews = items;
 
-
-        renderReviews();
+        renderReviews(items);
 
     } catch {
-
-        grid.innerHTML = "";
-
+        renderEmpty(
+            grid,
+            "Отзывҳо ҳоло дастрас нестанд."
+        );
     }
-
 }
 
 
-function renderReviews() {
-
+function renderReviews(items) {
     const grid =
-        getById("reviewsGrid");
+        get("reviewsGrid");
 
     if (!grid) return;
+
+    if (!items.length) {
+        renderEmpty(
+            grid,
+            "Ҳоло отзыв нест."
+        );
+
+        return;
+    }
 
 
     grid.innerHTML = "";
 
-
-    state.reviews
-        .slice(0, 6)
-        .forEach(review => {
-
-            const template =
-                getById(
-                    "reviewCardTemplate"
-                );
+    const template =
+        get("reviewCardTemplate");
 
 
-            const card =
-                template.content
-                    .firstElementChild
+    items.slice(0, 6)
+        .forEach(item => {
+
+            const node =
+                template
+                    .content
                     .cloneNode(true);
-
-
-            $(".review-text", card).textContent =
-                review.comment ||
-                review.text ||
-                "Хизматрасонии олӣ.";
-
-
-            $(".review-name", card).textContent =
-                fullName(
-                    review.user ||
-                    review.author
-                ) ||
-                "Корбар";
-
-
-            $(".review-role", card).textContent =
-                review.role ||
-                "Корбар";
 
 
             const rating =
                 Math.max(
-                    1,
+                    0,
                     Math.min(
                         5,
-                        Number(review.rating || 5)
+                        Number(
+                            item.rating || 0
+                        )
                     )
                 );
 
 
-            $(".review-stars", card).textContent =
+            $(".review-stars", node)
+                .textContent =
                 "★".repeat(rating) +
                 "☆".repeat(5 - rating);
 
 
-            grid.appendChild(card);
+            $(".review-text", node)
+                .textContent =
+                item.comment ||
+                item.text ||
+                "Отзыв";
 
+
+            $(".review-name", node)
+                .textContent =
+                item.user?.firstName ||
+                item.user?.name ||
+                item.author?.name ||
+                "Корбар";
+
+
+            $(".review-date", node)
+                .textContent =
+                item.createdAt
+                    ? formatDate(
+                        item.createdAt
+                    )
+                    : "";
+
+
+            const avatar =
+                $(".review-avatar", node);
+
+
+            avatar.src =
+                safeUrl(
+                    item.user?.avatar ||
+                    item.author?.avatar ||
+                    CONFIG.DEFAULT_IMAGE
+                );
+
+
+            grid.appendChild(node);
         });
-
 }
 
 
@@ -1773,806 +3210,1103 @@ function renderReviews() {
 ========================================================= */
 
 async function loadNotifications() {
-
-    if (!state.accessToken) return;
-
+    if (!state.user) return;
 
     try {
-
         const data =
-            await apiRequest(
+            await apiGet(
                 "/notifications"
             );
 
+        const items =
+            normalizeList(data);
 
-        state.notifications =
-            normalizeArray(data);
+        state.notifications = items;
 
+        renderNotifications(
+            items
+        );
 
-        renderNotifications();
-
-        updateNotificationBadge();
+        updateNotificationCount(
+            data.unreadCount ??
+            items.filter(
+                n => !n.read
+            ).length
+        );
 
     } catch {
-
-        // user may not have notifications
+        // silently ignore
     }
-
 }
 
 
-function renderNotifications() {
-
+function renderNotifications(items) {
     const list =
-        getById("notificationsList");
+        get("notificationsList");
 
     if (!list) return;
 
-
-    if (!state.notifications.length) {
-
-        list.innerHTML = `
-            <div class="empty-state">
-                <div>♢</div>
-                <h3>Огоҳинома нест</h3>
-                <p>Ҳоло огоҳиномаи нав надоред.</p>
-            </div>
-        `;
+    if (!items.length) {
+        renderEmpty(
+            list,
+            "Огоҳинома нест.",
+            true
+        );
 
         return;
-
     }
 
 
-    list.innerHTML = "";
+    list.innerHTML =
+        items
+            .slice(0, 30)
+            .map(item => `
+                <div
+                    class="notification-item ${
+                        item.read
+                            ? ""
+                            : "unread"
+                    }"
+                    data-notification-id="${escapeHTML(
+                        String(item.id || "")
+                    )}"
+                >
 
+                    <div class="notification-icon">
+                        ${notificationIcon(
+                            item.type
+                        )}
+                    </div>
 
-    state.notifications.forEach(notification => {
+                    <div class="notification-body">
 
-        const item =
-            document.createElement("div");
+                        <strong>
+                            ${escapeHTML(
+                                item.title ||
+                                "Огоҳинома"
+                            )}
+                        </strong>
 
-        item.className =
-            "notification-item";
+                        <p>
+                            ${escapeHTML(
+                                item.message ||
+                                item.body ||
+                                ""
+                            )}
+                        </p>
 
+                        <small>
+                            ${item.createdAt
+                                ? formatDateTime(
+                                    item.createdAt
+                                )
+                                : ""
+                            }
+                        </small>
 
-        if (!notification.read) {
+                    </div>
 
-            item.classList.add("unread");
-
-        }
-
-
-        item.innerHTML = `
-            <div class="notification-icon">
-                ${notificationIcon(notification.type)}
-            </div>
-
-            <div class="notification-content">
-
-                <strong>
-                    ${escapeHTML(
-                        notification.title ||
-                        "Огоҳинома"
-                    )}
-                </strong>
-
-                <p>
-                    ${escapeHTML(
-                        notification.message ||
-                        ""
-                    )}
-                </p>
-
-                <small>
-                    ${formatDate(
-                        notification.createdAt
-                    )}
-                </small>
-
-            </div>
-        `;
-
-
-        item.addEventListener(
-            "click",
-            () => markNotificationRead(
-                notification.id
-            )
-        );
-
-
-        list.appendChild(item);
-
-    });
-
+                </div>
+            `)
+            .join("");
 }
 
 
-function updateNotificationBadge() {
-
+function updateNotificationCount(count) {
     const badge =
-        getById("notificationBadge");
+        get("notificationCount");
 
     if (!badge) return;
 
-
-    const unread =
-        state.notifications
-            .filter(n => !n.read)
-            .length;
-
-
     badge.textContent =
-        unread > 99
+        count > 99
             ? "99+"
-            : unread;
-
+            : String(count);
 
     badge.hidden =
-        unread === 0;
-
+        !count;
 }
 
 
-async function markNotificationRead(id) {
-
-    try {
-
-        await apiRequest(
-            `/notifications/${id}`,
-            {
-                method: "PATCH",
-                body: JSON.stringify({
-                    read: true
-                })
-            }
-        );
-
-
-        const notification =
-            state.notifications.find(
-                n => n.id === id
-            );
-
-
-        if (notification)
-            notification.read = true;
-
-
-        renderNotifications();
-        updateNotificationBadge();
-
-    } catch {
-
-        // ignore
+async function openNotifications() {
+    if (!state.user) {
+        openModal("loginModal");
+        return;
     }
 
+    openModal(
+        "notificationsModal"
+    );
+
+    await loadNotifications();
 }
+
+
+get("notificationsBtn")
+    ?.addEventListener(
+        "click",
+        openNotifications
+    );
 
 
 /* =========================================================
    CHAT
 ========================================================= */
 
-async function loadConversations() {
-
-    if (!state.accessToken) {
+async function openChat() {
+    if (!state.user) {
+        openModal("loginModal");
 
         toast(
-            "Аввал ба аккаунт ворид шавед.",
-            "warning"
+            "Барои истифодаи chat ворид шавед.",
+            "info"
         );
 
         return;
+    }
 
+    openModal("chatModal");
+
+    await loadConversations();
+}
+
+
+async function loadConversations() {
+    const list =
+        get("conversationList");
+
+    if (!list) return;
+
+    list.innerHTML = `
+        <div class="loading-block small">
+            <div class="loader-ring small"></div>
+            <p>Бор шуда истодааст...</p>
+        </div>
+    `;
+
+
+    try {
+        const data =
+            await apiGet(
+                "/messages/conversations"
+            );
+
+        const items =
+            normalizeList(data);
+
+        state.conversations = items;
+
+        renderConversations(
+            items
+        );
+
+    } catch {
+        renderEmpty(
+            list,
+            "Conversation нест.",
+            true
+        );
+    }
+}
+
+
+function renderConversations(items) {
+    const list =
+        get("conversationList");
+
+    if (!list) return;
+
+    if (!items.length) {
+        renderEmpty(
+            list,
+            "Conversation нест.",
+            true
+        );
+
+        return;
+    }
+
+
+    list.innerHTML =
+        items.map(item => {
+
+            const other =
+                item.otherUser ||
+                item.user ||
+                item.participant ||
+                {};
+
+            const name =
+                [
+                    other.firstName,
+                    other.lastName
+                ]
+                    .filter(Boolean)
+                    .join(" ") ||
+                other.name ||
+                other.username ||
+                "Корбар";
+
+
+            return `
+                <button
+                    type="button"
+                    class="conversation-item ${
+                        String(
+                            state.currentConversationId
+                        ) ===
+                        String(item.id)
+                            ? "active"
+                            : ""
+                    }"
+                    data-conversation-id="${escapeHTML(
+                        String(item.id)
+                    )}"
+                >
+
+                    <img
+                        src="${safeUrl(
+                            other.avatar ||
+                            CONFIG.DEFAULT_IMAGE
+                        )}"
+                        alt=""
+                    >
+
+                    <div>
+
+                        <strong>
+                            ${escapeHTML(name)}
+                        </strong>
+
+                        <small>
+                            ${escapeHTML(
+                                item.lastMessage ||
+                                "Паём нест."
+                            )}
+                        </small>
+
+                    </div>
+
+                </button>
+            `;
+        })
+        .join("");
+
+
+    $$(".conversation-item", list)
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    state.currentConversationId =
+                        button.dataset
+                            .conversationId;
+
+                    loadMessages(
+                        state.currentConversationId
+                    );
+
+                    $$(".conversation-item")
+                        .forEach(
+                            b =>
+                                b.classList.toggle(
+                                    "active",
+                                    b === button
+                                )
+                        );
+                }
+            );
+
+        });
+}
+
+
+async function loadMessages(
+    conversationId
+) {
+    const messages =
+        get("chatMessages");
+
+    const header =
+        get("chatHeader");
+
+    if (!messages) return;
+
+    messages.innerHTML = `
+        <div class="loading-block small">
+            <div class="loader-ring small"></div>
+            <p>Паёмҳо бор шуда истодаанд...</p>
+        </div>
+    `;
+
+
+    try {
+        const data =
+            await apiGet(
+                `/messages/conversations/${encodeURIComponent(
+                    conversationId
+                )}/messages`
+            );
+
+        const items =
+            normalizeList(data);
+
+        renderMessages(items);
+
+
+        const conversation =
+            state.conversations.find(
+                item =>
+                    String(item.id) ===
+                    String(conversationId)
+            );
+
+
+        if (header && conversation) {
+
+            const other =
+                conversation.otherUser ||
+                conversation.user ||
+                {};
+
+            header.textContent =
+                [
+                    other.firstName,
+                    other.lastName
+                ]
+                    .filter(Boolean)
+                    .join(" ") ||
+                other.name ||
+                "Chat";
+        }
+
+    } catch {
+        renderError(
+            messages,
+            "Паёмҳоро гирифтан имконнопазир аст."
+        );
+    }
+}
+
+
+function renderMessages(items) {
+    const container =
+        get("chatMessages");
+
+    if (!container) return;
+
+    if (!items.length) {
+        renderEmpty(
+            container,
+            "Ҳоло паём нест. Аввалин паёмро нависед.",
+            true
+        );
+
+        return;
+    }
+
+
+    container.innerHTML =
+        items
+            .map(message => {
+
+                const mine =
+                    String(
+                        message.senderId ||
+                        message.sender?.id
+                    ) ===
+                    String(
+                        state.user?.id
+                    );
+
+
+                return `
+                    <div
+                        class="message ${
+                            mine
+                                ? "message-me"
+                                : "message-other"
+                        }"
+                    >
+
+                        <div class="message-bubble">
+
+                            ${
+                                message.fileUrl ||
+                                message.attachment
+                                    ? `
+                                    <a
+                                        href="${safeUrl(
+                                            message.fileUrl ||
+                                            message.attachment
+                                        )}"
+                                        target="_blank"
+                                        rel="noopener"
+                                    >
+                                        📎 Файл
+                                    </a>
+                                    `
+                                    : ""
+                            }
+
+                            <span>
+                                ${escapeHTML(
+                                    message.text ||
+                                    message.content ||
+                                    ""
+                                )}
+                            </span>
+
+                        </div>
+
+                        <small>
+                            ${
+                                message.createdAt
+                                    ? formatTime(
+                                        message.createdAt
+                                    )
+                                    : ""
+                            }
+                        </small>
+
+                    </div>
+                `;
+            })
+            .join("");
+
+
+    container.scrollTop =
+        container.scrollHeight;
+}
+
+
+async function sendChatMessage(event) {
+    event.preventDefault();
+
+    if (!state.user) {
+        openModal("loginModal");
+        return;
+    }
+
+    if (!state.currentConversationId) {
+        toast(
+            "Аввал conversation интихоб кунед.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const input =
+        get("chatInput");
+
+    const file =
+        get("chatFile")
+            ?.files?.[0];
+
+    const text =
+        input?.value.trim();
+
+
+    if (!text && !file) {
+        return;
     }
 
 
     try {
 
-        const data =
-            await apiRequest(
-                "/messages/conversations"
+        let body;
+
+
+        if (file) {
+            body =
+                new FormData();
+
+            body.append(
+                "text",
+                text
             );
 
+            body.append(
+                "file",
+                file
+            );
 
-        state.conversations =
-            normalizeArray(data);
+            body.append(
+                "conversationId",
+                state.currentConversationId
+            );
+
+        } else {
+            body = {
+                conversationId:
+                    state.currentConversationId,
+                text
+            };
+        }
 
 
-        renderConversations();
-
-    } catch (error) {
-
-        toast(
-            error.message,
-            "error"
+        await apiPost(
+            "/messages",
+            body
         );
 
-    }
 
+        if (input) {
+            input.value = "";
+        }
+
+        if (get("chatFile")) {
+            get("chatFile").value = "";
+        }
+
+
+        await loadMessages(
+            state.currentConversationId
+        );
+
+    } catch (error) {
+        toast(
+            error.message ||
+            "Паём фиристода нашуд.",
+            "error"
+        );
+    }
 }
 
 
-function renderConversations() {
-
-    const list =
-        getById("conversationList");
-
-    if (!list) return;
-
-
-    list.innerHTML = "";
+get("chatBtn")
+    ?.addEventListener(
+        "click",
+        openChat
+    );
 
 
-    state.conversations.forEach(conversation => {
-
-        const user =
-            conversation.user ||
-            conversation.otherUser ||
-            conversation.participant;
-
-
-        const item =
-            document.createElement("button");
+get("chatForm")
+    ?.addEventListener(
+        "submit",
+        sendChatMessage
+    );
 
 
-        item.className =
-            "conversation-item";
+get("chatAttachBtn")
+    ?.addEventListener(
+        "click",
+        () =>
+            get("chatFile")?.click()
+    );
 
 
-        item.innerHTML = `
+/* =========================================================
+   CONTACT SPECIALIST
+========================================================= */
 
-            <div class="avatar">
-                ${escapeHTML(
-                    getInitials(user)
+async function contactSpecialist(
+    specialist
+) {
+    if (!state.user) {
+        openModal("loginModal");
+
+        toast(
+            "Барои тамос аввал ворид шавед.",
+            "info"
+        );
+
+        return;
+    }
+
+
+    try {
+        const data =
+            await apiPost(
+                "/messages/conversations",
+                {
+                    participantId:
+                        specialist.userId ||
+                        specialist.id
+                }
+            );
+
+
+        state.currentConversationId =
+            data.id ||
+            data.conversation?.id;
+
+
+        await openChat();
+
+    } catch (error) {
+        toast(
+            error.message ||
+            "Chat кушода нашуд.",
+            "error"
+        );
+    }
+}
+
+
+/* =========================================================
+   SPECIALIST DETAIL
+========================================================= */
+
+function openSpecialist(item) {
+    openDetail(
+        item,
+        "specialist"
+    );
+}
+
+
+/* =========================================================
+   DETAIL
+========================================================= */
+
+function openDetail(
+    item,
+    type = "service"
+) {
+    const content =
+        get("detailContent");
+
+    if (!content) return;
+
+    const title =
+        item.title ||
+        item.name ||
+        "Тафсилот";
+
+
+    const description =
+        item.description ||
+        item.bio ||
+        "Тавсиф дастрас нест.";
+
+
+    let extra = "";
+
+
+    if (type === "specialist") {
+
+        extra = `
+            <div class="detail-grid">
+
+                <div>
+                    <span>Рейтинг</span>
+                    <strong>
+                        ★ ${formatNumber(
+                            item.rating ||
+                            item.averageRating ||
+                            0
+                        )}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Таҷриба</span>
+                    <strong>
+                        ${escapeHTML(
+                            item.experience ||
+                            "—"
+                        )}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Ҷойгиршавӣ</span>
+                    <strong>
+                        ${escapeHTML(
+                            item.city ||
+                            item.region ||
+                            "Тоҷикистон"
+                        )}
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="detail-actions">
+
+                <button
+                    id="detailContactBtn"
+                    class="btn btn-primary"
+                    type="button"
+                >
+                    💬 Тамос гирифтан
+                </button>
+
+            </div>
+        `;
+
+    } else if (
+        type === "service" ||
+        type === "product"
+    ) {
+
+        extra = `
+            <div class="detail-price">
+                ${formatPrice(
+                    item.price
                 )}
             </div>
 
-            <div>
-
-                <strong>
-                    ${escapeHTML(
-                        fullName(user) ||
-                        "User"
-                    )}
-                </strong>
-
+            <div class="detail-meta">
                 <span>
                     ${escapeHTML(
-                        conversation.lastMessage ||
-                        "Паём нест"
+                        item.category ||
+                        ""
+                    )}
+                </span>
+
+                <span>
+                    📍 ${escapeHTML(
+                        item.city ||
+                        item.region ||
+                        "Тоҷикистон"
+                    )}
+                </span>
+
+                <span>
+                    ★ ${formatNumber(
+                        item.rating ||
+                        item.averageRating ||
+                        0
+                    )}
+                </span>
+            </div>
+
+            <div class="detail-actions">
+
+                <button
+                    id="detailOrderBtn"
+                    class="btn btn-primary"
+                    type="button"
+                >
+                    Дархост кардан
+                </button>
+
+                <button
+                    id="detailFavoriteBtn"
+                    class="btn btn-ghost"
+                    type="button"
+                >
+                    ♡ Дӯстдошта
+                </button>
+
+            </div>
+        `;
+
+    } else if (type === "job") {
+
+        extra = `
+            <div class="detail-meta">
+
+                <span>
+                    💼 ${escapeHTML(
+                        item.company ||
+                        ""
+                    )}
+                </span>
+
+                <span>
+                    💰 ${escapeHTML(
+                        item.salary ||
+                        "Мувофиқа мешавад"
+                    )}
+                </span>
+
+                <span>
+                    📍 ${escapeHTML(
+                        item.city ||
+                        item.region ||
+                        ""
                     )}
                 </span>
 
             </div>
 
+            <div class="detail-actions">
+
+                <button
+                    id="detailApplyBtn"
+                    class="btn btn-primary"
+                    type="button"
+                >
+                    Ариза додан
+                </button>
+
+            </div>
         `;
 
+    } else if (type === "project") {
 
-        item.addEventListener(
-            "click",
-            () => openConversation(conversation)
-        );
+        extra = `
+            <div class="detail-meta">
+
+                <span>
+                    ${escapeHTML(
+                        item.category ||
+                        ""
+                    )}
+                </span>
+
+                <span>
+                    💰 ${formatPrice(
+                        item.budget
+                    )}
+                </span>
+
+                <span>
+                    ${translateProjectStatus(
+                        item.status
+                    )}
+                </span>
+
+            </div>
+
+            <div class="detail-actions">
+
+                <button
+                    id="detailProposalBtn"
+                    class="btn btn-primary"
+                    type="button"
+                >
+                    Proposal фиристодан
+                </button>
+
+            </div>
+        `;
+
+    } else if (type === "realestate") {
+
+        extra = `
+            <div class="detail-meta">
+
+                <span>
+                    ${translateRealEstateType(
+                        item.type
+                    )}
+                </span>
+
+                <span>
+                    ${item.rooms
+                        ? `${item.rooms} ҳуҷра`
+                        : ""
+                    }
+                </span>
+
+                <span>
+                    ${item.area
+                        ? `${item.area} м²`
+                        : ""
+                    }
+                </span>
+
+                <span>
+                    📍 ${escapeHTML(
+                        item.city ||
+                        item.region ||
+                        ""
+                    )}
+                </span>
+
+            </div>
+
+            <div class="detail-price">
+                ${formatPrice(
+                    item.price
+                )}
+            </div>
+        `;
+    }
 
 
-        list.appendChild(item);
+    content.innerHTML = `
+        <div class="detail-page">
 
-    });
+            <div class="detail-image-wrap">
 
+                <img
+                    src="${safeUrl(
+                        item.image ||
+                        item.cover ||
+                        (
+                            Array.isArray(
+                                item.images
+                            )
+                                ? item.images[0]
+                                : null
+                        ) ||
+                        CONFIG.DEFAULT_IMAGE
+                    )}"
+                    alt="${escapeHTML(title)}"
+                >
+
+            </div>
+
+            <div class="detail-body">
+
+                <span class="tag">
+                    ${escapeHTML(
+                        type.toUpperCase()
+                    )}
+                </span>
+
+                <h2>
+                    ${escapeHTML(title)}
+                </h2>
+
+                <p>
+                    ${escapeHTML(
+                        description
+                    )}
+                </p>
+
+                ${extra}
+
+            </div>
+
+        </div>
+    `;
+
+
+    if (type === "specialist") {
+
+        get("detailContactBtn")
+            ?.addEventListener(
+                "click",
+                () =>
+                    contactSpecialist(
+                        item
+                    )
+            );
+
+    }
+
+
+    if (
+        type === "service" ||
+        type === "product"
+    ) {
+
+        get("detailOrderBtn")
+            ?.addEventListener(
+                "click",
+                () =>
+                    createOrder(
+                        item,
+                        type
+                    )
+            );
+
+
+        get("detailFavoriteBtn")
+            ?.addEventListener(
+                "click",
+                event =>
+                    toggleFavorite(
+                        item.id,
+                        type === "product"
+                            ? "PRODUCT"
+                            : "SERVICE",
+                        event.currentTarget
+                    )
+            );
+    }
+
+
+    if (type === "job") {
+
+        get("detailApplyBtn")
+            ?.addEventListener(
+                "click",
+                () =>
+                    applyToJob(
+                        item
+                    )
+            );
+    }
+
+
+    if (type === "project") {
+
+        get("detailProposalBtn")
+            ?.addEventListener(
+                "click",
+                () =>
+                    sendProposal(
+                        item
+                    )
+            );
+    }
+
+
+    openModal("detailModal");
 }
 
 
-async function openConversation(conversation) {
+/* =========================================================
+   FAVORITES
+========================================================= */
 
-    state.activeConversation =
-        conversation;
-
-
-    const user =
-        conversation.user ||
-        conversation.otherUser ||
-        conversation.participant;
-
-
-    const name =
-        fullName(user) ||
-        "User";
-
-
-    const nameElement =
-        getById("chatUserName");
-
-    if (nameElement)
-        nameElement.textContent = name;
-
-
-    const avatar =
-        getById("chatUserAvatar");
-
-    if (avatar)
-        avatar.textContent =
-            getInitials(user);
+async function toggleFavorite(
+    targetId,
+    targetType,
+    button
+) {
+    if (!state.user) {
+        openModal("loginModal");
+        return;
+    }
 
 
     try {
 
         const data =
-            await apiRequest(
-                `/messages/conversations/${conversation.id}`
-            );
-
-
-        renderMessages(
-            normalizeArray(data)
-        );
-
-    } catch (error) {
-
-        toast(
-            error.message,
-            "error"
-        );
-
-    }
-
-}
-
-
-function renderMessages(messages) {
-
-    const box =
-        getById("chatMessages");
-
-    if (!box) return;
-
-
-    box.innerHTML = "";
-
-
-    messages.forEach(message => {
-
-        const mine =
-            message.senderId === state.user?.id ||
-            message.sender?.id === state.user?.id;
-
-
-        const bubble =
-            document.createElement("div");
-
-
-        bubble.className =
-            `message-bubble ${
-                mine ? "mine" : "theirs"
-            }`;
-
-
-        bubble.innerHTML = `
-
-            <div class="message-text">
-                ${escapeHTML(
-                    message.content ||
-                    message.text ||
-                    ""
-                )}
-            </div>
-
-            <small>
-                ${formatTime(
-                    message.createdAt
-                )}
-            </small>
-
-        `;
-
-
-        box.appendChild(bubble);
-
-    });
-
-
-    box.scrollTop =
-        box.scrollHeight;
-
-}
-
-
-async function handleSendMessage(event) {
-
-    event.preventDefault();
-
-
-    if (!state.activeConversation) {
-
-        toast(
-            "Аввал conversation интихоб кунед.",
-            "warning"
-        );
-
-        return;
-
-    }
-
-
-    const input =
-        getById("chatInput");
-
-
-    const content =
-        input?.value.trim();
-
-
-    if (!content) return;
-
-
-    try {
-
-        const message =
-            await apiRequest(
-                "/messages",
+            await apiPost(
+                "/favorites/toggle",
                 {
-                    method: "POST",
-
-                    body: JSON.stringify({
-                        conversationId:
-                            state.activeConversation.id,
-
-                        content
-                    })
+                    targetId,
+                    targetType
                 }
             );
 
 
-        input.value = "";
+        const active =
+            data.favorite ||
+            data.isFavorite;
 
 
-        const box =
-            getById("chatMessages");
+        if (button) {
+            button.textContent =
+                active
+                    ? "♥"
+                    : "♡";
 
+            button.classList.toggle(
+                "active",
+                !!active
+            );
+        }
 
-        const bubble =
-            document.createElement("div");
-
-
-        bubble.className =
-            "message-bubble mine";
-
-
-        bubble.innerHTML = `
-            <div class="message-text">
-                ${escapeHTML(
-                    message.content || content
-                )}
-            </div>
-
-            <small>
-                ${formatTime(
-                    message.createdAt ||
-                    new Date()
-                )}
-            </small>
-        `;
-
-
-        box.appendChild(bubble);
-
-        box.scrollTop =
-            box.scrollHeight;
-
-    } catch (error) {
 
         toast(
-            error.message,
-            "error"
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   CREATE PROJECT
-========================================================= */
-
-async function handleCreateProject(event) {
-
-    event.preventDefault();
-
-
-    if (!requireAuth()) return;
-
-
-    const payload = {
-
-        title:
-            getById("projectTitle").value.trim(),
-
-        description:
-            getById("projectDescription").value.trim(),
-
-        category:
-            getById("projectFormCategory").value,
-
-        budget:
-            Number(
-                getById("projectBudgetInput").value
-            ),
-
-        deadline:
-            getById("projectDeadline").value || null,
-
-        city:
-            getById("projectCity").value.trim(),
-
-        skills:
-            getById("projectSkills").value
-                .split(",")
-                .map(x => x.trim())
-                .filter(Boolean)
-
-    };
-
-
-    try {
-
-        await apiRequest(
-            "/projects",
-            {
-                method: "POST",
-                body: JSON.stringify(payload)
-            }
-        );
-
-
-        closeModal("projectModal");
-
-        toast(
-            "Лоиҳа бомуваффақият нашр шуд.",
+            active
+                ? "Ба дӯстдошта илова шуд."
+                : "Аз дӯстдошта хориҷ шуд.",
             "success"
         );
 
-
-        event.currentTarget.reset();
-
-        await loadProjects();
-
     } catch (error) {
 
         toast(
-            error.message,
+            error.message ||
+            "Амалиёт иҷро нашуд.",
             "error"
         );
-
     }
-
-}
-
-
-/* =========================================================
-   CREATE SERVICE
-========================================================= */
-
-async function handleCreateService(event) {
-
-    event.preventDefault();
-
-
-    if (!requireAuth()) return;
-
-
-    const payload = {
-
-        title:
-            getById("serviceTitle").value.trim(),
-
-        description:
-            getById("serviceDescription").value.trim(),
-
-        category:
-            getById("serviceCategory").value,
-
-        price:
-            Number(
-                getById("servicePrice").value
-            ),
-
-        region:
-            getById("serviceRegion").value
-
-    };
-
-
-    try {
-
-        await apiRequest(
-            "/services",
-            {
-                method: "POST",
-                body: JSON.stringify(payload)
-            }
-        );
-
-
-        closeModal("serviceModal");
-
-        toast(
-            "Хизматрасонӣ нашр шуд.",
-            "success"
-        );
-
-
-        event.currentTarget.reset();
-
-        await loadServices();
-
-    } catch (error) {
-
-        toast(
-            error.message,
-            "error"
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   CREATE PRODUCT
-========================================================= */
-
-async function handleCreateProduct(event) {
-
-    event.preventDefault();
-
-
-    if (!requireAuth()) return;
-
-
-    const payload = {
-
-        title:
-            getById("productTitle").value.trim(),
-
-        description:
-            getById("productDescription").value.trim(),
-
-        price:
-            Number(
-                getById("productPrice").value
-            ),
-
-        category:
-            getById("productCategory").value
-
-    };
-
-
-    try {
-
-        await apiRequest(
-            "/products",
-            {
-                method: "POST",
-                body: JSON.stringify(payload)
-            }
-        );
-
-
-        closeModal("productModal");
-
-        toast(
-            "Маҳсулот нашр шуд.",
-            "success"
-        );
-
-
-        event.currentTarget.reset();
-
-        await loadProducts();
-
-    } catch (error) {
-
-        toast(
-            error.message,
-            "error"
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   CREATE REAL ESTATE
-========================================================= */
-
-async function handleCreateRealEstate(event) {
-
-    event.preventDefault();
-
-
-    if (!requireAuth()) return;
-
-
-    const payload = {
-
-        title:
-            getById("realEstateTitle").value.trim(),
-
-        type:
-            getById("realEstateType").value,
-
-        description:
-            getById("realEstateDescription").value.trim(),
-
-        propertyType:
-            getById("realEstatePropertyType").value,
-
-        price:
-            Number(
-                getById("realEstatePrice").value
-            ),
-
-        area:
-            Number(
-                getById("realEstateArea").value
-            ) || null,
-
-        rooms:
-            Number(
-                getById("realEstateRooms").value
-            ) || null,
-
-        region:
-            getById("realEstateFormRegion").value,
-
-        city:
-            getById("realEstateCity").value.trim(),
-
-        address:
-            getById("realEstateAddress").value.trim(),
-
-        phone:
-            getById("realEstatePhone").value.trim()
-
-    };
-
-
-    try {
-
-        await apiRequest(
-            "/real-estate",
-            {
-                method: "POST",
-                body: JSON.stringify(payload)
-            }
-        );
-
-
-        closeModal("realEstateModal");
-
-        toast(
-            "Эълони амвол нашр шуд.",
-            "success"
-        );
-
-
-        event.currentTarget.reset();
-
-        await loadRealEstate();
-
-    } catch (error) {
-
-        toast(
-            error.message,
-            "error"
-        );
-
-    }
-
 }
 
 
@@ -2580,31 +4314,37 @@ async function handleCreateRealEstate(event) {
    JOB APPLICATION
 ========================================================= */
 
-async function applyToJob(jobId) {
+async function applyToJob(job) {
+    if (!state.user) {
+        openModal("loginModal");
 
-    if (!requireAuth()) return;
+        toast(
+            "Барои ариза додан ворид шавед.",
+            "info"
+        );
+
+        return;
+    }
 
 
     const message =
-        prompt(
-            "Паёми шумо барои корфармо:"
+        window.prompt(
+            "Паёми кӯтоҳ барои корфармо:"
         );
 
 
-    if (message === null) return;
+    if (message === null) {
+        return;
+    }
 
 
     try {
 
-        await apiRequest(
+        await apiPost(
             "/applications",
             {
-                method: "POST",
-
-                body: JSON.stringify({
-                    jobId,
-                    message
-                })
+                jobId: job.id,
+                message
             }
         );
 
@@ -2617,2015 +4357,1179 @@ async function applyToJob(jobId) {
     } catch (error) {
 
         toast(
-            error.message,
+            error.message ||
+            "Ариза фиристода нашуд.",
             "error"
         );
-
     }
-
 }
 
 
 /* =========================================================
-   FAVORITES
+   PROJECT PROPOSAL
 ========================================================= */
 
-async function toggleFavorite(
-    itemId,
-    type
-) {
+async function sendProposal(project) {
+    if (!state.user) {
+        openModal("loginModal");
 
-    if (!requireAuth()) return;
+        toast(
+            "Барои proposal фиристодан ворид шавед.",
+            "info"
+        );
+
+        return;
+    }
+
+
+    const price =
+        window.prompt(
+            "Нархи пешниҳоди шумо:"
+        );
+
+
+    if (price === null) {
+        return;
+    }
+
+
+    const message =
+        window.prompt(
+            "Паёми proposal:"
+        );
+
+
+    if (message === null) {
+        return;
+    }
+
+
+    const deliveryTime =
+        window.prompt(
+            "Мӯҳлати иҷро, масалан: 7 рӯз"
+        );
 
 
     try {
 
-        await apiRequest(
-            "/favorites",
+        await apiPost(
+            "/proposals",
             {
-                method: "POST",
-
-                body: JSON.stringify({
-                    itemId,
-                    type
-                })
+                projectId: project.id,
+                price: Number(price),
+                message,
+                deliveryTime
             }
         );
 
 
         toast(
-            "Ба дӯстдоштаҳо илова шуд.",
+            "Proposal бомуваффақият фиристода шуд.",
             "success"
+        );
+
+
+    } catch (error) {
+
+        toast(
+            error.message ||
+            "Proposal фиристода нашуд.",
+            "error"
+        );
+    }
+}
+
+
+/* =========================================================
+   ORDER
+========================================================= */
+
+async function createOrder(
+    item,
+    type
+) {
+    if (!state.user) {
+        openModal("loginModal");
+        return;
+    }
+
+
+    const confirmed =
+        window.confirm(
+            `Оё мехоҳед "${item.title || item.name}"-ро дархост кунед?`
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        await apiPost(
+            "/orders",
+            {
+                itemId: item.id,
+                itemType:
+                    type === "product"
+                        ? "PRODUCT"
+                        : "SERVICE"
+            }
+        );
+
+
+        toast(
+            "Дархости шумо фиристода шуд.",
+            "success"
+        );
+
+
+        closeModal(
+            "detailModal"
         );
 
     } catch (error) {
 
         toast(
-            error.message,
+            error.message ||
+            "Дархост иҷро нашуд.",
             "error"
         );
-
     }
-
 }
 
 
 /* =========================================================
-   SEARCH
+   CREATE PROJECT
 ========================================================= */
 
-function initSearch() {
-
-    const heroSearch =
-        getById("heroSearchBtn");
-
-
-    heroSearch?.addEventListener(
-        "click",
-        () => {
-
-            const query =
-                getById(
-                    "heroSearchInput"
-                )?.value.trim();
+async function handleCreateProject(
+    event
+) {
+    event.preventDefault();
 
 
-            if (!query) {
-
-                toast(
-                    "Матни ҷустуҷӯро ворид кунед.",
-                    "warning"
-                );
-
-                return;
-
-            }
-
-
-            openModal("searchModal");
-
-            const input =
-                getById(
-                    "globalSearchInput"
-                );
-
-
-            if (input) {
-
-                input.value = query;
-
-                performSearch(query);
-
-            }
-
-        }
-    );
-
-
-    getById("globalSearchInput")
-        ?.addEventListener(
-            "input",
-            debounce(event => {
-
-                performSearch(
-                    event.target.value
-                );
-
-            }, 350)
-        );
-
-
-    $$("[data-search]").forEach(button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                const query =
-                    button.dataset.search;
-
-
-                getById(
-                    "heroSearchInput"
-                ).value = query;
-
-
-                performSearch(query);
-
-                openModal("searchModal");
-
-            }
-        );
-
-    });
-
-}
-
-
-async function performSearch(query) {
-
-    const results =
-        getById("searchResults");
-
-
-    if (!results) return;
-
-
-    query =
-        query.trim();
-
-
-    if (!query) {
-
-        results.innerHTML = `
-            <div class="empty-state">
-                <div>⌕</div>
-                <h3>Ҷустуҷӯ кунед</h3>
-                <p>
-                    Номи хизмат, кор ё мутахассисро ворид кунед.
-                </p>
-            </div>
-        `;
-
+    if (!state.user) {
+        closeModal("projectModal");
+        openModal("loginModal");
         return;
-
     }
 
 
-    results.innerHTML = `
-        <div class="search-loading">
-            Ҷустуҷӯ...
-        </div>
-    `;
+    const title =
+        get("projectTitle")
+            ?.value.trim();
+
+    const description =
+        get("projectDescription")
+            ?.value.trim();
+
+    const category =
+        get("projectFormCategory")
+            ?.value;
+
+    const budget =
+        get("projectBudget")
+            ?.value;
+
+    const deadline =
+        get("projectDeadline")
+            ?.value;
+
+    const region =
+        get("projectRegion")
+            ?.value;
+
+    const city =
+        get("projectCity")
+            ?.value.trim();
+
+    const skills =
+        get("projectSkills")
+            ?.value.trim();
+
+    const files =
+        get("projectFiles")
+            ?.files;
+
+
+    if (!title || !description || !category) {
+
+        toast(
+            "Ном, тавсиф ва категория ҳатмист.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const button =
+        get("projectSubmitBtn");
+
+
+    setButtonLoading(
+        button,
+        true,
+        "Нашр шуда истодааст..."
+    );
 
 
     try {
 
-        const data =
-            await apiRequest(
-                `/search?q=${encodeURIComponent(query)}`
+        let body;
+
+
+        if (files?.length) {
+
+            body =
+                new FormData();
+
+            body.append(
+                "title",
+                title
+            );
+
+            body.append(
+                "description",
+                description
+            );
+
+            body.append(
+                "category",
+                category
+            );
+
+            body.append(
+                "budget",
+                budget || ""
+            );
+
+            body.append(
+                "deadline",
+                deadline || ""
+            );
+
+            body.append(
+                "region",
+                region || ""
+            );
+
+            body.append(
+                "city",
+                city || ""
+            );
+
+            body.append(
+                "skills",
+                skills || ""
             );
 
 
-        renderSearchResults(
-            normalizeArray(data)
+            [...files].forEach(
+                file =>
+                    body.append(
+                        "files",
+                        file
+                    )
+            );
+
+        } else {
+
+            body = {
+                title,
+                description,
+                category,
+                budget:
+                    budget
+                        ? Number(budget)
+                        : null,
+                deadline:
+                    deadline || null,
+                region:
+                    region || null,
+                city:
+                    city || null,
+                skills:
+                    skills
+                        ? skills
+                            .split(",")
+                            .map(
+                                x =>
+                                    x.trim()
+                            )
+                            .filter(Boolean)
+                        : []
+            };
+        }
+
+
+        await apiPost(
+            "/projects",
+            body
         );
 
-    } catch {
 
-        /*
-         * Local fallback search.
-         * API дастрас набошад ҳам UI намешиканад.
-         */
-
-        const all = [
-
-            ...state.specialists.map(
-                x => ({
-                    ...x,
-                    _type: "specialist"
-                })
-            ),
-
-            ...state.services.map(
-                x => ({
-                    ...x,
-                    _type: "service"
-                })
-            ),
-
-            ...state.jobs.map(
-                x => ({
-                    ...x,
-                    _type: "job"
-                })
-            ),
-
-            ...state.projects.map(
-                x => ({
-                    ...x,
-                    _type: "project"
-                })
-            )
-
-        ];
+        closeModal(
+            "projectModal"
+        );
 
 
-        const lower =
-            query.toLowerCase();
+        get("projectForm")
+            ?.reset();
 
 
-        const filtered =
-            all.filter(item => {
-
-                const text =
-                    JSON.stringify(item)
-                        .toLowerCase();
-
-                return text.includes(lower);
-
-            });
+        toast(
+            "Лоиҳа бомуваффақият нашр шуд.",
+            "success"
+        );
 
 
-        renderSearchResults(filtered);
+        await loadProjects();
 
+    } catch (error) {
+
+        toast(
+            error.message ||
+            "Лоиҳа нашр нашуд.",
+            "error"
+        );
+
+    } finally {
+
+        setButtonLoading(
+            button,
+            false,
+            "Лоиҳаро нашр кардан"
+        );
     }
-
 }
 
 
-function renderSearchResults(results) {
-
-    const container =
-        getById("searchResults");
-
-
-    if (!container) return;
-
-
-    if (!results.length) {
-
-        container.innerHTML = `
-            <div class="empty-state">
-                <div>🔎</div>
-                <h3>Натиҷа ёфт нашуд</h3>
-                <p>
-                    Ҷустуҷӯи дигарро санҷед.
-                </p>
-            </div>
-        `;
-
-        return;
-
-    }
-
-
-    container.innerHTML = "";
-
-
-    results.slice(0, 15)
-        .forEach(item => {
-
-            const result =
-                document.createElement("button");
-
-
-            result.className =
-                "search-result";
-
-
-            const title =
-                item.title ||
-                fullName(item) ||
-                item.name ||
-                "Натиҷа";
-
-
-            const type =
-                item._type ||
-                "result";
-
-
-            result.innerHTML = `
-
-                <div class="search-result-icon">
-                    ${searchTypeIcon(type)}
-                </div>
-
-                <div>
-
-                    <strong>
-                        ${escapeHTML(title)}
-                    </strong>
-
-                    <span>
-                        ${escapeHTML(
-                            categoryName(
-                                item.category
-                            )
-                        )}
-                    </span>
-
-                </div>
-
-                <b>→</b>
-
-            `;
-
-
-            result.addEventListener(
-                "click",
-                () => {
-
-                    closeModal("searchModal");
-
-                    openSearchItem(item);
-
-                }
-            );
-
-
-            container.appendChild(result);
-
-        });
-
-}
+get("projectForm")
+    ?.addEventListener(
+        "submit",
+        handleCreateProject
+    );
 
 
 /* =========================================================
-   FILTERS
+   ADD SERVICE
 ========================================================= */
 
-function initFilters() {
+function openServiceModal() {
 
-    getById("specialistSearch")
-        ?.addEventListener(
-            "input",
-            debounce(filterSpecialists, 250)
+    if (!state.user) {
+        openModal("loginModal");
+
+        toast(
+            "Барои илова кардани хизматрасонӣ ворид шавед.",
+            "info"
         );
 
+        return;
+    }
 
-    getById("specialistCategory")
-        ?.addEventListener(
-            "change",
-            filterSpecialists
-        );
-
-
-    getById("specialistRegion")
-        ?.addEventListener(
-            "change",
-            filterSpecialists
-        );
-
-
-    getById("specialistSort")
-        ?.addEventListener(
-            "change",
-            filterSpecialists
-        );
-
-
-    getById("marketSearch")
-        ?.addEventListener(
-            "input",
-            debounce(filterMarketplace, 250)
-        );
-
-
-    getById("marketCategory")
-        ?.addEventListener(
-            "change",
-            filterMarketplace
-        );
-
-
-    getById("marketRegion")
-        ?.addEventListener(
-            "change",
-            filterMarketplace
-        );
-
-
-    getById("jobSearch")
-        ?.addEventListener(
-            "input",
-            debounce(filterJobs, 250)
-        );
-
-
-    getById("jobRegion")
-        ?.addEventListener(
-            "change",
-            filterJobs
-        );
-
-
-    getById("jobType")
-        ?.addEventListener(
-            "change",
-            filterJobs
-        );
-
-
-    getById("projectSearch")
-        ?.addEventListener(
-            "input",
-            debounce(filterProjects, 250)
-        );
-
-
-    getById("projectCategory")
-        ?.addEventListener(
-            "change",
-            filterProjects
-        );
-
-
-    getById("realEstateSearch")
-        ?.addEventListener(
-            "input",
-            debounce(filterRealEstate, 250)
-        );
-
-
-    getById("realEstateCategory")
-        ?.addEventListener(
-            "change",
-            filterRealEstate
-        );
-
-
-    getById("realEstateRegion")
-        ?.addEventListener(
-            "change",
-            filterRealEstate
-        );
-
+    openModal(
+        "serviceModal"
+    );
 }
 
 
-function filterSpecialists() {
-
-    const query =
-        getById("specialistSearch")
-            ?.value
-            .toLowerCase()
-            .trim() || "";
+async function handleCreateService(
+    event
+) {
+    event.preventDefault();
 
 
-    const category =
-        getById("specialistCategory")
-            ?.value || "";
+    if (!state.user) {
+        closeModal("serviceModal");
+        openModal("loginModal");
+        return;
+    }
 
 
-    const region =
-        getById("specialistRegion")
-            ?.value || "";
+    const title =
+        get("serviceTitle")
+            ?.value.trim();
 
-
-    let result =
-        [...state.specialists];
-
-
-    result =
-        result.filter(item => {
-
-            const text =
-                JSON.stringify(item)
-                    .toLowerCase();
-
-
-            const queryMatch =
-                !query ||
-                text.includes(query);
-
-
-            const categoryMatch =
-                !category ||
-                String(
-                    item.category ||
-                    item.specialization ||
-                    ""
-                ).toLowerCase()
-                    .includes(category);
-
-
-            const regionMatch =
-                !region ||
-                String(
-                    item.region || ""
-                ).toLowerCase()
-                    .includes(region);
-
-
-            return (
-                queryMatch &&
-                categoryMatch &&
-                regionMatch
-            );
-
-        });
-
-
-    renderSpecialists(result);
-
-}
-
-
-function filterMarketplace() {
-
-    const query =
-        getById("marketSearch")
-            ?.value
-            .toLowerCase()
-            .trim() || "";
-
+    const description =
+        get("serviceDescription")
+            ?.value.trim();
 
     const category =
-        getById("marketCategory")
-            ?.value || "";
+        get("serviceCategory")
+            ?.value;
 
+    const price =
+        get("servicePrice")
+            ?.value;
 
     const region =
-        getById("marketRegion")
-            ?.value || "";
+        get("serviceRegion")
+            ?.value;
 
-
-    const source =
-        state.activeMarketplace === "services"
-            ? state.services
-            : state.products;
-
-
-    const result =
-        source.filter(item => {
-
-            const text =
-                JSON.stringify(item)
-                    .toLowerCase();
-
-
-            return (
-                (!query ||
-                    text.includes(query)) &&
-
-                (!category ||
-                    String(
-                        item.category || ""
-                    ).toLowerCase()
-                        .includes(category)) &&
-
-                (!region ||
-                    String(
-                        item.region || ""
-                    ).toLowerCase()
-                        .includes(region))
-            );
-
-        });
+    const image =
+        get("serviceImage")
+            ?.files?.[0];
 
 
     if (
-        state.activeMarketplace ===
-        "services"
+        !title ||
+        !description ||
+        !category ||
+        !price
     ) {
 
-        renderServices(result);
+        toast(
+            "Маълумоти заруриро пур кунед.",
+            "error"
+        );
 
-    } else {
-
-        renderProducts(result);
-
+        return;
     }
 
+
+    const button =
+        get("serviceSubmitBtn");
+
+
+    setButtonLoading(
+        button,
+        true,
+        "Нашр шуда истодааст..."
+    );
+
+
+    try {
+
+        let body;
+
+
+        if (image) {
+
+            body =
+                new FormData();
+
+            body.append(
+                "title",
+                title
+            );
+
+            body.append(
+                "description",
+                description
+            );
+
+            body.append(
+                "category",
+                category
+            );
+
+            body.append(
+                "price",
+                price
+            );
+
+            body.append(
+                "region",
+                region || ""
+            );
+
+            body.append(
+                "image",
+                image
+            );
+
+        } else {
+
+            body = {
+                title,
+                description,
+                category,
+                price: Number(price),
+                region:
+                    region || null
+            };
+        }
+
+
+        await apiPost(
+            "/services",
+            body
+        );
+
+
+        closeModal(
+            "serviceModal"
+        );
+
+
+        get("serviceForm")
+            ?.reset();
+
+
+        toast(
+            "Хизматрасонӣ нашр шуд.",
+            "success"
+        );
+
+
+        state.currentMarketType =
+            "services";
+
+
+        if (get("servicesTab")) {
+            get("servicesTab")
+                .click();
+        }
+
+
+    } catch (error) {
+
+        toast(
+            error.message ||
+            "Хизматрасонӣ нашр нашуд.",
+            "error"
+        );
+
+    } finally {
+
+        setButtonLoading(
+            button,
+            false,
+            "Хизматрасониро нашр кардан"
+        );
+    }
 }
 
 
-function filterJobs() {
-
-    const query =
-        getById("jobSearch")
-            ?.value
-            .toLowerCase()
-            .trim() || "";
+get("serviceForm")
+    ?.addEventListener(
+        "submit",
+        handleCreateService
+    );
 
 
-    const region =
-        getById("jobRegion")
-            ?.value || "";
+/* =========================================================
+   PRODUCT
+========================================================= */
 
+async function handleCreateProduct(
+    event
+) {
+    event.preventDefault();
+
+
+    if (!state.user) {
+        closeModal("productModal");
+        openModal("loginModal");
+        return;
+    }
+
+
+    const title =
+        get("productTitle")
+            ?.value.trim();
+
+    const description =
+        get("productDescription")
+            ?.value.trim();
+
+    const price =
+        get("productPrice")
+            ?.value;
+
+    const category =
+        get("productCategory")
+            ?.value;
+
+    const images =
+        get("productImages")
+            ?.files;
+
+
+    if (
+        !title ||
+        !description ||
+        !price ||
+        !category
+    ) {
+
+        toast(
+            "Маълумоти заруриро пур кунед.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const button =
+        get("productSubmitBtn");
+
+
+    setButtonLoading(
+        button,
+        true,
+        "Нашр шуда истодааст..."
+    );
+
+
+    try {
+
+        let body;
+
+
+        if (images?.length) {
+
+            body =
+                new FormData();
+
+            body.append(
+                "title",
+                title
+            );
+
+            body.append(
+                "description",
+                description
+            );
+
+            body.append(
+                "price",
+                price
+            );
+
+            body.append(
+                "category",
+                category
+            );
+
+
+            [...images].forEach(
+                file =>
+                    body.append(
+                        "images",
+                        file
+                    )
+            );
+
+        } else {
+
+            body = {
+                title,
+                description,
+                price: Number(price),
+                category
+            };
+        }
+
+
+        await apiPost(
+            "/products",
+            body
+        );
+
+
+        closeModal(
+            "productModal"
+        );
+
+
+        get("productForm")
+            ?.reset();
+
+
+        toast(
+            "Маҳсулот нашр шуд.",
+            "success"
+        );
+
+
+        if (get("productsTab")) {
+            get("productsTab")
+                .click();
+        }
+
+    } catch (error) {
+
+        toast(
+            error.message ||
+            "Маҳсулот нашр нашуд.",
+            "error"
+        );
+
+    } finally {
+
+        setButtonLoading(
+            button,
+            false,
+            "Маҳсулотро нашр кардан"
+        );
+    }
+}
+
+
+get("productForm")
+    ?.addEventListener(
+        "submit",
+        handleCreateProduct
+    );
+
+
+/* =========================================================
+   REAL ESTATE CREATE
+========================================================= */
+
+async function handleCreateRealEstate(
+    event
+) {
+    event.preventDefault();
+
+
+    if (!state.user) {
+        closeModal(
+            "realEstateModal"
+        );
+
+        openModal("loginModal");
+
+        return;
+    }
+
+
+    const title =
+        get("realEstateTitle")
+            ?.value.trim();
+
+    const description =
+        get("realEstateDescription")
+            ?.value.trim();
+
+    const dealType =
+        get("realEstateDealType")
+            ?.value;
 
     const type =
-        getById("jobType")
-            ?.value || "";
+        get("realEstateFormType")
+            ?.value;
 
+    const price =
+        get("realEstatePrice")
+            ?.value;
 
-    const result =
-        state.jobs.filter(item => {
+    const rooms =
+        get("realEstateFormRooms")
+            ?.value;
 
-            const text =
-                JSON.stringify(item)
-                    .toLowerCase();
+    const area =
+        get("realEstateArea")
+            ?.value;
 
+    const floor =
+        get("realEstateFloor")
+            ?.value;
 
-            return (
-                (!query ||
-                    text.includes(query)) &&
-
-                (!region ||
-                    String(
-                        item.region || ""
-                    ).toLowerCase()
-                        .includes(region)) &&
-
-                (!type ||
-                    String(
-                        item.type ||
-                        item.employmentType ||
-                        ""
-                    ).toLowerCase()
-                        .includes(type))
-            );
-
-        });
-
-
-    renderJobs(result);
-
-}
-
-
-function filterProjects() {
-
-    const query =
-        getById("projectSearch")
-            ?.value
-            .toLowerCase()
-            .trim() || "";
-
-
-    const category =
-        getById("projectCategory")
-            ?.value || "";
-
-
-    const result =
-        state.projects.filter(item => {
-
-            const text =
-                JSON.stringify(item)
-                    .toLowerCase();
-
-
-            return (
-                (!query ||
-                    text.includes(query)) &&
-
-                (!category ||
-                    String(
-                        item.category || ""
-                    ).toLowerCase()
-                        .includes(category))
-            );
-
-        });
-
-
-    renderProjects(result);
-
-}
-
-
-function filterRealEstate() {
-
-    const query =
-        getById("realEstateSearch")
-            ?.value
-            .toLowerCase()
-            .trim() || "";
-
-
-    const category =
-        getById("realEstateCategory")
-            ?.value || "";
-
+    const address =
+        get("realEstateAddress")
+            ?.value.trim();
 
     const region =
-        getById("realEstateRegion")
-            ?.value || "";
-
-
-    let result =
-        state.realEstate.filter(item => {
-
-            const text =
-                JSON.stringify(item)
-                    .toLowerCase();
-
-
-            return (
-                (!query ||
-                    text.includes(query)) &&
-
-                (!category ||
-                    String(
-                        item.propertyType ||
-                        item.category ||
-                        ""
-                    ).toLowerCase()
-                        .includes(category)) &&
-
-                (!region ||
-                    String(
-                        item.region || ""
-                    ).toLowerCase()
-                        .includes(region))
-            );
-
-        });
-
-
-    renderRealEstate(result);
-
-}
-
-
-/* =========================================================
-   TABS
-========================================================= */
-
-function initTabs() {
-
-    $$(".market-tab")
-        .forEach(tab => {
-
-            tab.addEventListener(
-                "click",
-                () => {
-
-                    $$(".market-tab")
-                        .forEach(x =>
-                            x.classList.remove(
-                                "active"
-                            )
-                        );
-
-
-                    tab.classList.add("active");
-
-
-                    state.activeMarketplace =
-                        tab.dataset.market;
-
-
-                    const services =
-                        getById(
-                            "servicesGrid"
-                        );
-
-                    const products =
-                        getById(
-                            "productsGrid"
-                        );
-
-
-                    if (
-                        state.activeMarketplace ===
-                        "services"
-                    ) {
-
-                        services.hidden = false;
-                        products.hidden = true;
-
-                        filterMarketplace();
-
-                    } else {
-
-                        services.hidden = true;
-                        products.hidden = false;
-
-                        filterMarketplace();
-
-                    }
-
-                }
-            );
-
-        });
-
-
-    $$(".real-tab")
-        .forEach(tab => {
-
-            tab.addEventListener(
-                "click",
-                () => {
-
-                    $$(".real-tab")
-                        .forEach(x =>
-                            x.classList.remove(
-                                "active"
-                            )
-                        );
-
-
-                    tab.classList.add("active");
-
-
-                    state.activeRealEstateType =
-                        tab.dataset.type;
-
-
-                    renderRealEstate();
-
-                }
-            );
-
-        });
-
-
-    $$(".category-card")
-        .forEach(card => {
-
-            card.addEventListener(
-                "click",
-                () => {
-
-                    const category =
-                        card.dataset.category;
-
-
-                    const market =
-                        getById(
-                            "marketCategory"
-                        );
-
-
-                    if (market) {
-
-                        market.value =
-                            category;
-
-                    }
-
-
-                    document
-                        .getElementById(
-                            "marketplace"
-                        )
-                        ?.scrollIntoView({
-                            behavior: "smooth"
-                        });
-
-
-                    filterMarketplace();
-
-                }
-            );
-
-        });
-
-
-    $$(".region-card")
-        .forEach(card => {
-
-            card.addEventListener(
-                "click",
-                () => {
-
-                    const region =
-                        card.dataset.region;
-
-
-                    const select =
-                        getById(
-                            "specialistRegion"
-                        );
-
-
-                    if (select) {
-
-                        select.value =
-                            region;
-
-                    }
-
-
-                    document
-                        .getElementById(
-                            "specialists"
-                        )
-                        ?.scrollIntoView({
-                            behavior: "smooth"
-                        });
-
-
-                    filterSpecialists();
-
-                }
-            );
-
-        });
-
-}
-
-
-/* =========================================================
-   NAVIGATION
-========================================================= */
-
-function initNavigation() {
-
-    const mobileBtn =
-        getById("mobileMenuBtn");
-
-    const mobileMenu =
-        getById("mobileMenu");
-
-
-    mobileBtn?.addEventListener(
-        "click",
-        () => {
-
-            mobileBtn.classList.toggle("active");
-
-            mobileMenu?.classList.toggle(
-                "open"
-            );
-
-        }
-    );
-
-
-    $$(".mobile-menu a")
-        .forEach(link => {
-
-            link.addEventListener(
-                "click",
-                () => {
-
-                    mobileBtn?.classList.remove(
-                        "active"
-                    );
-
-                    mobileMenu?.classList.remove(
-                        "open"
-                    );
-
-                }
-            );
-
-        });
-
-
-    $$(".nav-link").forEach(link => {
-
-        link.addEventListener(
-            "click",
-            () => {
-
-                $$(".nav-link")
-                    .forEach(x =>
-                        x.classList.remove(
-                            "active"
-                        )
-                    );
-
-
-                link.classList.add("active");
-
-            }
+        get("realEstateFormRegion")
+            ?.value;
+
+    const city =
+        get("realEstateCity")
+            ?.value.trim();
+
+    const phone =
+        get("realEstatePhone")
+            ?.value.trim();
+
+    const images =
+        get("realEstateImages")
+            ?.files;
+
+
+    if (
+        !title ||
+        !description ||
+        !dealType ||
+        !type ||
+        !price ||
+        !region
+    ) {
+
+        toast(
+            "Майдонҳои заруриро пур кунед.",
+            "error"
         );
 
-    });
-
-
-    getById("heroExploreBtn")
-        ?.addEventListener(
-            "click",
-            () => {
-
-                document
-                    .getElementById("marketplace")
-                    ?.scrollIntoView({
-                        behavior: "smooth"
-                    });
-
-            }
-        );
-
-
-    getById("ctaExploreBtn")
-        ?.addEventListener(
-            "click",
-            () => {
-
-                document
-                    .getElementById("marketplace")
-                    ?.scrollIntoView({
-                        behavior: "smooth"
-                    });
-
-            }
-        );
-
-
-    getById("heroRegisterBtn")
-        ?.addEventListener(
-            "click",
-            () => openModal("registerModal")
-        );
-
-
-    getById("ctaRegisterBtn")
-        ?.addEventListener(
-            "click",
-            () => openModal("registerModal")
-        );
-
-
-    getById("loginBtn")
-        ?.addEventListener(
-            "click",
-            () => openModal("loginModal")
-        );
-
-
-    getById("registerBtn")
-        ?.addEventListener(
-            "click",
-            () => openModal("registerModal")
-        );
-
-
-    getById("mobileLoginBtn")
-        ?.addEventListener(
-            "click",
-            () => openModal("loginModal")
-        );
-
-
-    getById("mobileRegisterBtn")
-        ?.addEventListener(
-            "click",
-            () => openModal("registerModal")
-        );
-
-
-    getById("globalSearchBtn")
-        ?.addEventListener(
-            "click",
-            () => openModal("searchModal")
-        );
-
-
-    getById("notificationBtn")
-        ?.addEventListener(
-            "click",
-            async () => {
-
-                if (!requireAuth())
-                    return;
-
-                openSideModal(
-                    "notificationsModal"
-                );
-
-                await loadNotifications();
-
-            }
-        );
-
-
-    getById("messageBtn")
-        ?.addEventListener(
-            "click",
-            async () => {
-
-                if (!requireAuth())
-                    return;
-
-                openChat();
-
-            }
-        );
-
-
-    getById("mobileProfileBtn")
-        ?.addEventListener(
-            "click",
-            () => {
-
-                if (state.user) {
-
-                    openProfile(
-                        state.user
-                    );
-
-                } else {
-
-                    openModal(
-                        "loginModal"
-                    );
-
-                }
-
-            }
-        );
-
-}
-
-
-/* =========================================================
-   MODALS
-========================================================= */
-
-function initModals() {
-
-    $("[data-close='searchModal']");
-
-    $$("[data-close]")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    closeModal(
-                        button.dataset.close
-                    );
-
-                }
-            );
-
-        });
-
-
-    $$(".modal-overlay")
-        .forEach(overlay => {
-
-            overlay.addEventListener(
-                "click",
-                () => {
-
-                    const modal =
-                        overlay.closest(
-                            ".modal"
-                        );
-
-
-                    if (modal)
-                        closeModal(
-                            modal.id
-                        );
-
-                }
-            );
-
-        });
-
-
-    document.addEventListener(
-        "keydown",
-        event => {
-
-            if (event.key === "Escape") {
-
-                $$(".modal.open")
-                    .forEach(modal =>
-                        closeModal(modal.id)
-                    );
-
-            }
-
-        }
-    );
-
-
-    getById("switchToRegister")
-        ?.addEventListener(
-            "click",
-            () => {
-
-                closeModal("loginModal");
-
-                openModal(
-                    "registerModal"
-                );
-
-            }
-        );
-
-
-    getById("switchToLogin")
-        ?.addEventListener(
-            "click",
-            () => {
-
-                closeModal("registerModal");
-
-                openModal(
-                    "loginModal"
-                );
-
-            }
-        );
-
-
-    getById("forgotPasswordBtn")
-        ?.addEventListener(
-            "click",
-            () => {
-
-                closeModal("loginModal");
-
-                openModal(
-                    "forgotModal"
-                );
-
-            }
-        );
-
-
-    getById("createProjectBtn")
-        ?.addEventListener(
-            "click",
-            () => {
-
-                if (requireAuth())
-                    openModal("projectModal");
-
-            }
-        );
-
-
-    getById("addServiceBtn")
-        ?.addEventListener(
-            "click",
-            () => {
-
-                if (requireAuth())
-                    openModal("serviceModal");
-
-            }
-        );
-
-
-    getById("addRealEstateBtn")
-        ?.addEventListener(
-            "click",
-            () => {
-
-                if (requireAuth())
-                    openModal(
-                        "realEstateModal"
-                    );
-
-            }
-        );
-
-
-    getById("userMenuBtn")
-        ?.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-                $("#userMenu")
-                    ?.classList.toggle(
-                        "open"
-                    );
-
-            }
-        );
-
-
-    document.addEventListener(
-        "click",
-        event => {
-
-            const menu =
-                getById("userMenu");
-
-            const button =
-                getById("userMenuBtn");
-
-
-            if (
-                menu &&
-                !menu.contains(event.target) &&
-                !button?.contains(event.target)
-            ) {
-
-                menu.classList.remove(
-                    "open"
-                );
-
-            }
-
-        }
-    );
-
-}
-
-
-function openModal(id) {
-
-    const modal =
-        getById(id);
-
-    if (!modal) return;
-
-
-    modal.classList.add("open");
-
-    document.body.classList.add(
-        "modal-open"
-    );
-
-
-    setTimeout(() => {
-
-        const input =
-            modal.querySelector(
-                "input:not([type='checkbox'])"
-            );
-
-        input?.focus();
-
-    }, 250);
-
-}
-
-
-function closeModal(id) {
-
-    const modal =
-        getById(id);
-
-    if (!modal) return;
-
-
-    modal.classList.remove("open");
-
-
-    if (!$(".modal.open")) {
-
-        document.body.classList.remove(
-            "modal-open"
-        );
-
+        return;
     }
 
-}
 
-
-function openSideModal(id) {
-
-    const modal =
-        getById(id);
-
-    if (!modal) return;
-
-
-    modal.classList.add("open");
-
-}
-
-
-function openChat() {
-
-    const modal =
-        getById("chatModal");
-
-    if (!modal) return;
-
-
-    modal.classList.add("open");
-
-    loadConversations();
-
-}
-
-
-/* =========================================================
-   FORMS
-========================================================= */
-
-function initForms() {
-
-    getById("loginForm")
-        ?.addEventListener(
-            "submit",
-            handleLogin
+    const button =
+        get(
+            "realEstateSubmitBtn"
         );
 
 
-    getById("registerForm")
-        ?.addEventListener(
-            "submit",
-            handleRegister
-        );
+    setButtonLoading(
+        button,
+        true,
+        "Нашр шуда истодааст..."
+    );
 
 
-    getById("forgotForm")
-        ?.addEventListener(
-            "submit",
-            handleForgotPassword
-        );
+    try {
+
+        let body;
 
 
-    getById("projectForm")
-        ?.addEventListener(
-            "submit",
-            handleCreateProject
-        );
+        if (images?.length) {
+
+            body =
+                new FormData();
+
+            body.append(
+                "title",
+                title
+            );
+
+            body.append(
+                "description",
+                description
+            );
+
+            body.append(
+                "dealType",
+                dealType
+            );
+
+            body.append(
+                "type",
+                type
+            );
+
+            body.append(
+                "price",
+                price
+            );
+
+            body.append(
+                "rooms",
+                rooms || ""
+            );
+
+            body.append(
+                "area",
+                area || ""
+            );
+
+            body.append(
+                "floor",
+                floor || ""
+            );
+
+            body.append(
+                "address",
+                address || ""
+            );
+
+            body.append(
+                "region",
+                region
+            );
+
+            body.append(
+                "city",
+                city || ""
+            );
+
+            body.append(
+                "phone",
+                phone || ""
+            );
 
 
-    getById("serviceForm")
-        ?.addEventListener(
-            "submit",
-            handleCreateService
-        );
-
-
-    getById("productForm")
-        ?.addEventListener(
-            "submit",
-            handleCreateProduct
-        );
-
-
-    getById("realEstateForm")
-        ?.addEventListener(
-            "submit",
-            handleCreateRealEstate
-        );
-
-
-    getById("chatForm")
-        ?.addEventListener(
-            "submit",
-            handleSendMessage
-        );
-
-
-    getById("logoutBtn")
-        ?.addEventListener(
-            "click",
-            () => logout()
-        );
-
-
-    getById("menuProfileBtn")
-        ?.addEventListener(
-            "click",
-            () => {
-
-                $("#userMenu")
-                    ?.classList.remove(
-                        "open"
-                    );
-
-                openProfile(state.user);
-
-            }
-        );
-
-
-    getById("menuMessagesBtn")
-        ?.addEventListener(
-            "click",
-            () => {
-
-                $("#userMenu")
-                    ?.classList.remove(
-                        "open"
-                    );
-
-                openChat();
-
-            }
-        );
-
-
-    getById("menuNotificationsBtn")
-        ?.addEventListener(
-            () => {
-
-                $("#userMenu")
-                    ?.classList.remove(
-                        "open"
-                    );
-
-                openSideModal(
-                    "notificationsModal"
-                );
-
-            }
-        );
-
-}
-
-
-/* =========================================================
-   PROFILE
-========================================================= */
-
-function openProfile(user) {
-
-    const content =
-        getById("profileContent");
-
-    if (!content) return;
-
-
-    const name =
-        fullName(user) ||
-        user?.username ||
-        "User";
-
-
-    const avatar =
-        user?.avatar ||
-        user?.photo ||
-        "";
-
-
-    content.innerHTML = `
-
-        <div class="profile-cover"></div>
-
-        <div class="profile-main">
-
-            <div class="profile-avatar">
-
-                ${
-                    avatar
-                    ? `<img src="${escapeHTML(avatar)}" alt="">`
-                    : escapeHTML(
-                        getInitials(user)
+            [...images].forEach(
+                file =>
+                    body.append(
+                        "images",
+                        file
                     )
-                }
+            );
 
-            </div>
+        } else {
 
-
-            <div class="profile-info">
-
-                <div class="verified-badge">
-                    ✓
-                </div>
-
-                <h2>
-                    ${escapeHTML(name)}
-                </h2>
-
-                <span>
-                    ${
-                        escapeHTML(
-                            user?.role ||
-                            user?.title ||
-                            "User"
-                        )
-                    }
-                </span>
-
-                <p>
-                    ${
-                        escapeHTML(
-                            user?.bio ||
-                            "Профили корбар дар SMM.TJ"
-                        )
-                    }
-                </p>
-
-            </div>
+            body = {
+                title,
+                description,
+                dealType,
+                type,
+                price: Number(price),
+                rooms:
+                    rooms
+                        ? Number(rooms)
+                        : null,
+                area:
+                    area
+                        ? Number(area)
+                        : null,
+                floor:
+                    floor
+                        ? Number(floor)
+                        : null,
+                address:
+                    address || null,
+                region,
+                city:
+                    city || null,
+                phone:
+                    phone || null
+            };
+        }
 
 
-            <div class="profile-actions">
-
-                <button
-                    class="btn btn-primary"
-                    id="profileMessageBtn"
-                >
-                    💬 Паём
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <div class="profile-details">
-
-            <div>
-                <small>Минтақа</small>
-                <strong>
-                    ${escapeHTML(
-                        user?.city ||
-                        user?.region ||
-                        "Тоҷикистон"
-                    )}
-                </strong>
-            </div>
-
-            <div>
-                <small>Рейтинг</small>
-                <strong>
-                    ★ ${Number(
-                        user?.rating || 5
-                    ).toFixed(1)}
-                </strong>
-            </div>
-
-            <div>
-                <small>Таҷриба</small>
-                <strong>
-                    ${user?.experience || 0} сол
-                </strong>
-            </div>
-
-        </div>
-
-    `;
-
-
-    openModal("profileModal");
-
-
-    getById("profileMessageBtn")
-        ?.addEventListener(
-            "click",
-            () => {
-
-                closeModal(
-                    "profileModal"
-                );
-
-                openChat();
-
-            }
+        await apiPost(
+            "/real-estate",
+            body
         );
 
+
+        closeModal(
+            "realEstateModal"
+        );
+
+
+        get("realEstateForm")
+            ?.reset();
+
+
+        toast(
+            "Эълони манзил нашр шуд.",
+            "success"
+        );
+
+
+        await loadRealEstate();
+
+    } catch (error) {
+
+        toast(
+            error.message ||
+            "Эълон нашр нашуд.",
+            "error"
+        );
+
+    } finally {
+
+        setButtonLoading(
+            button,
+            false,
+            "Эълонро нашр кардан"
+        );
+    }
 }
+
+
+get("realEstateForm")
+    ?.addEventListener(
+        "submit",
+        handleCreateRealEstate
+    );
 
 
 /* =========================================================
-   DETAILS
+   CTA REGISTER
 ========================================================= */
 
-function openService(service) {
-
-    openDetailModal(
-        "Хизматрасонӣ",
-        service.title || service.name,
-        service.description,
-        service.price
+get("ctaRegisterBtn")
+    ?.addEventListener(
+        "click",
+        () => openModal(
+            "registerModal"
+        )
     );
 
-}
 
-
-function openProduct(product) {
-
-    openDetailModal(
-        "Маҳсулот",
-        product.title || product.name,
-        product.description,
-        product.price
+get("footerRegisterBtn")
+    ?.addEventListener(
+        "click",
+        () => openModal(
+            "registerModal"
+        )
     );
 
-}
 
-
-function openProject(project) {
-
-    openDetailModal(
-        "Лоиҳа",
-        project.title,
-        project.description,
-        project.budget
+get("footerLoginBtn")
+    ?.addEventListener(
+        "click",
+        () => openModal(
+            "loginModal"
+        )
     );
 
-}
 
-
-function openRealEstate(item) {
-
-    openDetailModal(
-        item.type === "rent"
-            ? "Иҷора"
-            : "Фурӯш",
-        item.title,
-        item.description,
-        item.price
+get("footerAddServiceBtn")
+    ?.addEventListener(
+        "click",
+        openServiceModal
     );
 
-}
+
+get("footerAddJobBtn")
+    ?.addEventListener(
+        "click",
+        () => get("addJobBtn")?.click()
+    );
 
 
-function openDetailModal(
-    label,
-    title,
-    description,
-    price
-) {
-
-    const content =
-        getById("profileContent");
-
-    if (!content) return;
+get("footerAddRealEstateBtn")
+    ?.addEventListener(
+        "click",
+        () => get(
+            "addRealEstateBtn"
+        )?.click()
+    );
 
 
-    content.innerHTML = `
+/* =========================================================
+   MOBILE BOTTOM NAV
+========================================================= */
 
-        <div class="detail-view">
+[
+    [
+        "bottomHomeBtn",
+        "home"
+    ],
+    [
+        "bottomSpecialistsBtn",
+        "specialists"
+    ],
+    [
+        "bottomMarketplaceBtn",
+        "marketplace"
+    ],
+    [
+        "bottomJobsBtn",
+        "jobs"
+    ]
+].forEach(
+    ([id, section]) => {
 
-            <span class="modal-label">
-                ${escapeHTML(label)}
-            </span>
-
-            <h2>
-                ${escapeHTML(title || "")}
-            </h2>
-
-            <p>
-                ${escapeHTML(
-                    description || ""
-                )}
-            </p>
-
-            <div class="detail-price">
-                ${formatPrice(price)}
-            </div>
-
-            <button
-                class="btn btn-primary btn-full"
-                onclick="closeModal('profileModal')"
-            >
-                Бастан
-            </button>
-
-        </div>
-
-    `;
-
-
-    openModal("profileModal");
-
-}
-
-
-function openSearchItem(item) {
-
-    if (item._type === "specialist") {
-
-        openProfile(item);
-
-    } else if (item._type === "service") {
-
-        openService(item);
-
-    } else if (item._type === "job") {
-
-        openDetailModal(
-            "Кор",
-            item.title,
-            item.description,
-            item.salary
-        );
-
-    } else if (item._type === "project") {
-
-        openProject(item);
-
-    } else {
-
-        openDetailModal(
-            "Натиҷа",
-            item.title || item.name,
-            item.description,
-            item.price
+        get(id)?.addEventListener(
+            "click",
+            () =>
+                scrollToSection(
+                    section
+                )
         );
 
     }
-
-}
-
-
-/* =========================================================
-   USER MENU
-========================================================= */
-
-function updateUserMenu() {
-
-    if (!state.user) return;
-
-
-    const name =
-        fullName(state.user) ||
-        state.user.username ||
-        "User";
-
-
-    const menuName =
-        getById("menuUserName");
-
-    const menuEmail =
-        getById("menuUserEmail");
-
-    const avatar =
-        getById("menuAvatar");
-
-
-    if (menuName)
-        menuName.textContent = name;
-
-
-    if (menuEmail)
-        menuEmail.textContent =
-            state.user.email ||
-            state.user.phone ||
-            "";
-
-
-    if (avatar)
-        avatar.textContent =
-            getInitials(state.user);
-
-}
+);
 
 
 /* =========================================================
-   COUNTERS
+   INTERSECTION OBSERVER
 ========================================================= */
 
-function initCounters() {
+function setupScrollObserver() {
+    const sections =
+        $$("main section[id]");
 
-    const counters =
-        $$("[data-counter]");
-
-
-    if (!counters.length) return;
+    if (!sections.length) return;
 
 
     const observer =
         new IntersectionObserver(
             entries => {
 
-                entries.forEach(entry => {
+                entries.forEach(
+                    entry => {
 
-                    if (
-                        !entry.isIntersecting
-                    )
-                        return;
+                        if (
+                            entry.isIntersecting
+                        ) {
 
+                            setActiveNav(
+                                entry.target.id
+                            );
 
-                    const element =
-                        entry.target;
+                        }
 
-
-                    animateCounter(
-                        element,
-                        Number(
-                            element.dataset.counter
-                        )
-                    );
-
-
-                    observer.unobserve(element);
-
-                });
+                    }
+                );
 
             },
             {
-                threshold: 0.5
+                threshold: 0.25
             }
         );
 
 
-    counters.forEach(
-        counter =>
-            observer.observe(counter)
+    sections.forEach(
+        section =>
+            observer.observe(
+                section
+            )
     );
-
-}
-
-
-function animateCounter(
-    element,
-    target
-) {
-
-    const duration = 1400;
-
-    const start =
-        performance.now();
-
-
-    function update(now) {
-
-        const progress =
-            Math.min(
-                (now - start) / duration,
-                1
-            );
-
-
-        const eased =
-            1 -
-            Math.pow(
-                1 - progress,
-                3
-            );
-
-
-        element.textContent =
-            Math.floor(
-                target * eased
-            ).toLocaleString("en-US") +
-            "+";
-
-
-        if (progress < 1) {
-
-            requestAnimationFrame(update);
-
-        }
-
-    }
-
-
-    requestAnimationFrame(update);
-
 }
 
 
 /* =========================================================
-   SCROLL ANIMATIONS
+   REVEAL ANIMATIONS
 ========================================================= */
 
-function initScrollAnimations() {
-
+function setupRevealAnimations() {
     const elements =
         $$(
-            ".section-heading, " +
-            ".category-card, " +
-            ".specialist-card, " +
-            ".marketplace-card, " +
-            ".job-card, " +
-            ".project-card, " +
-            ".real-estate-card, " +
-            ".review-card, " +
-            ".step-card, " +
-            ".region-card"
+            ".section, .card, .category-card, .step, .region-card"
         );
+
+    if (!elements.length) return;
+
+
+    if (
+        !("IntersectionObserver" in window)
+    ) {
+        elements.forEach(
+            element =>
+                element.classList.add(
+                    "visible"
+                )
+        );
+
+        return;
+    }
 
 
     const observer =
         new IntersectionObserver(
             entries => {
 
-                entries.forEach(entry => {
+                entries.forEach(
+                    entry => {
 
-                    if (
-                        entry.isIntersecting
-                    ) {
+                        if (
+                            entry.isIntersecting
+                        ) {
 
-                        entry.target.classList.add(
-                            "visible"
-                        );
+                            entry.target.classList.add(
+                                "visible"
+                            );
 
-                        observer.unobserve(
-                            entry.target
-                        );
+                            observer.unobserve(
+                                entry.target
+                            );
+
+                        }
 
                     }
-
-                });
+                );
 
             },
             {
@@ -4636,139 +5540,166 @@ function initScrollAnimations() {
 
     elements.forEach(
         element =>
-            observer.observe(element)
+            observer.observe(
+                element
+            )
     );
-
 }
 
 
 /* =========================================================
-   FAVORITE BUTTONS
+   LOADING SCREEN
 ========================================================= */
 
-function initFavoriteButtons() {
+function hideLoader() {
+    const loader =
+        get("appLoader");
 
-    document.addEventListener(
-        "click",
-        event => {
+    if (!loader) return;
 
-            const button =
-                event.target.closest(
-                    ".favorite-btn"
-                );
+    loader.classList.add(
+        "loaded"
+    );
+
+    setTimeout(
+        () => loader.remove(),
+        700
+    );
+}
 
 
-            if (!button) return;
+/* =========================================================
+   LOAD ALL
+========================================================= */
+
+async function loadAllData() {
+    if (state.loading) return;
+
+    state.loading = true;
 
 
-            event.stopPropagation();
+    try {
 
-            button.classList.toggle(
-                "active"
+        await Promise.allSettled([
+            loadSpecialists(),
+            loadServices(),
+            loadJobs(),
+            loadProjects(),
+            loadRealEstate(),
+            loadReviews()
+        ]);
+
+
+        if (state.user) {
+            await loadNotifications();
+        }
+
+
+    } finally {
+
+        state.loading = false;
+    }
+}
+
+
+/* =========================================================
+   STATS
+========================================================= */
+
+async function loadStats() {
+    try {
+
+        const data =
+            await apiGet(
+                "/stats"
             );
 
 
-            if (
-                button.classList.contains(
-                    "active"
-                )
-            ) {
+        updateStat(
+            "statSpecialists",
+            data.specialists ||
+            data.smm ||
+            0
+        );
 
-                button.textContent = "♥";
 
-            } else {
+        updateStat(
+            "statServices",
+            data.services ||
+            0
+        );
 
-                button.textContent = "♡";
 
-            }
+        updateStat(
+            "statProjects",
+            data.projects ||
+            0
+        );
 
-        }
-    );
 
+        updateStat(
+            "statJobs",
+            data.jobs ||
+            0
+        );
+
+    } catch {
+        // Stats can remain 0 until API exists.
+    }
+}
+
+
+function updateStat(
+    id,
+    value
+) {
+    const element =
+        get(id);
+
+    if (!element) return;
+
+    element.textContent =
+        formatNumber(
+            Number(value) || 0
+        );
 }
 
 
 /* =========================================================
-   TOAST
+   UTILITY — NORMALIZE LIST
 ========================================================= */
 
-function toast(
-    message,
-    type = "success"
-) {
+function normalizeList(data) {
 
-    const container =
-        getById("toastContainer");
+    if (Array.isArray(data)) {
+        return data;
+    }
 
-    if (!container) return;
+    if (
+        Array.isArray(
+            data?.data
+        )
+    ) {
+        return data.data;
+    }
 
+    if (
+        Array.isArray(
+            data?.items
+        )
+    ) {
+        return data.items;
+    }
 
-    const item =
-        document.createElement("div");
+    if (
+        Array.isArray(
+            data?.results
+        )
+    ) {
+        return data.results;
+    }
 
-
-    item.className =
-        `toast toast-${type}`;
-
-
-    item.innerHTML = `
-
-        <div class="toast-icon">
-            ${toastIcon(type)}
-        </div>
-
-        <div class="toast-content">
-            <strong>
-                ${toastTitle(type)}
-            </strong>
-
-            <span>
-                ${escapeHTML(message)}
-            </span>
-        </div>
-
-        <button class="toast-close">
-            ×
-        </button>
-
-    `;
-
-
-    container.appendChild(item);
-
-
-    requestAnimationFrame(() => {
-
-        item.classList.add("show");
-
-    });
-
-
-    item.querySelector(
-        ".toast-close"
-    )?.addEventListener(
-        "click",
-        () => removeToast(item)
-    );
-
-
-    setTimeout(
-        () => removeToast(item),
-        4500
-    );
-
-}
-
-
-function removeToast(item) {
-
-    item.classList.remove("show");
-
-    setTimeout(
-        () => item.remove(),
-        400
-    );
-
+    return [];
 }
 
 
@@ -4780,228 +5711,192 @@ function showSkeleton(
     container,
     count = 6
 ) {
+    if (!container) return;
 
-    container.innerHTML = "";
+    container.innerHTML =
+        Array.from(
+            {
+                length: count
+            },
+            () => `
+                <div class="skeleton-card">
 
+                    <div class="skeleton-image"></div>
 
-    for (let i = 0; i < count; i++) {
+                    <div class="skeleton-line long"></div>
 
-        const skeleton =
-            document.createElement("div");
+                    <div class="skeleton-line"></div>
 
+                    <div class="skeleton-line short"></div>
 
-        skeleton.className =
-            "skeleton-card";
-
-
-        skeleton.innerHTML = `
-
-            <div class="skeleton-image"></div>
-
-            <div class="skeleton-line large"></div>
-            <div class="skeleton-line"></div>
-            <div class="skeleton-line short"></div>
-
-        `;
-
-
-        container.appendChild(skeleton);
-
-    }
-
+                </div>
+            `
+        ).join("");
 }
 
 
 /* =========================================================
-   EMPTY STATE
+   EMPTY
 ========================================================= */
 
 function renderEmpty(
     container,
-    message
+    message,
+    small = false
 ) {
-
     if (!container) return;
 
-
     container.innerHTML = `
+        <div
+            class="empty-state ${
+                small
+                    ? "small"
+                    : ""
+            }"
+        >
 
-        <div class="empty-state">
+            <div class="empty-icon">
+                ◌
+            </div>
 
-            <div>◌</div>
-
-            <h3>
-                Ҳоло маълумот нест
-            </h3>
-
-            <p>
-                ${escapeHTML(message)}
-            </p>
+            <strong>
+                ${escapeHTML(
+                    message
+                )}
+            </strong>
 
         </div>
-
     `;
-
-}
-
-
-function showEmpty(id) {
-
-    const element =
-        getById(id);
-
-    if (element)
-        element.hidden = false;
-
-}
-
-
-function hideEmpty(id) {
-
-    const element =
-        getById(id);
-
-    if (element)
-        element.hidden = true;
-
 }
 
 
 /* =========================================================
-   UTILITIES
+   ERROR
 ========================================================= */
 
-function normalizeArray(data) {
+function renderError(
+    container,
+    message
+) {
+    if (!container) return;
 
-    if (Array.isArray(data))
-        return data;
+    container.innerHTML = `
+        <div class="empty-state error-state">
+
+            <div class="empty-icon">
+                !
+            </div>
+
+            <strong>
+                ${escapeHTML(
+                    message
+                )}
+            </strong>
+
+            <button
+                type="button"
+                class="btn btn-ghost retry-btn"
+            >
+                Аз нав кӯшиш кардан
+            </button>
+
+        </div>
+    `;
 
 
-    if (Array.isArray(data?.data))
-        return data.data;
-
-
-    if (Array.isArray(data?.items))
-        return data.items;
-
-
-    if (Array.isArray(data?.results))
-        return data.results;
-
-
-    return [];
-
+    $(".retry-btn", container)
+        ?.addEventListener(
+            "click",
+            () => location.reload()
+        );
 }
 
 
-function fullName(user) {
+/* =========================================================
+   NUMBER
+========================================================= */
 
-    if (!user) return "";
+function formatNumber(value) {
+    const number =
+        Number(value) || 0;
 
-
-    return [
-        user.firstName,
-        user.lastName
-    ]
-        .filter(Boolean)
-        .join(" ");
-
+    return number.toLocaleString(
+        "tg-TJ"
+    );
 }
 
 
-function getInitials(user) {
-
-    if (!user)
-        return "U";
-
-
-    const name =
-        fullName(user) ||
-        user.username ||
-        user.name ||
-        "User";
-
-
-    return name
-        .split(/\s+/)
-        .slice(0, 2)
-        .map(word =>
-            word.charAt(0)
-        )
-        .join("")
-        .toUpperCase();
-
-}
-
+/* =========================================================
+   PRICE
+========================================================= */
 
 function formatPrice(value) {
-
     if (
         value === null ||
         value === undefined ||
         value === ""
     ) {
-
-        return "Созишӣ";
-
+        return "Нарх мувофиқа мешавад";
     }
-
 
     const number =
         Number(value);
 
-
-    if (Number.isNaN(number))
-        return `${value} TJS`;
-
+    if (
+        Number.isNaN(number)
+    ) {
+        return String(value);
+    }
 
     return (
-        number.toLocaleString("en-US") +
-        " TJS"
+        number.toLocaleString(
+            "tg-TJ"
+        ) +
+        " сомонӣ"
     );
-
 }
 
 
+/* =========================================================
+   DATE
+========================================================= */
+
 function formatDate(value) {
-
-    if (!value)
-        return "—";
-
+    if (!value) return "—";
 
     const date =
         new Date(value);
 
-
-    if (Number.isNaN(date.getTime()))
-        return "—";
-
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return String(value);
+    }
 
     return date.toLocaleDateString(
         "tg-TJ",
         {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric"
+            year: "numeric",
+            month: "short",
+            day: "numeric"
         }
     );
-
 }
 
 
 function formatTime(value) {
-
-    if (!value)
-        return "";
-
-
     const date =
         new Date(value);
 
-
-    if (Number.isNaN(date.getTime()))
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
         return "";
-
+    }
 
     return date.toLocaleTimeString(
         "tg-TJ",
@@ -5010,316 +5905,269 @@ function formatTime(value) {
             minute: "2-digit"
         }
     );
-
 }
 
 
-function categoryName(category) {
-
-    const categories = {
-
-        smm: "SMM",
-        design: "Design",
-        marketing: "Marketing",
-        programming: "Programming",
-        video: "Video Editing",
-        photography: "Photography",
-        copywriting: "Copywriting",
-        business: "Business",
-        education: "Education",
-        services: "Services",
-        products: "Products"
-
-    };
-
+function formatDateTime(value) {
+    const date =
+        new Date(value);
 
     if (
-        typeof category === "object"
+        Number.isNaN(
+            date.getTime()
+        )
     ) {
-
-        return (
-            category.name ||
-            category.title ||
-            "Категория"
-        );
-
+        return "";
     }
 
-
-    return (
-        categories[
-            String(category)
-                .toLowerCase()
-        ] ||
-        category ||
-        "Категория"
+    return date.toLocaleString(
+        "tg-TJ",
+        {
+            day: "2-digit",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit"
+        }
     );
-
 }
 
 
-function propertyName(type) {
+/* =========================================================
+   TRANSLATIONS
+========================================================= */
 
-    const names = {
-
-        apartment: "Квартира",
-        house: "Хона",
-        room: "Ҳуҷра",
-        office: "Офис",
-        commercial: "Тиҷоратӣ",
-        land: "Замин"
-
+function translateJobType(type) {
+    const map = {
+        FULL_TIME: "Full-time",
+        PART_TIME: "Part-time",
+        REMOTE: "Remote",
+        FREELANCE: "Freelance"
     };
 
-
     return (
-        names[type] ||
+        map[type] ||
         type ||
-        "Амвол"
+        "Кор"
     );
-
 }
 
 
-function statusName(status) {
-
-    const statuses = {
-
+function translateProjectStatus(status) {
+    const map = {
         OPEN: "Кушода",
         IN_PROGRESS: "Дар кор",
-        COMPLETED: "Анҷом ёфт",
+        COMPLETED: "Анҷомшуда",
         CANCELLED: "Бекоршуда"
-
     };
-
 
     return (
-        statuses[status] ||
+        map[status] ||
         status ||
-        "OPEN"
+        "Кушода"
     );
-
 }
 
 
-function debounce(
-    callback,
-    delay = 300
-) {
-
-    let timeout;
-
-
-    return (...args) => {
-
-        clearTimeout(timeout);
-
-
-        timeout =
-            setTimeout(
-                () =>
-                    callback(...args),
-                delay
-            );
-
+function translateRealEstateType(type) {
+    const map = {
+        APARTMENT: "Квартира",
+        HOUSE: "Хона",
+        ROOM: "Ҳуҷра",
+        OFFICE: "Офис",
+        COMMERCIAL: "Коммерсия",
+        LAND: "Замин"
     };
 
-}
-
-
-function setButtonLoading(
-    button,
-    loading
-) {
-
-    if (!button) return;
-
-
-    if (loading) {
-
-        button.dataset.originalText =
-            button.innerHTML;
-
-        button.disabled = true;
-
-        button.innerHTML =
-            `<span class="button-loader"></span>`;
-
-    } else {
-
-        button.disabled = false;
-
-        button.innerHTML =
-            button.dataset.originalText ||
-            "Ирсол кардан";
-
-    }
-
-}
-
-
-function requireAuth() {
-
-    if (state.user)
-        return true;
-
-
-    toast(
-        "Барои ин амал аввал ворид шавед.",
-        "warning"
+    return (
+        map[type] ||
+        type ||
+        "Манзил"
     );
-
-
-    openModal("loginModal");
-
-    return false;
-
-}
-
-
-/* =========================================================
-   ESCAPE HTML
-========================================================= */
-
-function escapeHTML(value) {
-
-    return String(
-        value ?? ""
-    )
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-
-}
-
-
-/* =========================================================
-   ICON HELPERS
-========================================================= */
-
-function toastIcon(type) {
-
-    return {
-
-        success: "✓",
-        error: "!",
-        warning: "⚠",
-        info: "i"
-
-    }[type] || "i";
-
-}
-
-
-function toastTitle(type) {
-
-    return {
-
-        success: "Муваффақият",
-        error: "Хатогӣ",
-        warning: "Огоҳӣ",
-        info: "Маълумот"
-
-    }[type] || "Маълумот";
-
 }
 
 
 function notificationIcon(type) {
+    const map = {
+        PROPOSAL: "📋",
+        PROPOSAL_ACCEPTED: "✅",
+        PROPOSAL_REJECTED: "❌",
+        MESSAGE: "💬",
+        REVIEW: "⭐",
+        PROJECT: "📁",
+        APPLICATION: "📝",
+        ADMIN: "🛡️"
+    };
 
-    return {
-
-        proposal: "◆",
-        message: "◇",
-        review: "★",
-        project: "◈",
-        application: "▣",
-        admin: "⚙"
-
-    }[type] || "♢";
-
-}
-
-
-function searchTypeIcon(type) {
-
-    return {
-
-        specialist: "👤",
-        service: "◆",
-        job: "💼",
-        project: "◈",
-        product: "📦",
-        realEstate: "🏠"
-
-    }[type] || "⌕";
-
+    return (
+        map[type] ||
+        "🔔"
+    );
 }
 
 
 /* =========================================================
-   BUTTON / CARD INTERACTION
+   URL SECURITY
+========================================================= */
+
+function safeUrl(url) {
+
+    if (!url) {
+        return CONFIG.DEFAULT_IMAGE;
+    }
+
+    try {
+
+        const parsed =
+            new URL(
+                url,
+                window.location.origin
+            );
+
+
+        if (
+            parsed.protocol ===
+                "http:" ||
+            parsed.protocol ===
+                "https:" ||
+            parsed.protocol ===
+                "blob:"
+        ) {
+            return parsed.href;
+        }
+
+
+    } catch {
+        return CONFIG.DEFAULT_IMAGE;
+    }
+
+
+    return CONFIG.DEFAULT_IMAGE;
+}
+
+
+/* =========================================================
+   HTML ESCAPE
+========================================================= */
+
+function escapeHTML(value) {
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
+
+
+/* =========================================================
+   CURRENT YEAR
+========================================================= */
+
+if (exists("currentYear")) {
+    get("currentYear")
+        .textContent =
+        new Date()
+            .getFullYear();
+}
+
+
+/* =========================================================
+   CATEGORY BUTTONS
+========================================================= */
+
+$$(".category-card")
+    .forEach(card => {
+
+        card.addEventListener(
+            "click",
+            () => {
+
+                const category =
+                    card.dataset.category;
+
+                if (
+                    get(
+                        "specialistCategory"
+                    )
+                ) {
+                    get(
+                        "specialistCategory"
+                    ).value =
+                        category;
+                }
+
+
+                if (
+                    get(
+                        "marketCategory"
+                    )
+                ) {
+                    get(
+                        "marketCategory"
+                    ).value =
+                        category;
+                }
+
+
+                scrollToSection(
+                    "specialists"
+                );
+
+
+                loadSpecialists();
+
+            }
+        );
+
+    });
+
+
+/* =========================================================
+   KEYBOARD SEARCH
 ========================================================= */
 
 document.addEventListener(
-    "mousemove",
+    "keydown",
     event => {
 
-        const cards =
-            document.elementsFromPoint(
-                event.clientX,
-                event.clientY
+        if (
+            (event.ctrlKey ||
+                event.metaKey) &&
+            event.key.toLowerCase() ===
+                "k"
+        ) {
+
+            event.preventDefault();
+
+            openModal(
+                "searchModal"
             );
 
-
-        const card =
-            cards.find(element =>
-                element.classList?.contains(
-                    "marketplace-card"
-                ) ||
-                element.classList?.contains(
-                    "specialist-card"
-                )
+            setTimeout(
+                () =>
+                    get(
+                        "globalSearchInput"
+                    )?.focus(),
+                100
             );
-
-
-        if (!card) return;
-
-
-        const rect =
-            card.getBoundingClientRect();
-
-
-        const x =
-            event.clientX - rect.left;
-
-
-        const y =
-            event.clientY - rect.top;
-
-
-        const rotateX =
-            ((y / rect.height) - 0.5) *
-            -5;
-
-
-        const rotateY =
-            ((x / rect.width) - 0.5) *
-            5;
-
-
-        card.style.setProperty(
-            "--rx",
-            `${rotateX}deg`
-        );
-
-
-        card.style.setProperty(
-            "--ry",
-            `${rotateY}deg`
-        );
+        }
 
     }
 );
@@ -5334,25 +6182,14 @@ window.addEventListener(
     () => {
 
         const header =
-            getById("header");
-
+            get("siteHeader");
 
         if (!header) return;
 
-
-        if (window.scrollY > 30) {
-
-            header.classList.add(
-                "scrolled"
-            );
-
-        } else {
-
-            header.classList.remove(
-                "scrolled"
-            );
-
-        }
+        header.classList.toggle(
+            "scrolled",
+            window.scrollY > 20
+        );
 
     },
     {
@@ -5362,91 +6199,110 @@ window.addEventListener(
 
 
 /* =========================================================
-   ACTIVE SECTION
+   INITIALIZATION
 ========================================================= */
 
-const sections =
-    $$(
-        "main section[id]"
-    );
+async function init() {
+
+    loadStoredUser();
+
+    updateAuthUI();
+
+    setupScrollObserver();
+
+    setupRevealAnimations();
 
 
-if (sections.length) {
+    try {
 
-    const sectionObserver =
-        new IntersectionObserver(
-            entries => {
+        await Promise.allSettled([
+            loadAllData(),
+            loadStats()
+        ]);
 
-                entries.forEach(entry => {
+    } finally {
 
-                    if (
-                        !entry.isIntersecting
-                    )
-                        return;
+        hideLoader();
 
-
-                    const id =
-                        entry.target.id;
-
-
-                    $$(".nav-link")
-                        .forEach(link => {
-
-                            link.classList.toggle(
-                                "active",
-                                link.getAttribute(
-                                    "href"
-                                ) === `#${id}`
-                            );
-
-                        });
-
-
-                    $$(".bottom-nav-item")
-                        .forEach(link => {
-
-                            link.classList.toggle(
-                                "active",
-                                link.getAttribute(
-                                    "href"
-                                ) === `#${id}`
-                            );
-
-                        });
-
-                });
-
-            },
-            {
-                threshold: 0.35
-            }
-        );
-
-
-    sections.forEach(section =>
-        sectionObserver.observe(section)
-    );
-
+    }
 }
 
 
 /* =========================================================
-   GLOBAL ERROR PROTECTION
+   GLOBAL APP
 ========================================================= */
 
-window.addEventListener(
-    "unhandledrejection",
-    event => {
+window.SMMTJ = {
 
-        console.error(
-            "Unhandled Promise:",
-            event.reason
-        );
+    state,
 
-    }
-);
+    openModal,
+
+    closeModal,
+
+    closeAllModals,
+
+    toast,
+
+    apiRequest,
+
+    apiGet,
+
+    apiPost,
+
+    apiPatch,
+
+    apiPut,
+
+    apiDelete,
+
+    scrollToSection,
+
+    loadSpecialists,
+
+    loadServices,
+
+    loadProducts,
+
+    loadJobs,
+
+    loadProjects,
+
+    loadRealEstate,
+
+    loadReviews,
+
+    loadNotifications,
+
+    loadConversations,
+
+    openChat,
+
+    openProfile,
+
+    logout
+};
 
 
 /* =========================================================
-   END
+   START
 ========================================================= */
+
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        init,
+        {
+            once: true
+        }
+    );
+
+} else {
+
+    init();
+
+}
