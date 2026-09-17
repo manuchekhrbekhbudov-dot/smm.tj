@@ -1,36 +1,44 @@
 /* =========================================================
-   SMM.TJ — script.js
-   Real Marketplace Frontend Logic
+   SMM.TJ — SCRIPT.JS
+   Frontend Controller
    ========================================================= */
 
 "use strict";
 
 /* =========================================================
    CONFIG
-   ========================================================= */
+========================================================= */
 
 const CONFIG = {
-    API_BASE_URL:
-        window.SMM_API_URL ||
-        "http://localhost:5000/api",
+    API_BASE_URL: "http://localhost:5000/api",
 
-    TOKEN_KEY: "smm_access_token",
-    REFRESH_TOKEN_KEY: "smm_refresh_token",
-    USER_KEY: "smm_user",
+    ACCESS_TOKEN_KEY: "smm_tj_access_token",
+    REFRESH_TOKEN_KEY: "smm_tj_refresh_token",
+    USER_KEY: "smm_tj_user",
 
-    REQUEST_TIMEOUT: 15000
+    ANIMATION_DURATION: 500,
+
+    FALLBACK_IMAGE:
+        "https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=900&q=80"
 };
+
 
 /* =========================================================
    GLOBAL STATE
-   ========================================================= */
+========================================================= */
 
 const state = {
-    user: getStoredUser(),
+    user: null,
 
-    specialists: [],
+    accessToken:
+        localStorage.getItem(CONFIG.ACCESS_TOKEN_KEY) || null,
+
+    refreshToken:
+        localStorage.getItem(CONFIG.REFRESH_TOKEN_KEY) || null,
+
     services: [],
     products: [],
+    specialists: [],
     jobs: [],
     projects: [],
     realEstate: [],
@@ -38,22 +46,17 @@ const state = {
     notifications: [],
     conversations: [],
 
-    filters: {
-        specialist: {},
-        marketplace: {},
-        jobs: {},
-        projects: {},
-        realEstate: {}
-    },
+    activeConversation: null,
+    activeMarketplace: "services",
+    activeRealEstateType: "sale",
 
-    currentConversation: null,
-    currentMarketplaceTab: "services",
-    currentRealEstateTab: "sale"
+    loading: false
 };
+
 
 /* =========================================================
    DOM HELPERS
-   ========================================================= */
+========================================================= */
 
 const $ = (selector, parent = document) =>
     parent.querySelector(selector);
@@ -61,456 +64,446 @@ const $ = (selector, parent = document) =>
 const $$ = (selector, parent = document) =>
     [...parent.querySelectorAll(selector)];
 
-function byId(id) {
-    return document.getElementById(id);
-}
+const getById = id =>
+    document.getElementById(id);
 
-function safeText(value) {
-    if (value === null || value === undefined) return "";
-    return String(value);
-}
-
-function escapeHTML(value) {
-    return safeText(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
 
 /* =========================================================
-   STORAGE
-   ========================================================= */
+   INITIALIZATION
+========================================================= */
 
-function getStoredUser() {
-    try {
-        const user = localStorage.getItem(CONFIG.USER_KEY);
-        return user ? JSON.parse(user) : null;
-    } catch {
-        return null;
-    }
+document.addEventListener("DOMContentLoaded", async () => {
+
+    initLoadingScreen();
+
+    initNavigation();
+    initModals();
+    initForms();
+    initFilters();
+    initTabs();
+    initSearch();
+    initCounters();
+    initScrollAnimations();
+    initFavoriteButtons();
+
+    restoreUser();
+
+    await loadInitialData();
+
+    updateAuthUI();
+
+    window.SMMTJ = {
+        state,
+        apiRequest,
+        openModal,
+        closeModal,
+        toast,
+        loadInitialData
+    };
+
+});
+
+
+/* =========================================================
+   LOADING SCREEN
+========================================================= */
+
+function initLoadingScreen() {
+
+    const screen = getById("loadingScreen");
+
+    if (!screen) return;
+
+    setTimeout(() => {
+
+        screen.classList.add("hidden");
+
+        setTimeout(() => {
+            screen.remove();
+        }, 700);
+
+    }, 1000);
 }
 
-function saveAuth(data) {
-    if (data?.accessToken) {
-        localStorage.setItem(
-            CONFIG.TOKEN_KEY,
-            data.accessToken
-        );
-    }
-
-    if (data?.refreshToken) {
-        localStorage.setItem(
-            CONFIG.REFRESH_TOKEN_KEY,
-            data.refreshToken
-        );
-    }
-
-    if (data?.user) {
-        localStorage.setItem(
-            CONFIG.USER_KEY,
-            JSON.stringify(data.user)
-        );
-
-        state.user = data.user;
-    }
-}
-
-function clearAuth() {
-    localStorage.removeItem(CONFIG.TOKEN_KEY);
-    localStorage.removeItem(CONFIG.REFRESH_TOKEN_KEY);
-    localStorage.removeItem(CONFIG.USER_KEY);
-
-    state.user = null;
-}
-
-function getAccessToken() {
-    return localStorage.getItem(CONFIG.TOKEN_KEY);
-}
 
 /* =========================================================
    API
-   ========================================================= */
+========================================================= */
 
 async function apiRequest(
     endpoint,
     options = {},
     retry = true
 ) {
-    const controller = new AbortController();
 
-    const timeout = setTimeout(
-        () => controller.abort(),
-        CONFIG.REQUEST_TIMEOUT
-    );
-
-    const token = getAccessToken();
-
-    const headers = {
-        Accept: "application/json",
-        ...(options.body instanceof FormData
-            ? {}
-            : {
-                  "Content-Type": "application/json"
-              }),
-        ...(options.headers || {})
+    const config = {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+        },
+        ...options
     };
 
-    if (token) {
-        headers.Authorization = `Bearer ${token}`;
+
+    if (state.accessToken) {
+
+        config.headers.Authorization =
+            `Bearer ${state.accessToken}`;
+
     }
 
+
     try {
-        const response = await fetch(
-            `${CONFIG.API_BASE_URL}${endpoint}`,
-            {
-                ...options,
-                headers,
-                signal: controller.signal
-            }
-        );
+
+        const response =
+            await fetch(
+                `${CONFIG.API_BASE_URL}${endpoint}`,
+                config
+            );
+
 
         if (
             response.status === 401 &&
             retry &&
-            localStorage.getItem(
-                CONFIG.REFRESH_TOKEN_KEY
-            )
+            state.refreshToken
         ) {
-            const refreshed = await refreshAccessToken();
+
+            const refreshed =
+                await refreshAccessToken();
 
             if (refreshed) {
+
                 return apiRequest(
                     endpoint,
                     options,
                     false
                 );
+
             }
 
-            clearAuth();
         }
+
 
         const contentType =
             response.headers.get("content-type") || "";
 
-        let data = null;
 
-        if (contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            data = await response.text();
-        }
+        const data =
+            contentType.includes("application/json")
+                ? await response.json()
+                : await response.text();
+
 
         if (!response.ok) {
-            const message =
-                data?.message ||
-                data?.error ||
-                "Амалиёт иҷро нашуд.";
 
             throw new Error(
-                Array.isArray(message)
-                    ? message.join(", ")
-                    : message
+                data?.message ||
+                data?.error ||
+                "Хатогӣ ҳангоми иҷрои дархост."
             );
+
         }
 
+
         return data;
-    } finally {
-        clearTimeout(timeout);
+
+    } catch (error) {
+
+        console.error("API Error:", error);
+
+        throw error;
+
     }
+
 }
+
 
 /* =========================================================
    REFRESH TOKEN
-   ========================================================= */
+========================================================= */
 
 async function refreshAccessToken() {
-    const refreshToken = localStorage.getItem(
-        CONFIG.REFRESH_TOKEN_KEY
-    );
-
-    if (!refreshToken) return false;
 
     try {
+
         const response = await fetch(
             `${CONFIG.API_BASE_URL}/auth/refresh`,
             {
                 method: "POST",
                 headers: {
-                    "Content-Type":
-                        "application/json"
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    refreshToken
+                    refreshToken: state.refreshToken
                 })
             }
         );
 
-        if (!response.ok) return false;
 
-        const data = await response.json();
+        if (!response.ok) {
 
-        if (data.accessToken) {
-            localStorage.setItem(
-                CONFIG.TOKEN_KEY,
-                data.accessToken
-            );
+            logout(false);
+
+            return false;
+
         }
 
-        if (data.refreshToken) {
-            localStorage.setItem(
-                CONFIG.REFRESH_TOKEN_KEY,
-                data.refreshToken
-            );
-        }
+
+        const data =
+            await response.json();
+
+
+        state.accessToken =
+            data.accessToken ||
+            data.access_token;
+
+
+        localStorage.setItem(
+            CONFIG.ACCESS_TOKEN_KEY,
+            state.accessToken
+        );
+
 
         return true;
+
     } catch {
+
+        logout(false);
+
         return false;
+
     }
+
 }
+
 
 /* =========================================================
-   TOAST
-   ========================================================= */
+   AUTH STORAGE
+========================================================= */
 
-function showToast(
-    message,
-    type = "info",
-    title = null
-) {
-    const container =
-        byId("toastContainer") ||
-        $(".toast-container");
+function restoreUser() {
 
-    if (!container) return;
+    try {
 
-    const titles = {
-        success: "Муваффақият",
-        error: "Хато",
-        warning: "Огоҳӣ",
-        info: "Маълумот"
-    };
+        const saved =
+            localStorage.getItem(
+                CONFIG.USER_KEY
+            );
 
-    const icons = {
-        success: "fa-solid fa-circle-check",
-        error: "fa-solid fa-circle-exclamation",
-        warning: "fa-solid fa-triangle-exclamation",
-        info: "fa-solid fa-circle-info"
-    };
+        if (saved) {
 
-    const toast = document.createElement("div");
+            state.user =
+                JSON.parse(saved);
 
-    toast.className = `toast ${type}`;
+        }
 
-    toast.innerHTML = `
-        <div class="toast-icon">
-            <i class="${icons[type] || icons.info}"></i>
-        </div>
+    } catch {
 
-        <div>
-            <strong>
-                ${escapeHTML(title || titles[type] || titles.info)}
-            </strong>
+        state.user = null;
 
-            <p>
-                ${escapeHTML(message)}
-            </p>
-        </div>
-    `;
+    }
 
-    container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = "0";
-        toast.style.transform =
-            "translateX(20px)";
-
-        setTimeout(() => toast.remove(), 300);
-    }, 4000);
 }
 
-/* =========================================================
-   MODAL SYSTEM
-   ========================================================= */
 
-function openModal(id) {
-    const modal = byId(id);
+function saveAuth(data) {
 
-    if (!modal) return;
+    state.accessToken =
+        data.accessToken ||
+        data.access_token ||
+        null;
 
-    modal.classList.add("active");
-    document.body.classList.add("modal-open");
-}
+    state.refreshToken =
+        data.refreshToken ||
+        data.refresh_token ||
+        null;
 
-function closeModal(id) {
-    const modal = byId(id);
+    state.user =
+        data.user ||
+        data.profile ||
+        null;
 
-    if (!modal) return;
 
-    modal.classList.remove("active");
+    if (state.accessToken) {
 
-    if (!$(".modal.active")) {
-        document.body.classList.remove(
-            "modal-open"
+        localStorage.setItem(
+            CONFIG.ACCESS_TOKEN_KEY,
+            state.accessToken
         );
+
     }
+
+
+    if (state.refreshToken) {
+
+        localStorage.setItem(
+            CONFIG.REFRESH_TOKEN_KEY,
+            state.refreshToken
+        );
+
+    }
+
+
+    if (state.user) {
+
+        localStorage.setItem(
+            CONFIG.USER_KEY,
+            JSON.stringify(state.user)
+        );
+
+    }
+
 }
 
-function closeAllModals() {
-    $$(".modal.active").forEach(modal =>
-        modal.classList.remove("active")
-    );
-
-    document.body.classList.remove(
-        "modal-open"
-    );
-}
-
-/* =========================================================
-   MOBILE MENU
-   ========================================================= */
-
-function openMobileMenu() {
-    $(".mobile-menu")?.classList.add("active");
-}
-
-function closeMobileMenu() {
-    $(".mobile-menu")?.classList.remove("active");
-}
 
 /* =========================================================
    AUTH UI
-   ========================================================= */
+========================================================= */
 
 function updateAuthUI() {
-    const loggedIn = Boolean(state.user);
 
-    const loginButtons = $$(
-        '[data-action="login"]'
-    );
+    const loginBtn =
+        getById("loginBtn");
 
-    loginButtons.forEach(button => {
-        button.style.display = loggedIn
-            ? "none"
-            : "";
-    });
+    const registerBtn =
+        getById("registerBtn");
 
-    const profileButtons = $$(
-        '[data-action="profile"]'
-    );
+    const userMenuBtn =
+        getById("userMenuBtn");
 
-    profileButtons.forEach(button => {
-        button.style.display = loggedIn
-            ? ""
-            : "none";
-    });
 
-    const userNameElements = $$(
-        "[data-user-name]"
-    );
+    if (state.user) {
 
-    userNameElements.forEach(el => {
-        el.textContent =
-            state.user?.firstName ||
-            state.user?.username ||
-            "Истифодабаранда";
-    });
+        if (loginBtn)
+            loginBtn.hidden = true;
 
-    const userEmailElements = $$(
-        "[data-user-email]"
-    );
+        if (registerBtn)
+            registerBtn.hidden = true;
 
-    userEmailElements.forEach(el => {
-        el.textContent =
-            state.user?.email ||
-            state.user?.phone ||
-            "";
-    });
+        if (userMenuBtn) {
+
+            userMenuBtn.hidden = false;
+
+            userMenuBtn.textContent =
+                getInitials(state.user);
+
+        }
+
+
+        updateUserMenu();
+
+    } else {
+
+        if (loginBtn)
+            loginBtn.hidden = false;
+
+        if (registerBtn)
+            registerBtn.hidden = false;
+
+        if (userMenuBtn)
+            userMenuBtn.hidden = true;
+
+    }
+
 }
 
-/* =========================================================
-   LOGIN
-   ========================================================= */
 
-async function login(identifier, password) {
-    if (!identifier || !password) {
-        showToast(
-            "Email ё рақам ва паролро пур кунед.",
+/* =========================================================
+   REGISTER
+========================================================= */
+
+async function handleRegister(event) {
+
+    event.preventDefault();
+
+    const form = event.currentTarget;
+
+    const firstName =
+        getById("registerFirstName")?.value.trim();
+
+    const lastName =
+        getById("registerLastName")?.value.trim();
+
+    const username =
+        getById("registerUsername")?.value.trim();
+
+    const phone =
+        getById("registerPhone")?.value.trim();
+
+    const email =
+        getById("registerEmail")?.value.trim();
+
+    const role =
+        getById("registerRole")?.value;
+
+    const region =
+        getById("registerRegion")?.value;
+
+    const city =
+        getById("registerCity")?.value.trim();
+
+    const password =
+        getById("registerPassword")?.value;
+
+    const confirmPassword =
+        getById("registerConfirmPassword")?.value;
+
+
+    if (password !== confirmPassword) {
+
+        toast(
+            "Паролҳо мувофиқ нестанд.",
             "error"
         );
 
         return;
+
     }
 
-    try {
-        setButtonLoading(
-            "#loginForm button[type='submit']",
-            true
-        );
 
-        const data = await apiRequest(
-            "/auth/login",
-            {
-                method: "POST",
-                body: JSON.stringify({
-                    identifier,
-                    email: identifier,
-                    phone: identifier,
-                    password
-                })
-            },
-            false
-        );
+    if (password.length < 6) {
 
-        saveAuth(data);
-
-        closeModal("loginModal");
-
-        updateAuthUI();
-
-        showToast(
-            "Шумо бомуваффақият ворид шудед.",
-            "success"
-        );
-
-        await loadInitialData();
-    } catch (error) {
-        showToast(
-            error.message ||
-                "Воридшавӣ иҷро нашуд.",
+        toast(
+            "Парол бояд ҳадди ақал 6 аломат дошта бошад.",
             "error"
         );
-    } finally {
-        setButtonLoading(
-            "#loginForm button[type='submit']",
-            false
-        );
+
+        return;
+
     }
-}
 
-/* =========================================================
-   REGISTER
-   ========================================================= */
 
-async function register(formData) {
+    const submit =
+        $("button[type='submit']", form);
+
+
+    setButtonLoading(submit, true);
+
+
     try {
-        setButtonLoading(
-            "#registerForm button[type='submit']",
-            true
-        );
 
-        const data = await apiRequest(
-            "/auth/register",
-            {
-                method: "POST",
-                body: JSON.stringify(
-                    Object.fromEntries(formData)
-                )
-            },
-            false
-        );
+        const data =
+            await apiRequest(
+                "/auth/register",
+                {
+                    method: "POST",
+
+                    body: JSON.stringify({
+                        firstName,
+                        lastName,
+                        username,
+                        phone,
+                        email,
+                        password,
+                        confirmPassword,
+                        role,
+                        region,
+                        city
+                    })
+                }
+            );
+
 
         saveAuth(data);
 
@@ -518,114 +511,209 @@ async function register(formData) {
 
         updateAuthUI();
 
-        showToast(
-            "Ҳисоб бомуваффақият сохта шуд.",
+        toast(
+            "Аккаунти шумо бомуваффақият сохта шуд.",
             "success"
         );
 
+
         await loadInitialData();
+
     } catch (error) {
-        showToast(
-            error.message ||
-                "Регистрация иҷро нашуд.",
+
+        toast(
+            error.message,
             "error"
         );
+
     } finally {
-        setButtonLoading(
-            "#registerForm button[type='submit']",
-            false
-        );
+
+        setButtonLoading(submit, false);
+
     }
+
 }
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+async function handleLogin(event) {
+
+    event.preventDefault();
+
+    const identifier =
+        getById("loginIdentifier")?.value.trim();
+
+    const password =
+        getById("loginPassword")?.value;
+
+
+    const submit =
+        $("button[type='submit']", event.currentTarget);
+
+
+    setButtonLoading(submit, true);
+
+
+    try {
+
+        const data =
+            await apiRequest(
+                "/auth/login",
+                {
+                    method: "POST",
+
+                    body: JSON.stringify({
+                        identifier,
+                        password
+                    })
+                }
+            );
+
+
+        saveAuth(data);
+
+        closeModal("loginModal");
+
+        updateAuthUI();
+
+        toast(
+            "Хуш омадед ба SMM.TJ!",
+            "success"
+        );
+
+
+        await loadInitialData();
+
+    } catch (error) {
+
+        toast(
+            error.message,
+            "error"
+        );
+
+    } finally {
+
+        setButtonLoading(submit, false);
+
+    }
+
+}
+
 
 /* =========================================================
    LOGOUT
-   ========================================================= */
+========================================================= */
 
-async function logout() {
+async function logout(showToast = true) {
+
     try {
-        const refreshToken =
-            localStorage.getItem(
-                CONFIG.REFRESH_TOKEN_KEY
-            );
 
-        if (refreshToken) {
+        if (state.accessToken) {
+
             await apiRequest(
                 "/auth/logout",
                 {
-                    method: "POST",
-                    body: JSON.stringify({
-                        refreshToken
-                    })
-                },
-                false
+                    method: "POST"
+                }
             );
+
         }
+
     } catch {
-        // local logout still continues
+
+        // local logout continues
     }
 
-    clearAuth();
+
+    state.user = null;
+    state.accessToken = null;
+    state.refreshToken = null;
+
+
+    localStorage.removeItem(
+        CONFIG.ACCESS_TOKEN_KEY
+    );
+
+    localStorage.removeItem(
+        CONFIG.REFRESH_TOKEN_KEY
+    );
+
+    localStorage.removeItem(
+        CONFIG.USER_KEY
+    );
+
 
     updateAuthUI();
 
-    closeAllModals();
 
-    showToast(
-        "Шумо аз аккаунт баромадед.",
-        "success"
-    );
+    if (showToast) {
+
+        toast(
+            "Шумо аз аккаунт баромадед.",
+            "success"
+        );
+
+    }
+
 }
+
 
 /* =========================================================
    FORGOT PASSWORD
-   ========================================================= */
+========================================================= */
 
-async function forgotPassword(identifier) {
-    if (!identifier) {
-        showToast(
-            "Email ё рақамро ворид кунед.",
-            "error"
-        );
+async function handleForgotPassword(event) {
 
-        return;
-    }
+    event.preventDefault();
+
+    const identifier =
+        getById("forgotIdentifier")?.value.trim();
+
 
     try {
+
         await apiRequest(
             "/auth/forgot-password",
             {
                 method: "POST",
+
                 body: JSON.stringify({
-                    identifier,
-                    email: identifier,
-                    phone: identifier
+                    identifier
                 })
-            },
-            false
+            }
         );
 
-        showToast(
-            "Агар аккаунт вуҷуд дошта бошад, маълумоти барқарорсозӣ фиристода мешавад.",
+
+        closeModal("forgotModal");
+
+        toast(
+            "Агар аккаунт мавҷуд бошад, маълумоти барқарорсозӣ фиристода шуд.",
             "success"
         );
 
-        closeModal("forgotPasswordModal");
     } catch (error) {
-        showToast(
-            error.message ||
-                "Амалиёт иҷро нашуд.",
+
+        toast(
+            error.message,
             "error"
         );
+
     }
+
 }
 
+
 /* =========================================================
-   LOAD INITIAL DATA
-   ========================================================= */
+   INITIAL DATA
+========================================================= */
 
 async function loadInitialData() {
+
     await Promise.allSettled([
+
         loadSpecialists(),
         loadServices(),
         loadProducts(),
@@ -634,2927 +722,4262 @@ async function loadInitialData() {
         loadRealEstate(),
         loadReviews(),
         loadNotifications()
+
     ]);
 
-    renderAll();
 }
+
 
 /* =========================================================
    SPECIALISTS
-   ========================================================= */
+========================================================= */
 
 async function loadSpecialists() {
+
+    const grid =
+        getById("specialistsGrid");
+
+    if (!grid) return;
+
+
+    showSkeleton(grid, 6);
+
+
     try {
-        const data = await apiRequest(
-            "/smm"
-        );
 
-        state.specialists =
-            normalizeList(data);
-    } catch (error) {
-        console.error(
-            "Specialists:",
-            error
-        );
-    }
-}
-
-function renderSpecialists() {
-    const container =
-        byId("specialistsGrid") ||
-        $("#specialistsGrid");
-
-    if (!container) return;
-
-    let items = [...state.specialists];
-
-    const search =
-        state.filters.specialist.search
-            ?.toLowerCase() || "";
-
-    const region =
-        state.filters.specialist.region || "";
-
-    const city =
-        state.filters.specialist.city || "";
-
-    const rating =
-        Number(
-            state.filters.specialist.rating || 0
-        );
-
-    if (search) {
-        items = items.filter(item => {
-            const text = [
-                item.name,
-                item.firstName,
-                item.lastName,
-                item.username,
-                item.bio,
-                item.skills?.join?.(" "),
-                item.services?.join?.(" ")
-            ]
-                .filter(Boolean)
-                .join(" ")
-                .toLowerCase();
-
-            return text.includes(search);
-        });
-    }
-
-    if (region) {
-        items = items.filter(
-            item =>
-                item.region === region ||
-                item.region?.name === region
-        );
-    }
-
-    if (city) {
-        items = items.filter(
-            item =>
-                item.city === city ||
-                item.city?.name === city
-        );
-    }
-
-    if (rating) {
-        items = items.filter(
-            item =>
-                Number(
-                    item.rating ||
-                        item.averageRating ||
-                        0
-                ) >= rating
-        );
-    }
-
-    if (!items.length) {
-        container.innerHTML =
-            emptyState(
-                "Мутахассис ёфт нашуд",
-                "Филтрҳо ё ҷустуҷӯро тағйир диҳед."
+        const data =
+            await apiRequest(
+                "/smm"
             );
 
-        return;
+
+        state.specialists =
+            normalizeArray(data);
+
+
+        renderSpecialists();
+
+    } catch {
+
+        renderEmpty(
+            grid,
+            "Мутахассисон ҳоло дастрас нестанд."
+        );
+
     }
 
-    container.innerHTML = items
-        .map(specialistCard)
-        .join("");
 }
 
-function specialistCard(item) {
-    const id =
-        item.id ||
-        item.userId ||
-        "";
+
+function renderSpecialists(
+    list = state.specialists
+) {
+
+    const grid =
+        getById("specialistsGrid");
+
+    if (!grid) return;
+
+
+    grid.innerHTML = "";
+
+
+    if (!list.length) {
+
+        showEmpty("specialistsEmpty");
+
+        return;
+
+    }
+
+
+    hideEmpty("specialistsEmpty");
+
+
+    list.forEach(item => {
+
+        const card =
+            createSpecialistCard(item);
+
+        grid.appendChild(card);
+
+        requestAnimationFrame(() => {
+
+            card.classList.add("reveal");
+
+        });
+
+    });
+
+}
+
+
+function createSpecialistCard(item) {
+
+    const template =
+        getById(
+            "specialistCardTemplate"
+        );
+
+    const card =
+        template.content
+            .firstElementChild
+            .cloneNode(true);
+
 
     const name =
-        item.name ||
-        [item.firstName, item.lastName]
-            .filter(Boolean)
-            .join(" ") ||
+        fullName(item) ||
         item.username ||
-        "SMM Specialist";
+        "Мутахассис";
+
 
     const avatar =
         item.avatar ||
         item.photo ||
         item.image ||
-        "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80";
+        CONFIG.FALLBACK_IMAGE;
+
+
+    $(".specialist-name", card).textContent =
+        name;
+
+    $(".specialist-role", card).textContent =
+        item.title ||
+        item.specialization ||
+        "SMM Specialist";
+
+    $(".specialist-bio", card).textContent =
+        item.bio ||
+        item.description ||
+        "Мутахассиси касбӣ дар SMM.TJ";
+
+
+    const image =
+        $(".specialist-avatar img", card);
+
+    image.src = avatar;
+    image.alt = name;
+
 
     const rating =
-        item.rating ||
-        item.averageRating ||
-        0;
+        Number(
+            item.rating ||
+            item.averageRating ||
+            5
+        );
+
+
+    $(".rating-value", card).textContent =
+        rating.toFixed(1);
+
+
+    $(".review-count", card).textContent =
+        `(${item.reviewCount || 0})`;
+
+
+    $(".specialist-location", card).textContent =
+        `◉ ${item.city || "Тоҷикистон"}`;
+
+
+    $(".specialist-experience", card).textContent =
+        item.experience
+            ? `${item.experience} сол таҷриба`
+            : "Мутахассиси касбӣ";
+
+
+    const tags =
+        $(".specialist-tags", card);
+
 
     const skills =
-        Array.isArray(item.skills)
-            ? item.skills.slice(0, 5)
-            : [];
+        normalizeArray(
+            item.skills ||
+            item.specialties
+        );
 
-    return `
-        <article class="card specialist-card"
-            data-id="${escapeHTML(id)}">
 
-            <div class="specialist-header">
+    skills.slice(0, 4).forEach(skill => {
 
-                <img
-                    class="specialist-avatar"
-                    src="${escapeHTML(avatar)}"
-                    alt="${escapeHTML(name)}"
-                    loading="lazy"
-                >
+        const tag =
+            document.createElement("span");
 
-                <div class="specialist-info">
+        tag.textContent =
+            typeof skill === "string"
+                ? skill
+                : skill.name;
 
-                    <div class="specialist-name">
-                        ${escapeHTML(name)}
+        tags.appendChild(tag);
 
-                        ${
-                            item.verified
-                                ? `<i class="fa-solid fa-circle-check verified"></i>`
-                                : ""
-                        }
-                    </div>
+    });
 
-                    <div class="specialist-role">
-                        ${escapeHTML(
-                            item.title ||
-                            item.role ||
-                            "SMM Specialist"
-                        )}
-                    </div>
 
-                    ${
-                        item.verified
-                            ? `
-                            <div class="verified-badge">
-                                <i class="fa-solid fa-check"></i>
-                                Verified
-                            </div>
-                            `
-                            : ""
-                    }
+    $(".specialist-view", card)
+        .addEventListener("click", () => {
 
-                </div>
-            </div>
+            openProfile(item);
 
-            <div class="card-meta">
-                <span class="meta-item">
-                    <i class="fa-solid fa-star"></i>
-                    ${Number(rating).toFixed(1)}
-                </span>
+        });
 
-                <span class="meta-item">
-                    <i class="fa-solid fa-location-dot"></i>
-                    ${escapeHTML(
-                        item.city?.name ||
-                        item.city ||
-                        "Тоҷикистон"
-                    )}
-                </span>
 
-                <span class="meta-item">
-                    <i class="fa-solid fa-briefcase"></i>
-                    ${escapeHTML(
-                        item.experience ||
-                        "Таҷриба"
-                    )}
-                </span>
-            </div>
+    $(".favorite-btn", card)
+        .addEventListener("click", () => {
 
-            ${
-                skills.length
-                    ? `
-                    <div class="skills">
-                        ${skills
-                            .map(
-                                skill =>
-                                    `<span class="skill">
-                                        ${escapeHTML(skill)}
-                                    </span>`
-                            )
-                            .join("")}
-                    </div>
-                    `
-                    : ""
-            }
+            toggleFavorite(
+                item.id,
+                "smm"
+            );
 
-            <div class="card-footer">
+        });
 
-                <strong class="price">
-                    ${formatPrice(
-                        item.price ||
-                        item.startingPrice ||
-                        0
-                    )}
-                </strong>
 
-                <div class="card-actions">
+    return card;
 
-                    <button
-                        class="favorite-btn"
-                        data-favorite="${escapeHTML(id)}"
-                        title="Ба дӯстдошта"
-                    >
-                        <i class="fa-regular fa-heart"></i>
-                    </button>
-
-                    <button
-                        class="btn btn-primary btn-small"
-                        data-specialist="${escapeHTML(id)}"
-                    >
-                        Дидан
-                    </button>
-
-                </div>
-
-            </div>
-        </article>
-    `;
 }
+
 
 /* =========================================================
    SERVICES
-   ========================================================= */
+========================================================= */
 
 async function loadServices() {
+
+    const grid =
+        getById("servicesGrid");
+
+    if (!grid) return;
+
+
+    showSkeleton(grid, 8);
+
+
     try {
-        const data = await apiRequest(
-            "/services"
-        );
+
+        const data =
+            await apiRequest(
+                "/services"
+            );
+
 
         state.services =
-            normalizeList(data);
-    } catch (error) {
-        console.error(
-            "Services:",
-            error
+            normalizeArray(data);
+
+
+        renderServices();
+
+    } catch {
+
+        renderEmpty(
+            grid,
+            "Хизматрасониҳо ҳоло дастрас нестанд."
         );
+
     }
+
 }
 
-function renderServices() {
-    const container =
-        byId("servicesGrid");
 
-    if (!container) return;
+function renderServices(
+    list = state.services
+) {
 
-    const items = filterMarketplace(
-        state.services
+    const grid =
+        getById("servicesGrid");
+
+    if (!grid) return;
+
+
+    grid.innerHTML = "";
+
+
+    list.slice(0, 12).forEach(item => {
+
+        const card =
+            createServiceCard(item);
+
+        grid.appendChild(card);
+
+    });
+
+}
+
+
+function createServiceCard(item) {
+
+    const template =
+        getById(
+            "serviceCardTemplate"
+        );
+
+
+    const card =
+        template.content
+            .firstElementChild
+            .cloneNode(true);
+
+
+    const image =
+        $(".card-image img", card);
+
+
+    image.src =
+        item.image ||
+        item.cover ||
+        item.thumbnail ||
+        CONFIG.FALLBACK_IMAGE;
+
+
+    $(".service-title", card).textContent =
+        item.title ||
+        item.name ||
+        "Хизматрасонӣ";
+
+
+    $(".service-description", card).textContent =
+        item.description ||
+        "Хизматрасонии касбӣ";
+
+
+    $(".seller-name", card).textContent =
+        fullName(item.user || item.owner) ||
+        item.username ||
+        "SMM Specialist";
+
+
+    $(".service-price", card).textContent =
+        formatPrice(
+            item.price
+        );
+
+
+    $(".card-category", card).textContent =
+        categoryName(
+            item.category
+        );
+
+
+    $(".card-rating strong", card).textContent =
+        Number(item.rating || 5).toFixed(1);
+
+
+    $(".card-rating span", card).textContent =
+        `(${item.reviewCount || 0})`;
+
+
+    $(".favorite-btn", card)
+        .addEventListener("click", () => {
+
+            toggleFavorite(
+                item.id,
+                "service"
+            );
+
+        });
+
+
+    const viewButton =
+        $(".card-footer .btn", card);
+
+
+    viewButton?.addEventListener(
+        "click",
+        () => openService(item)
     );
 
-    container.innerHTML = items.length
-        ? items.map(serviceCard).join("")
-        : emptyState(
-              "Хизмат ёфт нашуд",
-              "Ҳоло хизматрасонӣ мавҷуд нест."
-          );
+
+    return card;
+
 }
 
-function serviceCard(item) {
-    const id = item.id || "";
-
-    return `
-        <article class="card">
-
-            ${
-                item.image
-                    ? `
-                    <img
-                        class="card-image"
-                        src="${escapeHTML(item.image)}"
-                        alt="${escapeHTML(item.title || "Service")}"
-                        loading="lazy"
-                    >
-                    `
-                    : `
-                    <div class="card-image"></div>
-                    `
-            }
-
-            <div class="card-body">
-
-                <div class="card-top">
-                    <h3 class="card-title">
-                        ${escapeHTML(
-                            item.title ||
-                            item.name ||
-                            "Хизмат"
-                        )}
-                    </h3>
-
-                    <span class="rating">
-                        <i class="fa-solid fa-star"></i>
-                        ${Number(
-                            item.rating || 0
-                        ).toFixed(1)}
-                    </span>
-                </div>
-
-                <p class="card-description">
-                    ${escapeHTML(
-                        item.description ||
-                        ""
-                    )}
-                </p>
-
-                <div class="card-meta">
-
-                    <span class="meta-item">
-                        <i class="fa-solid fa-user"></i>
-                        ${escapeHTML(
-                            item.seller?.name ||
-                            item.specialist?.name ||
-                            item.user?.name ||
-                            "Мутахассис"
-                        )}
-                    </span>
-
-                    <span class="meta-item">
-                        <i class="fa-solid fa-location-dot"></i>
-                        ${escapeHTML(
-                            item.city?.name ||
-                            item.city ||
-                            "Тоҷикистон"
-                        )}
-                    </span>
-
-                </div>
-
-                <div class="card-footer">
-
-                    <strong class="price">
-                        ${formatPrice(
-                            item.price || 0
-                        )}
-                    </strong>
-
-                    <button
-                        class="btn btn-primary btn-small"
-                        data-service="${escapeHTML(id)}"
-                    >
-                        Фармоиш
-                    </button>
-
-                </div>
-
-            </div>
-        </article>
-    `;
-}
 
 /* =========================================================
    PRODUCTS
-   ========================================================= */
+========================================================= */
 
 async function loadProducts() {
+
+    const grid =
+        getById("productsGrid");
+
+    if (!grid) return;
+
+
     try {
-        const data = await apiRequest(
-            "/products"
-        );
+
+        const data =
+            await apiRequest(
+                "/products"
+            );
+
 
         state.products =
-            normalizeList(data);
-    } catch (error) {
-        console.error(
-            "Products:",
-            error
+            normalizeArray(data);
+
+
+        renderProducts();
+
+    } catch {
+
+        renderEmpty(
+            grid,
+            "Маҳсулотҳо ҳоло дастрас нестанд."
         );
+
     }
+
 }
 
-function renderProducts() {
-    const container =
-        byId("productsGrid");
 
-    if (!container) return;
+function renderProducts(
+    list = state.products
+) {
 
-    const items = filterMarketplace(
-        state.products
-    );
+    const grid =
+        getById("productsGrid");
 
-    container.innerHTML = items.length
-        ? items.map(productCard).join("")
-        : emptyState(
-              "Маҳсулот ёфт нашуд",
-              "Ҳоло маҳсулот мавҷуд нест."
-          );
+    if (!grid) return;
+
+
+    grid.innerHTML = "";
+
+
+    list.slice(0, 12).forEach(item => {
+
+        const card =
+            createProductCard(item);
+
+        grid.appendChild(card);
+
+    });
+
 }
 
-function productCard(item) {
-    const id = item.id || "";
 
-    return `
-        <article class="card">
+function createProductCard(item) {
 
-            ${
-                item.image
-                    ? `
-                    <img
-                        class="card-image"
-                        src="${escapeHTML(item.image)}"
-                        alt="${escapeHTML(
-                            item.title ||
-                            item.name ||
-                            "Product"
-                        )}"
-                        loading="lazy"
-                    >
-                    `
-                    : `<div class="card-image"></div>`
-            }
+    const template =
+        getById(
+            "productCardTemplate"
+        );
 
-            <div class="card-body">
 
-                <h3 class="card-title">
-                    ${escapeHTML(
-                        item.title ||
-                        item.name ||
-                        "Маҳсулот"
-                    )}
-                </h3>
+    const card =
+        template.content
+            .firstElementChild
+            .cloneNode(true);
 
-                <p class="card-description">
-                    ${escapeHTML(
-                        item.description ||
-                        ""
-                    )}
-                </p>
 
-                <div class="card-meta">
+    $("img", card).src =
+        item.image ||
+        item.thumbnail ||
+        CONFIG.FALLBACK_IMAGE;
 
-                    <span class="meta-item">
-                        <i class="fa-solid fa-store"></i>
-                        ${escapeHTML(
-                            item.seller?.businessName ||
-                            item.seller?.name ||
-                            "Фурӯшанда"
-                        )}
-                    </span>
 
-                    <span class="meta-item">
-                        <i class="fa-solid fa-location-dot"></i>
-                        ${escapeHTML(
-                            item.city?.name ||
-                            item.city ||
-                            "Тоҷикистон"
-                        )}
-                    </span>
+    $(".product-title", card).textContent =
+        item.title ||
+        item.name ||
+        "Маҳсулот";
 
-                </div>
 
-                <div class="card-footer">
+    $(".product-description", card).textContent =
+        item.description ||
+        "Маҳсулоти нав";
 
-                    <strong class="price">
-                        ${formatPrice(
-                            item.price || 0
-                        )}
-                    </strong>
 
-                    <button
-                        class="btn btn-primary btn-small"
-                        data-product="${escapeHTML(id)}"
-                    >
-                        Харидан
-                    </button>
+    $(".product-price", card).textContent =
+        formatPrice(item.price);
 
-                </div>
 
-            </div>
-        </article>
-    `;
-}
+    $(".product-category", card).textContent =
+        categoryName(item.category);
 
-/* =========================================================
-   MARKETPLACE FILTER
-   ========================================================= */
 
-function filterMarketplace(items) {
-    let result = [...items];
+    $(".favorite-btn", card)
+        .addEventListener("click", () => {
 
-    const filters =
-        state.filters.marketplace;
+            toggleFavorite(
+                item.id,
+                "product"
+            );
 
-    const search =
-        filters.search?.toLowerCase() || "";
-
-    if (search) {
-        result = result.filter(item => {
-            const text = [
-                item.title,
-                item.name,
-                item.description,
-                item.category?.name,
-                item.region,
-                item.city
-            ]
-                .filter(Boolean)
-                .join(" ")
-                .toLowerCase();
-
-            return text.includes(search);
         });
-    }
 
-    if (filters.category) {
-        result = result.filter(
-            item =>
-                item.category ===
-                    filters.category ||
-                item.category?.name ===
-                    filters.category
-        );
-    }
 
-    if (filters.region) {
-        result = result.filter(
-            item =>
-                item.region ===
-                    filters.region ||
-                item.region?.name ===
-                    filters.region
-        );
-    }
+    $(".card-footer .btn", card)
+        .addEventListener("click", () => {
 
-    if (filters.city) {
-        result = result.filter(
-            item =>
-                item.city === filters.city ||
-                item.city?.name ===
-                    filters.city
-        );
-    }
+            openProduct(item);
 
-    if (filters.maxPrice) {
-        result = result.filter(
-            item =>
-                Number(item.price || 0) <=
-                Number(filters.maxPrice)
-        );
-    }
+        });
 
-    return result;
+
+    return card;
+
 }
+
 
 /* =========================================================
    JOBS
-   ========================================================= */
+========================================================= */
 
 async function loadJobs() {
+
+    const grid =
+        getById("jobsGrid");
+
+    if (!grid) return;
+
+
+    showSkeleton(grid, 5);
+
+
     try {
-        const data = await apiRequest(
-            "/jobs"
-        );
+
+        const data =
+            await apiRequest(
+                "/jobs"
+            );
+
 
         state.jobs =
-            normalizeList(data);
-    } catch (error) {
-        console.error(
-            "Jobs:",
-            error
+            normalizeArray(data);
+
+
+        renderJobs();
+
+    } catch {
+
+        renderEmpty(
+            grid,
+            "Ҷойҳои корӣ дастрас нестанд."
         );
+
     }
+
 }
 
-function renderJobs() {
-    const container =
-        byId("jobsGrid");
 
-    if (!container) return;
+function renderJobs(
+    list = state.jobs
+) {
 
-    let items = [...state.jobs];
+    const grid =
+        getById("jobsGrid");
 
-    const filters = state.filters.jobs;
+    if (!grid) return;
 
-    if (filters.search) {
-        const search =
-            filters.search.toLowerCase();
 
-        items = items.filter(item =>
-            [
-                item.title,
-                item.company,
-                item.description,
-                item.skills?.join?.(" ")
-            ]
-                .filter(Boolean)
-                .join(" ")
-                .toLowerCase()
-                .includes(search)
-        );
-    }
+    grid.innerHTML = "";
 
-    if (filters.region) {
-        items = items.filter(
-            item =>
-                item.region ===
-                    filters.region ||
-                item.region?.name ===
-                    filters.region
-        );
-    }
 
-    if (filters.city) {
-        items = items.filter(
-            item =>
-                item.city === filters.city ||
-                item.city?.name ===
-                    filters.city
-        );
-    }
+    list.slice(0, 10).forEach(item => {
 
-    container.innerHTML = items.length
-        ? items.map(jobCard).join("")
-        : emptyState(
-              "Вакансия ёфт нашуд",
-              "Ҳоло мувофиқи филтрҳо кор ёфт нашуд."
-          );
+        const card =
+            createJobCard(item);
+
+        grid.appendChild(card);
+
+    });
+
 }
 
-function jobCard(item) {
-    const id = item.id || "";
 
-    const skills = Array.isArray(
-        item.skills
-    )
-        ? item.skills.slice(0, 5)
-        : [];
+function createJobCard(item) {
 
-    return `
-        <article class="card job-card">
+    const template =
+        getById(
+            "jobCardTemplate"
+        );
 
-            <div class="job-header">
 
-                <div class="job-company">
+    const card =
+        template.content
+            .firstElementChild
+            .cloneNode(true);
 
-                    <div class="company-logo">
-                        <i class="fa-solid fa-building"></i>
-                    </div>
 
-                    <div>
-                        <h3 class="job-title">
-                            ${escapeHTML(
-                                item.title ||
-                                "Вакансия"
-                            )}
-                        </h3>
+    $(".job-company", card).textContent =
+        item.company ||
+        item.employer?.name ||
+        "Компания";
 
-                        <div class="job-company-name">
-                            ${escapeHTML(
-                                item.company ||
-                                item.companyName ||
-                                "Компания"
-                            )}
-                        </div>
-                    </div>
 
-                </div>
+    $(".job-title", card).textContent =
+        item.title ||
+        "Ҷойи корӣ";
 
-                <span class="job-type">
-                    ${escapeHTML(
-                        item.employmentType ||
-                        item.type ||
-                        "Full-time"
-                    )}
-                </span>
 
-            </div>
+    $(".job-description", card).textContent =
+        item.description ||
+        "";
 
-            <p class="job-description">
-                ${escapeHTML(
-                    item.description ||
-                    ""
-                )}
-            </p>
 
-            ${
-                skills.length
-                    ? `
-                    <div class="job-skills">
-                        ${skills
-                            .map(
-                                skill =>
-                                    `<span class="job-skill">
-                                        ${escapeHTML(skill)}
-                                    </span>`
-                            )
-                            .join("")}
-                    </div>
-                    `
-                    : ""
-            }
+    $(".job-type", card).textContent =
+        item.employmentType ||
+        item.type ||
+        "Full-time";
 
-            <div class="card-meta">
 
-                <span class="meta-item">
-                    <i class="fa-solid fa-location-dot"></i>
-                    ${escapeHTML(
-                        item.city?.name ||
-                        item.city ||
-                        "Тоҷикистон"
-                    )}
-                </span>
+    $(".job-location", card).textContent =
+        item.city ||
+        item.region ||
+        "Тоҷикистон";
 
-                <span class="meta-item">
-                    <i class="fa-solid fa-user-tie"></i>
-                    ${escapeHTML(
-                        item.experience ||
-                        "Таҷриба лозим"
-                    )}
-                </span>
 
-            </div>
+    $(".job-salary", card).textContent =
+        item.salary
+            ? formatPrice(item.salary)
+            : "Созишӣ";
 
-            <div class="job-footer">
 
-                <strong class="salary">
-                    ${formatPrice(
-                        item.salaryMin ||
-                        item.salary ||
-                        0
-                    )}
-                </strong>
+    $(".job-deadline", card).textContent =
+        formatDate(item.deadline);
 
-                <button
-                    class="btn btn-primary btn-small"
-                    data-job="${escapeHTML(id)}"
-                >
-                    Ариза додан
-                </button>
 
-            </div>
+    const skills =
+        $(".job-skills", card);
 
-        </article>
-    `;
+
+    normalizeArray(item.skills)
+        .slice(0, 4)
+        .forEach(skill => {
+
+            const span =
+                document.createElement("span");
+
+            span.textContent =
+                typeof skill === "string"
+                    ? skill
+                    : skill.name;
+
+            skills.appendChild(span);
+
+        });
+
+
+    $(".job-bottom .btn", card)
+        .addEventListener("click", () => {
+
+            applyToJob(item.id);
+
+        });
+
+
+    return card;
+
 }
+
 
 /* =========================================================
    PROJECTS
-   ========================================================= */
+========================================================= */
 
 async function loadProjects() {
+
+    const grid =
+        getById("projectsGrid");
+
+    if (!grid) return;
+
+
+    showSkeleton(grid, 6);
+
+
     try {
-        const data = await apiRequest(
-            "/projects"
-        );
+
+        const data =
+            await apiRequest(
+                "/projects"
+            );
+
 
         state.projects =
-            normalizeList(data);
-    } catch (error) {
-        console.error(
-            "Projects:",
-            error
+            normalizeArray(data);
+
+
+        renderProjects();
+
+    } catch {
+
+        renderEmpty(
+            grid,
+            "Лоиҳаҳо ҳоло дастрас нестанд."
         );
-    }
-}
 
-function renderProjects() {
-    const container =
-        byId("projectsGrid");
-
-    if (!container) return;
-
-    let items = [...state.projects];
-
-    const filters =
-        state.filters.projects;
-
-    if (filters.search) {
-        const search =
-            filters.search.toLowerCase();
-
-        items = items.filter(item =>
-            [
-                item.title,
-                item.description,
-                item.category?.name
-            ]
-                .filter(Boolean)
-                .join(" ")
-                .toLowerCase()
-                .includes(search)
-        );
     }
 
-    if (filters.status) {
-        items = items.filter(
-            item =>
-                item.status ===
-                filters.status
+}
+
+
+function renderProjects(
+    list = state.projects
+) {
+
+    const grid =
+        getById("projectsGrid");
+
+    if (!grid) return;
+
+
+    grid.innerHTML = "";
+
+
+    list.slice(0, 12).forEach(item => {
+
+        const card =
+            createProjectCard(item);
+
+        grid.appendChild(card);
+
+    });
+
+}
+
+
+function createProjectCard(item) {
+
+    const template =
+        getById(
+            "projectCardTemplate"
         );
-    }
 
-    container.innerHTML = items.length
-        ? items.map(projectCard).join("")
-        : emptyState(
-              "Лоиҳа ёфт нашуд",
-              "Ҳоло лоиҳаи мувофиқ вуҷуд надорад."
-          );
+
+    const card =
+        template.content
+            .firstElementChild
+            .cloneNode(true);
+
+
+    $(".project-category", card).textContent =
+        categoryName(item.category);
+
+
+    $(".project-status", card).textContent =
+        statusName(item.status);
+
+
+    $(".project-title", card).textContent =
+        item.title ||
+        "Лоиҳа";
+
+
+    $(".project-description", card).textContent =
+        item.description ||
+        "";
+
+
+    $(".project-budget", card).textContent =
+        formatPrice(item.budget);
+
+
+    $(".project-deadline", card).textContent =
+        formatDate(item.deadline);
+
+
+    $(".project-owner-name", card).textContent =
+        fullName(
+            item.client ||
+            item.owner ||
+            item.user
+        ) ||
+        "Client";
+
+
+    $(".project-location", card).textContent =
+        item.city ||
+        item.region ||
+        "Тоҷикистон";
+
+
+    $(".project-view", card)
+        .addEventListener("click", () => {
+
+            openProject(item);
+
+        });
+
+
+    return card;
+
 }
 
-function projectCard(item) {
-    const id = item.id || "";
-
-    const statusClass =
-        String(item.status || "OPEN")
-            .toLowerCase();
-
-    return `
-        <article class="card project-card">
-
-            <div class="job-header">
-
-                <div>
-                    <h3 class="card-title">
-                        ${escapeHTML(
-                            item.title ||
-                            "Лоиҳа"
-                        )}
-                    </h3>
-
-                    <div class="card-meta">
-
-                        <span class="meta-item">
-                            <i class="fa-solid fa-layer-group"></i>
-                            ${escapeHTML(
-                                item.category?.name ||
-                                item.category ||
-                                "Категория"
-                            )}
-                        </span>
-
-                        <span class="meta-item">
-                            <i class="fa-solid fa-location-dot"></i>
-                            ${escapeHTML(
-                                item.city?.name ||
-                                item.city ||
-                                "Тоҷикистон"
-                            )}
-                        </span>
-
-                    </div>
-                </div>
-
-                <span class="project-status ${escapeHTML(
-                    statusClass
-                )}">
-                    ${escapeHTML(
-                        projectStatusText(
-                            item.status
-                        )
-                    )}
-                </span>
-
-            </div>
-
-            <p class="card-description">
-                ${escapeHTML(
-                    item.description ||
-                    ""
-                )}
-            </p>
-
-            <div class="project-footer">
-
-                <strong class="project-budget">
-                    ${formatPrice(
-                        item.budget ||
-                        item.price ||
-                        0
-                    )}
-                </strong>
-
-                <button
-                    class="btn btn-primary btn-small"
-                    data-project="${escapeHTML(id)}"
-                >
-                    Дидан
-                </button>
-
-            </div>
-
-        </article>
-    `;
-}
-
-function projectStatusText(status) {
-    const map = {
-        OPEN: "Кушода",
-        IN_PROGRESS: "Дар иҷро",
-        COMPLETED: "Анҷом ёфт",
-        CANCELLED: "Бекор шуд"
-    };
-
-    return (
-        map[status] ||
-        status ||
-        "Кушода"
-    );
-}
 
 /* =========================================================
    REAL ESTATE
-   ========================================================= */
+========================================================= */
 
 async function loadRealEstate() {
+
+    const grid =
+        getById("realEstateGrid");
+
+    if (!grid) return;
+
+
+    showSkeleton(grid, 6);
+
+
     try {
-        const data = await apiRequest(
-            "/real-estate"
-        );
+
+        const data =
+            await apiRequest(
+                "/real-estate"
+            );
+
 
         state.realEstate =
-            normalizeList(data);
-    } catch (error) {
-        console.error(
-            "Real estate:",
-            error
+            normalizeArray(data);
+
+
+        renderRealEstate();
+
+    } catch {
+
+        renderEmpty(
+            grid,
+            "Эълонҳои амвол дастрас нестанд."
         );
+
     }
+
 }
 
-function renderRealEstate() {
-    const container =
-        byId("realEstateGrid");
 
-    if (!container) return;
+function renderRealEstate(
+    list = state.realEstate
+) {
 
-    let items = [
-        ...state.realEstate
-    ];
+    const grid =
+        getById("realEstateGrid");
 
-    const filters =
-        state.filters.realEstate;
+    if (!grid) return;
 
-    items = items.filter(item => {
-        const type =
-            item.type ||
-            item.dealType ||
-            "sale";
 
-        if (
-            state.currentRealEstateTab &&
-            type.toLowerCase() !==
-                state.currentRealEstateTab
-        ) {
-            return false;
-        }
+    grid.innerHTML = "";
 
-        return true;
+
+    const filtered =
+        list.filter(item => {
+
+            const type =
+                item.type ||
+                item.operationType ||
+                "sale";
+
+            return type ===
+                state.activeRealEstateType;
+
+        });
+
+
+    filtered.slice(0, 12).forEach(item => {
+
+        grid.appendChild(
+            createRealEstateCard(item)
+        );
+
     });
 
-    if (filters.search) {
-        const search =
-            filters.search.toLowerCase();
-
-        items = items.filter(item =>
-            [
-                item.title,
-                item.description,
-                item.address,
-                item.city
-            ]
-                .filter(Boolean)
-                .join(" ")
-                .toLowerCase()
-                .includes(search)
-        );
-    }
-
-    if (filters.city) {
-        items = items.filter(
-            item =>
-                item.city === filters.city ||
-                item.city?.name ===
-                    filters.city
-        );
-    }
-
-    if (filters.maxPrice) {
-        items = items.filter(
-            item =>
-                Number(item.price || 0) <=
-                Number(filters.maxPrice)
-        );
-    }
-
-    container.innerHTML = items.length
-        ? items
-              .map(realEstateCard)
-              .join("")
-        : emptyState(
-              "Эълон ёфт нашуд",
-              "Ҳоло чунин эълон вуҷуд надорад."
-          );
 }
 
-function realEstateCard(item) {
-    const id = item.id || "";
 
-    const image =
+function createRealEstateCard(item) {
+
+    const template =
+        getById(
+            "realEstateCardTemplate"
+        );
+
+
+    const card =
+        template.content
+            .firstElementChild
+            .cloneNode(true);
+
+
+    $("img", card).src =
         item.image ||
         item.images?.[0] ||
-        "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=80";
+        CONFIG.FALLBACK_IMAGE;
 
-    return `
-        <article
-            class="card real-estate-card"
-            data-id="${escapeHTML(id)}"
-        >
 
-            <div style="position:relative">
+    $(".real-type", card).textContent =
+        item.type === "rent"
+            ? "Иҷора"
+            : "Фурӯш";
 
-                <img
-                    class="card-image"
-                    src="${escapeHTML(image)}"
-                    alt="${escapeHTML(
-                        item.title ||
-                        "Real Estate"
-                    )}"
-                    loading="lazy"
-                >
 
-                <span class="property-type">
-                    ${escapeHTML(
-                        item.propertyType ||
-                        item.type ||
-                        "Амвол"
-                    )}
-                </span>
+    $(".real-property-type", card).textContent =
+        propertyName(
+            item.propertyType ||
+            item.category
+        );
 
-            </div>
 
-            <div class="card-body">
+    $(".real-title", card).textContent =
+        item.title ||
+        "Амвол";
 
-                <div class="card-top">
 
-                    <h3 class="card-title">
-                        ${escapeHTML(
-                            item.title ||
-                            "Амволи ғайриманқул"
-                        )}
-                    </h3>
+    $(".real-description", card).textContent =
+        item.description ||
+        "";
 
-                    <strong class="property-price">
-                        ${formatPrice(
-                            item.price || 0
-                        )}
-                    </strong>
 
-                </div>
+    $(".real-rooms", card).textContent =
+        item.rooms || 0;
 
-                <p class="card-description">
-                    ${escapeHTML(
-                        item.description ||
-                        ""
-                    )}
-                </p>
 
-                <div class="property-details">
+    $(".real-area", card).textContent =
+        item.area || 0;
 
-                    <div class="property-detail">
-                        <strong>
-                            ${escapeHTML(
-                                item.rooms || "-"
-                            )}
-                        </strong>
-                        <span>Ҳуҷра</span>
-                    </div>
 
-                    <div class="property-detail">
-                        <strong>
-                            ${escapeHTML(
-                                item.area || "-"
-                            )}
-                        </strong>
-                        <span>м²</span>
-                    </div>
+    $(".real-price", card).textContent =
+        formatPrice(item.price);
 
-                    <div class="property-detail">
-                        <strong>
-                            ${escapeHTML(
-                                item.floor || "-"
-                            )}
-                        </strong>
-                        <span>Ошёна</span>
-                    </div>
 
-                </div>
+    $(".real-location span", card).textContent =
+        item.city ||
+        item.region ||
+        "Тоҷикистон";
 
-                <div class="card-footer">
 
-                    <span class="meta-item">
-                        <i class="fa-solid fa-location-dot"></i>
-                        ${escapeHTML(
-                            item.city?.name ||
-                            item.city ||
-                            item.address ||
-                            "Тоҷикистон"
-                        )}
-                    </span>
+    $(".favorite-btn", card)
+        .addEventListener("click", () => {
 
-                    <button
-                        class="btn btn-primary btn-small"
-                        data-realestate="${escapeHTML(id)}"
-                    >
-                        Дидан
-                    </button>
+            toggleFavorite(
+                item.id,
+                "real-estate"
+            );
 
-                </div>
+        });
 
-            </div>
 
-        </article>
-    `;
+    $(".real-bottom .btn", card)
+        .addEventListener("click", () => {
+
+            openRealEstate(item);
+
+        });
+
+
+    return card;
+
 }
+
 
 /* =========================================================
    REVIEWS
-   ========================================================= */
+========================================================= */
 
 async function loadReviews() {
+
+    const grid =
+        getById("reviewsGrid");
+
+    if (!grid) return;
+
+
     try {
-        const data = await apiRequest(
-            "/reviews"
-        );
+
+        const data =
+            await apiRequest(
+                "/reviews"
+            );
+
 
         state.reviews =
-            normalizeList(data);
-    } catch (error) {
-        console.error(
-            "Reviews:",
-            error
-        );
+            normalizeArray(data);
+
+
+        renderReviews();
+
+    } catch {
+
+        grid.innerHTML = "";
+
     }
+
 }
+
 
 function renderReviews() {
-    const container =
-        byId("reviewsGrid");
 
-    if (!container) return;
+    const grid =
+        getById("reviewsGrid");
 
-    container.innerHTML = state.reviews
+    if (!grid) return;
+
+
+    grid.innerHTML = "";
+
+
+    state.reviews
         .slice(0, 6)
-        .map(reviewCard)
-        .join("");
+        .forEach(review => {
+
+            const template =
+                getById(
+                    "reviewCardTemplate"
+                );
+
+
+            const card =
+                template.content
+                    .firstElementChild
+                    .cloneNode(true);
+
+
+            $(".review-text", card).textContent =
+                review.comment ||
+                review.text ||
+                "Хизматрасонии олӣ.";
+
+
+            $(".review-name", card).textContent =
+                fullName(
+                    review.user ||
+                    review.author
+                ) ||
+                "Корбар";
+
+
+            $(".review-role", card).textContent =
+                review.role ||
+                "Корбар";
+
+
+            const rating =
+                Math.max(
+                    1,
+                    Math.min(
+                        5,
+                        Number(review.rating || 5)
+                    )
+                );
+
+
+            $(".review-stars", card).textContent =
+                "★".repeat(rating) +
+                "☆".repeat(5 - rating);
+
+
+            grid.appendChild(card);
+
+        });
+
 }
 
-function reviewCard(item) {
-    const rating = Math.min(
-        5,
-        Math.max(
-            0,
-            Number(item.rating || 0)
-        )
-    );
-
-    const stars = Array.from(
-        { length: 5 },
-        (_, index) =>
-            index < rating
-                ? '<i class="fa-solid fa-star"></i>'
-                : '<i class="fa-regular fa-star"></i>'
-    ).join("");
-
-    const user =
-        item.user ||
-        item.author ||
-        {};
-
-    return `
-        <article class="review-card">
-
-            <div class="review-stars">
-                ${stars}
-            </div>
-
-            <p class="review-text">
-                “${escapeHTML(
-                    item.comment ||
-                    item.text ||
-                    ""
-                )}”
-            </p>
-
-            <div class="review-author">
-
-                <img
-                    class="review-avatar"
-                    src="${escapeHTML(
-                        user.avatar ||
-                        item.avatar ||
-                        "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
-                    )}"
-                    alt=""
-                    loading="lazy"
-                >
-
-                <div>
-                    <strong>
-                        ${escapeHTML(
-                            user.name ||
-                            user.firstName ||
-                            item.name ||
-                            "Истифодабаранда"
-                        )}
-                    </strong>
-
-                    <span>
-                        ${escapeHTML(
-                            item.role ||
-                            "Мизоҷи SMM.TJ"
-                        )}
-                    </span>
-                </div>
-
-            </div>
-
-        </article>
-    `;
-}
 
 /* =========================================================
    NOTIFICATIONS
-   ========================================================= */
+========================================================= */
 
 async function loadNotifications() {
-    if (!state.user) return;
+
+    if (!state.accessToken) return;
+
 
     try {
+
         const data =
             await apiRequest(
                 "/notifications"
             );
 
+
         state.notifications =
-            normalizeList(data);
+            normalizeArray(data);
+
 
         renderNotifications();
 
-        updateNotificationCount();
-    } catch (error) {
-        console.error(
-            "Notifications:",
-            error
-        );
+        updateNotificationBadge();
+
+    } catch {
+
+        // user may not have notifications
     }
+
 }
+
 
 function renderNotifications() {
-    const container =
-        byId("notificationsList");
 
-    if (!container) return;
+    const list =
+        getById("notificationsList");
+
+    if (!list) return;
+
 
     if (!state.notifications.length) {
-        container.innerHTML =
-            emptyState(
-                "Огоҳӣ нест",
-                "Ҳоло огоҳии нав надоред."
-            );
+
+        list.innerHTML = `
+            <div class="empty-state">
+                <div>♢</div>
+                <h3>Огоҳинома нест</h3>
+                <p>Ҳоло огоҳиномаи нав надоред.</p>
+            </div>
+        `;
 
         return;
+
     }
 
-    container.innerHTML =
-        state.notifications
-            .map(notification => {
-                return `
-                    <div class="notification-item ${
-                        notification.read
-                            ? ""
-                            : "unread"
-                    }">
 
-                        <div class="notification-icon">
-                            <i class="fa-solid fa-bell"></i>
-                        </div>
+    list.innerHTML = "";
 
-                        <div>
-                            <strong>
-                                ${escapeHTML(
-                                    notification.title ||
-                                    "Огоҳӣ"
-                                )}
-                            </strong>
 
-                            <p>
-                                ${escapeHTML(
-                                    notification.message ||
-                                    ""
-                                )}
-                            </p>
+    state.notifications.forEach(notification => {
 
-                            <div class="notification-time">
-                                ${formatDate(
-                                    notification.createdAt
-                                )}
-                            </div>
-                        </div>
+        const item =
+            document.createElement("div");
 
-                    </div>
-                `;
-            })
-            .join("");
-}
+        item.className =
+            "notification-item";
 
-function updateNotificationCount() {
-    const count =
-        state.notifications.filter(
-            notification =>
-                !notification.read
-        ).length;
 
-    $$(".notification-count").forEach(
-        element => {
-            element.textContent =
-                count > 99 ? "99+" : count;
+        if (!notification.read) {
 
-            element.style.display = count
-                ? "grid"
-                : "none";
+            item.classList.add("unread");
+
         }
-    );
+
+
+        item.innerHTML = `
+            <div class="notification-icon">
+                ${notificationIcon(notification.type)}
+            </div>
+
+            <div class="notification-content">
+
+                <strong>
+                    ${escapeHTML(
+                        notification.title ||
+                        "Огоҳинома"
+                    )}
+                </strong>
+
+                <p>
+                    ${escapeHTML(
+                        notification.message ||
+                        ""
+                    )}
+                </p>
+
+                <small>
+                    ${formatDate(
+                        notification.createdAt
+                    )}
+                </small>
+
+            </div>
+        `;
+
+
+        item.addEventListener(
+            "click",
+            () => markNotificationRead(
+                notification.id
+            )
+        );
+
+
+        list.appendChild(item);
+
+    });
+
 }
+
+
+function updateNotificationBadge() {
+
+    const badge =
+        getById("notificationBadge");
+
+    if (!badge) return;
+
+
+    const unread =
+        state.notifications
+            .filter(n => !n.read)
+            .length;
+
+
+    badge.textContent =
+        unread > 99
+            ? "99+"
+            : unread;
+
+
+    badge.hidden =
+        unread === 0;
+
+}
+
+
+async function markNotificationRead(id) {
+
+    try {
+
+        await apiRequest(
+            `/notifications/${id}`,
+            {
+                method: "PATCH",
+                body: JSON.stringify({
+                    read: true
+                })
+            }
+        );
+
+
+        const notification =
+            state.notifications.find(
+                n => n.id === id
+            );
+
+
+        if (notification)
+            notification.read = true;
+
+
+        renderNotifications();
+        updateNotificationBadge();
+
+    } catch {
+
+        // ignore
+    }
+
+}
+
 
 /* =========================================================
-   CREATE PROJECT
-   ========================================================= */
+   CHAT
+========================================================= */
 
-async function createProject(form) {
-    if (!state.user) {
-        showToast(
+async function loadConversations() {
+
+    if (!state.accessToken) {
+
+        toast(
             "Аввал ба аккаунт ворид шавед.",
             "warning"
         );
 
-        closeModal("createProjectModal");
-        openModal("loginModal");
-
         return;
+
     }
 
-    const data = Object.fromEntries(
-        new FormData(form)
-    );
 
     try {
-        setButtonLoading(
-            "#createProjectForm button[type='submit']",
-            true
-        );
 
-        const project =
-            await apiRequest(
-                "/projects",
-                {
-                    method: "POST",
-                    body: JSON.stringify(data)
-                }
-            );
-
-        state.projects.unshift(project);
-
-        form.reset();
-
-        closeModal(
-            "createProjectModal"
-        );
-
-        renderProjects();
-
-        showToast(
-            "Лоиҳа бомуваффақият сохта шуд.",
-            "success"
-        );
-    } catch (error) {
-        showToast(
-            error.message ||
-                "Лоиҳа сохта нашуд.",
-            "error"
-        );
-    } finally {
-        setButtonLoading(
-            "#createProjectForm button[type='submit']",
-            false
-        );
-    }
-}
-
-/* =========================================================
-   ADD SERVICE
-   ========================================================= */
-
-async function createService(form) {
-    if (!requireAuth()) return;
-
-    const data = Object.fromEntries(
-        new FormData(form)
-    );
-
-    try {
-        const service =
-            await apiRequest(
-                "/services",
-                {
-                    method: "POST",
-                    body: JSON.stringify(data)
-                }
-            );
-
-        state.services.unshift(service);
-
-        form.reset();
-
-        closeModal("addServiceModal");
-
-        renderServices();
-
-        showToast(
-            "Хизмат сохта шуд.",
-            "success"
-        );
-    } catch (error) {
-        showToast(
-            error.message ||
-                "Хизмат сохта нашуд.",
-            "error"
-        );
-    }
-}
-
-/* =========================================================
-   ADD PRODUCT
-   ========================================================= */
-
-async function createProduct(form) {
-    if (!requireAuth()) return;
-
-    const data = Object.fromEntries(
-        new FormData(form)
-    );
-
-    try {
-        const product =
-            await apiRequest(
-                "/products",
-                {
-                    method: "POST",
-                    body: JSON.stringify(data)
-                }
-            );
-
-        state.products.unshift(product);
-
-        form.reset();
-
-        closeModal("addProductModal");
-
-        renderProducts();
-
-        showToast(
-            "Маҳсулот сохта шуд.",
-            "success"
-        );
-    } catch (error) {
-        showToast(
-            error.message ||
-                "Маҳсулот сохта нашуд.",
-            "error"
-        );
-    }
-}
-
-/* =========================================================
-   ADD REAL ESTATE
-   ========================================================= */
-
-async function createRealEstate(form) {
-    if (!requireAuth()) return;
-
-    const data = Object.fromEntries(
-        new FormData(form)
-    );
-
-    try {
-        const listing =
-            await apiRequest(
-                "/real-estate",
-                {
-                    method: "POST",
-                    body: JSON.stringify(data)
-                }
-            );
-
-        state.realEstate.unshift(
-            listing
-        );
-
-        form.reset();
-
-        closeModal(
-            "addRealEstateModal"
-        );
-
-        renderRealEstate();
-
-        showToast(
-            "Эълони амвол сохта шуд.",
-            "success"
-        );
-    } catch (error) {
-        showToast(
-            error.message ||
-                "Эълон сохта нашуд.",
-            "error"
-        );
-    }
-}
-
-/* =========================================================
-   FAVORITES
-   ========================================================= */
-
-async function toggleFavorite(
-    type,
-    itemId,
-    button
-) {
-    if (!requireAuth()) return;
-
-    try {
-        const active =
-            button.classList.contains(
-                "active"
-            );
-
-        if (active) {
-            await apiRequest(
-                `/favorites/${encodeURIComponent(
-                    itemId
-                )}`,
-                {
-                    method: "DELETE"
-                }
-            );
-
-            button.classList.remove(
-                "active"
-            );
-
-            button.innerHTML =
-                '<i class="fa-regular fa-heart"></i>';
-
-            showToast(
-                "Аз дӯстдоштаҳо хориҷ шуд.",
-                "success"
-            );
-        } else {
-            await apiRequest(
-                "/favorites",
-                {
-                    method: "POST",
-                    body: JSON.stringify({
-                        itemId,
-                        type
-                    })
-                }
-            );
-
-            button.classList.add(
-                "active"
-            );
-
-            button.innerHTML =
-                '<i class="fa-solid fa-heart"></i>';
-
-            showToast(
-                "Ба дӯстдоштаҳо илова шуд.",
-                "success"
-            );
-        }
-    } catch (error) {
-        showToast(
-            error.message ||
-                "Амалиёт иҷро нашуд.",
-            "error"
-        );
-    }
-}
-
-/* =========================================================
-   APPLY TO JOB
-   ========================================================= */
-
-async function applyToJob(jobId) {
-    if (!requireAuth()) return;
-
-    try {
-        await apiRequest(
-            "/applications",
-            {
-                method: "POST",
-                body: JSON.stringify({
-                    jobId
-                })
-            }
-        );
-
-        showToast(
-            "Аризаи шумо фиристода шуд.",
-            "success"
-        );
-    } catch (error) {
-        showToast(
-            error.message ||
-                "Ариза фиристода нашуд.",
-            "error"
-        );
-    }
-}
-
-/* =========================================================
-   PROPOSAL
-   ========================================================= */
-
-async function sendProposal(
-    projectId,
-    message,
-    price,
-    deliveryTime
-) {
-    if (!requireAuth()) return;
-
-    try {
-        await apiRequest(
-            "/proposals",
-            {
-                method: "POST",
-                body: JSON.stringify({
-                    projectId,
-                    message,
-                    price,
-                    deliveryTime
-                })
-            }
-        );
-
-        showToast(
-            "Пешниҳоди шумо фиристода шуд.",
-            "success"
-        );
-    } catch (error) {
-        showToast(
-            error.message ||
-                "Пешниҳод фиристода нашуд.",
-            "error"
-        );
-    }
-}
-
-/* =========================================================
-   CHAT
-   ========================================================= */
-
-async function loadConversations() {
-    if (!state.user) return;
-
-    try {
         const data =
             await apiRequest(
                 "/messages/conversations"
             );
 
+
         state.conversations =
-            normalizeList(data);
+            normalizeArray(data);
+
 
         renderConversations();
+
     } catch (error) {
-        console.error(
-            "Conversations:",
-            error
-        );
-    }
-}
 
-function renderConversations() {
-    const container =
-        byId("conversationList");
-
-    if (!container) return;
-
-    if (!state.conversations.length) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="fa-regular fa-comments"></i>
-                <h3>Чатҳо нестанд</h3>
-                <p>
-                    Барои оғози чат ба корбар муроҷиат кунед.
-                </p>
-            </div>
-        `;
-
-        return;
-    }
-
-    container.innerHTML =
-        state.conversations
-            .map(conversation => {
-                const user =
-                    conversation.user ||
-                    conversation.otherUser ||
-                    {};
-
-                return `
-                    <div
-                        class="conversation"
-                        data-conversation="${
-                            escapeHTML(
-                                conversation.id
-                            )
-                        }"
-                    >
-
-                        <img
-                            class="conversation-avatar"
-                            src="${escapeHTML(
-                                user.avatar ||
-                                "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
-                            )}"
-                            alt=""
-                        >
-
-                        <div class="conversation-info">
-
-                            <div class="conversation-top">
-
-                                <strong>
-                                    ${escapeHTML(
-                                        user.name ||
-                                        user.username ||
-                                        "Истифодабаранда"
-                                    )}
-                                </strong>
-
-                                <span>
-                                    ${formatDate(
-                                        conversation.updatedAt
-                                    )}
-                                </span>
-
-                            </div>
-
-                            <p>
-                                ${escapeHTML(
-                                    conversation.lastMessage ||
-                                    ""
-                                )}
-                            </p>
-
-                        </div>
-
-                    </div>
-                `;
-            })
-            .join("");
-}
-
-async function openConversation(
-    conversationId
-) {
-    try {
-        const data =
-            await apiRequest(
-                `/messages/conversations/${encodeURIComponent(
-                    conversationId
-                )}`
-            );
-
-        state.currentConversation =
-            data;
-
-        renderChatMessages(
-            normalizeList(
-                data.messages
-            )
-        );
-
-        const name =
-            data.otherUser?.name ||
-            data.user?.name ||
-            "Чат";
-
-        const title =
-            byId("chatUserName");
-
-        if (title) {
-            title.textContent = name;
-        }
-    } catch (error) {
-        showToast(
-            error.message ||
-                "Чат кушода нашуд.",
+        toast(
+            error.message,
             "error"
         );
+
     }
+
 }
 
-function renderChatMessages(messages) {
-    const container =
-        byId("chatMessages");
 
-    if (!container) return;
+function renderConversations() {
 
-    container.innerHTML = messages
-        .map(message => {
-            const sent =
-                message.senderId ===
-                state.user?.id;
+    const list =
+        getById("conversationList");
 
-            return `
-                <div class="message ${
-                    sent ? "sent" : ""
-                }">
+    if (!list) return;
 
+
+    list.innerHTML = "";
+
+
+    state.conversations.forEach(conversation => {
+
+        const user =
+            conversation.user ||
+            conversation.otherUser ||
+            conversation.participant;
+
+
+        const item =
+            document.createElement("button");
+
+
+        item.className =
+            "conversation-item";
+
+
+        item.innerHTML = `
+
+            <div class="avatar">
+                ${escapeHTML(
+                    getInitials(user)
+                )}
+            </div>
+
+            <div>
+
+                <strong>
                     ${escapeHTML(
-                        message.content ||
-                        message.text ||
-                        ""
+                        fullName(user) ||
+                        "User"
                     )}
+                </strong>
 
-                    <span class="message-time">
-                        ${formatDate(
-                            message.createdAt
-                        )}
-                    </span>
+                <span>
+                    ${escapeHTML(
+                        conversation.lastMessage ||
+                        "Паём нест"
+                    )}
+                </span>
 
-                </div>
-            `;
-        })
-        .join("");
+            </div>
 
-    container.scrollTop =
-        container.scrollHeight;
+        `;
+
+
+        item.addEventListener(
+            "click",
+            () => openConversation(conversation)
+        );
+
+
+        list.appendChild(item);
+
+    });
+
 }
 
-async function sendMessage(content) {
-    if (!requireAuth()) return;
 
-    if (!state.currentConversation) {
-        showToast(
-            "Аввал чат интихоб кунед.",
+async function openConversation(conversation) {
+
+    state.activeConversation =
+        conversation;
+
+
+    const user =
+        conversation.user ||
+        conversation.otherUser ||
+        conversation.participant;
+
+
+    const name =
+        fullName(user) ||
+        "User";
+
+
+    const nameElement =
+        getById("chatUserName");
+
+    if (nameElement)
+        nameElement.textContent = name;
+
+
+    const avatar =
+        getById("chatUserAvatar");
+
+    if (avatar)
+        avatar.textContent =
+            getInitials(user);
+
+
+    try {
+
+        const data =
+            await apiRequest(
+                `/messages/conversations/${conversation.id}`
+            );
+
+
+        renderMessages(
+            normalizeArray(data)
+        );
+
+    } catch (error) {
+
+        toast(
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+function renderMessages(messages) {
+
+    const box =
+        getById("chatMessages");
+
+    if (!box) return;
+
+
+    box.innerHTML = "";
+
+
+    messages.forEach(message => {
+
+        const mine =
+            message.senderId === state.user?.id ||
+            message.sender?.id === state.user?.id;
+
+
+        const bubble =
+            document.createElement("div");
+
+
+        bubble.className =
+            `message-bubble ${
+                mine ? "mine" : "theirs"
+            }`;
+
+
+        bubble.innerHTML = `
+
+            <div class="message-text">
+                ${escapeHTML(
+                    message.content ||
+                    message.text ||
+                    ""
+                )}
+            </div>
+
+            <small>
+                ${formatTime(
+                    message.createdAt
+                )}
+            </small>
+
+        `;
+
+
+        box.appendChild(bubble);
+
+    });
+
+
+    box.scrollTop =
+        box.scrollHeight;
+
+}
+
+
+async function handleSendMessage(event) {
+
+    event.preventDefault();
+
+
+    if (!state.activeConversation) {
+
+        toast(
+            "Аввал conversation интихоб кунед.",
             "warning"
         );
 
         return;
+
     }
 
-    if (!content.trim()) return;
+
+    const input =
+        getById("chatInput");
+
+
+    const content =
+        input?.value.trim();
+
+
+    if (!content) return;
+
 
     try {
+
         const message =
             await apiRequest(
                 "/messages",
                 {
                     method: "POST",
+
                     body: JSON.stringify({
                         conversationId:
-                            state.currentConversation
-                                .id,
+                            state.activeConversation.id,
+
                         content
                     })
                 }
             );
 
-        const current =
-            state.currentConversation
-                .messages || [];
 
-        current.push(message);
+        input.value = "";
 
-        renderChatMessages(
-            current
-        );
+
+        const box =
+            getById("chatMessages");
+
+
+        const bubble =
+            document.createElement("div");
+
+
+        bubble.className =
+            "message-bubble mine";
+
+
+        bubble.innerHTML = `
+            <div class="message-text">
+                ${escapeHTML(
+                    message.content || content
+                )}
+            </div>
+
+            <small>
+                ${formatTime(
+                    message.createdAt ||
+                    new Date()
+                )}
+            </small>
+        `;
+
+
+        box.appendChild(bubble);
+
+        box.scrollTop =
+            box.scrollHeight;
+
     } catch (error) {
-        showToast(
-            error.message ||
-                "Паём фиристода нашуд.",
+
+        toast(
+            error.message,
             "error"
         );
+
     }
+
 }
+
+
+/* =========================================================
+   CREATE PROJECT
+========================================================= */
+
+async function handleCreateProject(event) {
+
+    event.preventDefault();
+
+
+    if (!requireAuth()) return;
+
+
+    const payload = {
+
+        title:
+            getById("projectTitle").value.trim(),
+
+        description:
+            getById("projectDescription").value.trim(),
+
+        category:
+            getById("projectFormCategory").value,
+
+        budget:
+            Number(
+                getById("projectBudgetInput").value
+            ),
+
+        deadline:
+            getById("projectDeadline").value || null,
+
+        city:
+            getById("projectCity").value.trim(),
+
+        skills:
+            getById("projectSkills").value
+                .split(",")
+                .map(x => x.trim())
+                .filter(Boolean)
+
+    };
+
+
+    try {
+
+        await apiRequest(
+            "/projects",
+            {
+                method: "POST",
+                body: JSON.stringify(payload)
+            }
+        );
+
+
+        closeModal("projectModal");
+
+        toast(
+            "Лоиҳа бомуваффақият нашр шуд.",
+            "success"
+        );
+
+
+        event.currentTarget.reset();
+
+        await loadProjects();
+
+    } catch (error) {
+
+        toast(
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   CREATE SERVICE
+========================================================= */
+
+async function handleCreateService(event) {
+
+    event.preventDefault();
+
+
+    if (!requireAuth()) return;
+
+
+    const payload = {
+
+        title:
+            getById("serviceTitle").value.trim(),
+
+        description:
+            getById("serviceDescription").value.trim(),
+
+        category:
+            getById("serviceCategory").value,
+
+        price:
+            Number(
+                getById("servicePrice").value
+            ),
+
+        region:
+            getById("serviceRegion").value
+
+    };
+
+
+    try {
+
+        await apiRequest(
+            "/services",
+            {
+                method: "POST",
+                body: JSON.stringify(payload)
+            }
+        );
+
+
+        closeModal("serviceModal");
+
+        toast(
+            "Хизматрасонӣ нашр шуд.",
+            "success"
+        );
+
+
+        event.currentTarget.reset();
+
+        await loadServices();
+
+    } catch (error) {
+
+        toast(
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   CREATE PRODUCT
+========================================================= */
+
+async function handleCreateProduct(event) {
+
+    event.preventDefault();
+
+
+    if (!requireAuth()) return;
+
+
+    const payload = {
+
+        title:
+            getById("productTitle").value.trim(),
+
+        description:
+            getById("productDescription").value.trim(),
+
+        price:
+            Number(
+                getById("productPrice").value
+            ),
+
+        category:
+            getById("productCategory").value
+
+    };
+
+
+    try {
+
+        await apiRequest(
+            "/products",
+            {
+                method: "POST",
+                body: JSON.stringify(payload)
+            }
+        );
+
+
+        closeModal("productModal");
+
+        toast(
+            "Маҳсулот нашр шуд.",
+            "success"
+        );
+
+
+        event.currentTarget.reset();
+
+        await loadProducts();
+
+    } catch (error) {
+
+        toast(
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   CREATE REAL ESTATE
+========================================================= */
+
+async function handleCreateRealEstate(event) {
+
+    event.preventDefault();
+
+
+    if (!requireAuth()) return;
+
+
+    const payload = {
+
+        title:
+            getById("realEstateTitle").value.trim(),
+
+        type:
+            getById("realEstateType").value,
+
+        description:
+            getById("realEstateDescription").value.trim(),
+
+        propertyType:
+            getById("realEstatePropertyType").value,
+
+        price:
+            Number(
+                getById("realEstatePrice").value
+            ),
+
+        area:
+            Number(
+                getById("realEstateArea").value
+            ) || null,
+
+        rooms:
+            Number(
+                getById("realEstateRooms").value
+            ) || null,
+
+        region:
+            getById("realEstateFormRegion").value,
+
+        city:
+            getById("realEstateCity").value.trim(),
+
+        address:
+            getById("realEstateAddress").value.trim(),
+
+        phone:
+            getById("realEstatePhone").value.trim()
+
+    };
+
+
+    try {
+
+        await apiRequest(
+            "/real-estate",
+            {
+                method: "POST",
+                body: JSON.stringify(payload)
+            }
+        );
+
+
+        closeModal("realEstateModal");
+
+        toast(
+            "Эълони амвол нашр шуд.",
+            "success"
+        );
+
+
+        event.currentTarget.reset();
+
+        await loadRealEstate();
+
+    } catch (error) {
+
+        toast(
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   JOB APPLICATION
+========================================================= */
+
+async function applyToJob(jobId) {
+
+    if (!requireAuth()) return;
+
+
+    const message =
+        prompt(
+            "Паёми шумо барои корфармо:"
+        );
+
+
+    if (message === null) return;
+
+
+    try {
+
+        await apiRequest(
+            "/applications",
+            {
+                method: "POST",
+
+                body: JSON.stringify({
+                    jobId,
+                    message
+                })
+            }
+        );
+
+
+        toast(
+            "Аризаи шумо фиристода шуд.",
+            "success"
+        );
+
+    } catch (error) {
+
+        toast(
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   FAVORITES
+========================================================= */
+
+async function toggleFavorite(
+    itemId,
+    type
+) {
+
+    if (!requireAuth()) return;
+
+
+    try {
+
+        await apiRequest(
+            "/favorites",
+            {
+                method: "POST",
+
+                body: JSON.stringify({
+                    itemId,
+                    type
+                })
+            }
+        );
+
+
+        toast(
+            "Ба дӯстдоштаҳо илова шуд.",
+            "success"
+        );
+
+    } catch (error) {
+
+        toast(
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
 
 /* =========================================================
    SEARCH
-   ========================================================= */
+========================================================= */
 
-function performGlobalSearch(query) {
-    const clean =
-        query.trim().toLowerCase();
+function initSearch() {
 
-    if (!clean) return;
+    const heroSearch =
+        getById("heroSearchBtn");
 
-    const sections = [
-        "#specialists",
-        "#marketplace",
-        "#jobs",
-        "#projects",
-        "#real-estate"
-    ];
 
-    const searchable =
-        [
-            ...state.specialists,
-            ...state.services,
-            ...state.products,
-            ...state.jobs,
-            ...state.projects,
-            ...state.realEstate
-        ];
+    heroSearch?.addEventListener(
+        "click",
+        () => {
 
-    const found = searchable.filter(
-        item =>
-            [
-                item.title,
-                item.name,
-                item.description,
-                item.bio
-            ]
-                .filter(Boolean)
-                .join(" ")
-                .toLowerCase()
-                .includes(clean)
+            const query =
+                getById(
+                    "heroSearchInput"
+                )?.value.trim();
+
+
+            if (!query) {
+
+                toast(
+                    "Матни ҷустуҷӯро ворид кунед.",
+                    "warning"
+                );
+
+                return;
+
+            }
+
+
+            openModal("searchModal");
+
+            const input =
+                getById(
+                    "globalSearchInput"
+                );
+
+
+            if (input) {
+
+                input.value = query;
+
+                performSearch(query);
+
+            }
+
+        }
     );
 
-    renderSearchResults(found);
 
-    if (found.length) {
-        document
-            .querySelector("#searchResults")
-            ?.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-    }
+    getById("globalSearchInput")
+        ?.addEventListener(
+            "input",
+            debounce(event => {
+
+                performSearch(
+                    event.target.value
+                );
+
+            }, 350)
+        );
+
+
+    $$("[data-search]").forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const query =
+                    button.dataset.search;
+
+
+                getById(
+                    "heroSearchInput"
+                ).value = query;
+
+
+                performSearch(query);
+
+                openModal("searchModal");
+
+            }
+        );
+
+    });
+
 }
 
-function renderSearchResults(items) {
+
+async function performSearch(query) {
+
+    const results =
+        getById("searchResults");
+
+
+    if (!results) return;
+
+
+    query =
+        query.trim();
+
+
+    if (!query) {
+
+        results.innerHTML = `
+            <div class="empty-state">
+                <div>⌕</div>
+                <h3>Ҷустуҷӯ кунед</h3>
+                <p>
+                    Номи хизмат, кор ё мутахассисро ворид кунед.
+                </p>
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    results.innerHTML = `
+        <div class="search-loading">
+            Ҷустуҷӯ...
+        </div>
+    `;
+
+
+    try {
+
+        const data =
+            await apiRequest(
+                `/search?q=${encodeURIComponent(query)}`
+            );
+
+
+        renderSearchResults(
+            normalizeArray(data)
+        );
+
+    } catch {
+
+        /*
+         * Local fallback search.
+         * API дастрас набошад ҳам UI намешиканад.
+         */
+
+        const all = [
+
+            ...state.specialists.map(
+                x => ({
+                    ...x,
+                    _type: "specialist"
+                })
+            ),
+
+            ...state.services.map(
+                x => ({
+                    ...x,
+                    _type: "service"
+                })
+            ),
+
+            ...state.jobs.map(
+                x => ({
+                    ...x,
+                    _type: "job"
+                })
+            ),
+
+            ...state.projects.map(
+                x => ({
+                    ...x,
+                    _type: "project"
+                })
+            )
+
+        ];
+
+
+        const lower =
+            query.toLowerCase();
+
+
+        const filtered =
+            all.filter(item => {
+
+                const text =
+                    JSON.stringify(item)
+                        .toLowerCase();
+
+                return text.includes(lower);
+
+            });
+
+
+        renderSearchResults(filtered);
+
+    }
+
+}
+
+
+function renderSearchResults(results) {
+
     const container =
-        byId("searchResults");
+        getById("searchResults");
+
 
     if (!container) return;
 
-    container.innerHTML = items
-        .slice(0, 20)
-        .map(item => {
-            return `
-                <div class="search-result">
 
-                    <div class="notification-icon">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </div>
+    if (!results.length) {
 
-                    <div>
-                        <strong>
-                            ${escapeHTML(
-                                item.title ||
-                                item.name ||
-                                "Натиҷа"
-                            )}
-                        </strong>
+        container.innerHTML = `
+            <div class="empty-state">
+                <div>🔎</div>
+                <h3>Натиҷа ёфт нашуд</h3>
+                <p>
+                    Ҷустуҷӯи дигарро санҷед.
+                </p>
+            </div>
+        `;
 
-                        <p>
-                            ${escapeHTML(
-                                item.description ||
-                                item.bio ||
-                                ""
-                            )}
-                        </p>
-                    </div>
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    results.slice(0, 15)
+        .forEach(item => {
+
+            const result =
+                document.createElement("button");
+
+
+            result.className =
+                "search-result";
+
+
+            const title =
+                item.title ||
+                fullName(item) ||
+                item.name ||
+                "Натиҷа";
+
+
+            const type =
+                item._type ||
+                "result";
+
+
+            result.innerHTML = `
+
+                <div class="search-result-icon">
+                    ${searchTypeIcon(type)}
+                </div>
+
+                <div>
+
+                    <strong>
+                        ${escapeHTML(title)}
+                    </strong>
+
+                    <span>
+                        ${escapeHTML(
+                            categoryName(
+                                item.category
+                            )
+                        )}
+                    </span>
 
                 </div>
-            `;
-        })
-        .join("");
 
-    if (!items.length) {
-        container.innerHTML =
-            emptyState(
-                "Натиҷа нест",
-                "Ягон маълумоти мувофиқ ёфт нашуд."
+                <b>→</b>
+
+            `;
+
+
+            result.addEventListener(
+                "click",
+                () => {
+
+                    closeModal("searchModal");
+
+                    openSearchItem(item);
+
+                }
             );
-    }
+
+
+            container.appendChild(result);
+
+        });
+
 }
 
+
 /* =========================================================
-   EVENT LISTENERS
-   ========================================================= */
+   FILTERS
+========================================================= */
 
-function setupEvents() {
-    document.addEventListener(
+function initFilters() {
+
+    getById("specialistSearch")
+        ?.addEventListener(
+            "input",
+            debounce(filterSpecialists, 250)
+        );
+
+
+    getById("specialistCategory")
+        ?.addEventListener(
+            "change",
+            filterSpecialists
+        );
+
+
+    getById("specialistRegion")
+        ?.addEventListener(
+            "change",
+            filterSpecialists
+        );
+
+
+    getById("specialistSort")
+        ?.addEventListener(
+            "change",
+            filterSpecialists
+        );
+
+
+    getById("marketSearch")
+        ?.addEventListener(
+            "input",
+            debounce(filterMarketplace, 250)
+        );
+
+
+    getById("marketCategory")
+        ?.addEventListener(
+            "change",
+            filterMarketplace
+        );
+
+
+    getById("marketRegion")
+        ?.addEventListener(
+            "change",
+            filterMarketplace
+        );
+
+
+    getById("jobSearch")
+        ?.addEventListener(
+            "input",
+            debounce(filterJobs, 250)
+        );
+
+
+    getById("jobRegion")
+        ?.addEventListener(
+            "change",
+            filterJobs
+        );
+
+
+    getById("jobType")
+        ?.addEventListener(
+            "change",
+            filterJobs
+        );
+
+
+    getById("projectSearch")
+        ?.addEventListener(
+            "input",
+            debounce(filterProjects, 250)
+        );
+
+
+    getById("projectCategory")
+        ?.addEventListener(
+            "change",
+            filterProjects
+        );
+
+
+    getById("realEstateSearch")
+        ?.addEventListener(
+            "input",
+            debounce(filterRealEstate, 250)
+        );
+
+
+    getById("realEstateCategory")
+        ?.addEventListener(
+            "change",
+            filterRealEstate
+        );
+
+
+    getById("realEstateRegion")
+        ?.addEventListener(
+            "change",
+            filterRealEstate
+        );
+
+}
+
+
+function filterSpecialists() {
+
+    const query =
+        getById("specialistSearch")
+            ?.value
+            .toLowerCase()
+            .trim() || "";
+
+
+    const category =
+        getById("specialistCategory")
+            ?.value || "";
+
+
+    const region =
+        getById("specialistRegion")
+            ?.value || "";
+
+
+    let result =
+        [...state.specialists];
+
+
+    result =
+        result.filter(item => {
+
+            const text =
+                JSON.stringify(item)
+                    .toLowerCase();
+
+
+            const queryMatch =
+                !query ||
+                text.includes(query);
+
+
+            const categoryMatch =
+                !category ||
+                String(
+                    item.category ||
+                    item.specialization ||
+                    ""
+                ).toLowerCase()
+                    .includes(category);
+
+
+            const regionMatch =
+                !region ||
+                String(
+                    item.region || ""
+                ).toLowerCase()
+                    .includes(region);
+
+
+            return (
+                queryMatch &&
+                categoryMatch &&
+                regionMatch
+            );
+
+        });
+
+
+    renderSpecialists(result);
+
+}
+
+
+function filterMarketplace() {
+
+    const query =
+        getById("marketSearch")
+            ?.value
+            .toLowerCase()
+            .trim() || "";
+
+
+    const category =
+        getById("marketCategory")
+            ?.value || "";
+
+
+    const region =
+        getById("marketRegion")
+            ?.value || "";
+
+
+    const source =
+        state.activeMarketplace === "services"
+            ? state.services
+            : state.products;
+
+
+    const result =
+        source.filter(item => {
+
+            const text =
+                JSON.stringify(item)
+                    .toLowerCase();
+
+
+            return (
+                (!query ||
+                    text.includes(query)) &&
+
+                (!category ||
+                    String(
+                        item.category || ""
+                    ).toLowerCase()
+                        .includes(category)) &&
+
+                (!region ||
+                    String(
+                        item.region || ""
+                    ).toLowerCase()
+                        .includes(region))
+            );
+
+        });
+
+
+    if (
+        state.activeMarketplace ===
+        "services"
+    ) {
+
+        renderServices(result);
+
+    } else {
+
+        renderProducts(result);
+
+    }
+
+}
+
+
+function filterJobs() {
+
+    const query =
+        getById("jobSearch")
+            ?.value
+            .toLowerCase()
+            .trim() || "";
+
+
+    const region =
+        getById("jobRegion")
+            ?.value || "";
+
+
+    const type =
+        getById("jobType")
+            ?.value || "";
+
+
+    const result =
+        state.jobs.filter(item => {
+
+            const text =
+                JSON.stringify(item)
+                    .toLowerCase();
+
+
+            return (
+                (!query ||
+                    text.includes(query)) &&
+
+                (!region ||
+                    String(
+                        item.region || ""
+                    ).toLowerCase()
+                        .includes(region)) &&
+
+                (!type ||
+                    String(
+                        item.type ||
+                        item.employmentType ||
+                        ""
+                    ).toLowerCase()
+                        .includes(type))
+            );
+
+        });
+
+
+    renderJobs(result);
+
+}
+
+
+function filterProjects() {
+
+    const query =
+        getById("projectSearch")
+            ?.value
+            .toLowerCase()
+            .trim() || "";
+
+
+    const category =
+        getById("projectCategory")
+            ?.value || "";
+
+
+    const result =
+        state.projects.filter(item => {
+
+            const text =
+                JSON.stringify(item)
+                    .toLowerCase();
+
+
+            return (
+                (!query ||
+                    text.includes(query)) &&
+
+                (!category ||
+                    String(
+                        item.category || ""
+                    ).toLowerCase()
+                        .includes(category))
+            );
+
+        });
+
+
+    renderProjects(result);
+
+}
+
+
+function filterRealEstate() {
+
+    const query =
+        getById("realEstateSearch")
+            ?.value
+            .toLowerCase()
+            .trim() || "";
+
+
+    const category =
+        getById("realEstateCategory")
+            ?.value || "";
+
+
+    const region =
+        getById("realEstateRegion")
+            ?.value || "";
+
+
+    let result =
+        state.realEstate.filter(item => {
+
+            const text =
+                JSON.stringify(item)
+                    .toLowerCase();
+
+
+            return (
+                (!query ||
+                    text.includes(query)) &&
+
+                (!category ||
+                    String(
+                        item.propertyType ||
+                        item.category ||
+                        ""
+                    ).toLowerCase()
+                        .includes(category)) &&
+
+                (!region ||
+                    String(
+                        item.region || ""
+                    ).toLowerCase()
+                        .includes(region))
+            );
+
+        });
+
+
+    renderRealEstate(result);
+
+}
+
+
+/* =========================================================
+   TABS
+========================================================= */
+
+function initTabs() {
+
+    $$(".market-tab")
+        .forEach(tab => {
+
+            tab.addEventListener(
+                "click",
+                () => {
+
+                    $$(".market-tab")
+                        .forEach(x =>
+                            x.classList.remove(
+                                "active"
+                            )
+                        );
+
+
+                    tab.classList.add("active");
+
+
+                    state.activeMarketplace =
+                        tab.dataset.market;
+
+
+                    const services =
+                        getById(
+                            "servicesGrid"
+                        );
+
+                    const products =
+                        getById(
+                            "productsGrid"
+                        );
+
+
+                    if (
+                        state.activeMarketplace ===
+                        "services"
+                    ) {
+
+                        services.hidden = false;
+                        products.hidden = true;
+
+                        filterMarketplace();
+
+                    } else {
+
+                        services.hidden = true;
+                        products.hidden = false;
+
+                        filterMarketplace();
+
+                    }
+
+                }
+            );
+
+        });
+
+
+    $$(".real-tab")
+        .forEach(tab => {
+
+            tab.addEventListener(
+                "click",
+                () => {
+
+                    $$(".real-tab")
+                        .forEach(x =>
+                            x.classList.remove(
+                                "active"
+                            )
+                        );
+
+
+                    tab.classList.add("active");
+
+
+                    state.activeRealEstateType =
+                        tab.dataset.type;
+
+
+                    renderRealEstate();
+
+                }
+            );
+
+        });
+
+
+    $$(".category-card")
+        .forEach(card => {
+
+            card.addEventListener(
+                "click",
+                () => {
+
+                    const category =
+                        card.dataset.category;
+
+
+                    const market =
+                        getById(
+                            "marketCategory"
+                        );
+
+
+                    if (market) {
+
+                        market.value =
+                            category;
+
+                    }
+
+
+                    document
+                        .getElementById(
+                            "marketplace"
+                        )
+                        ?.scrollIntoView({
+                            behavior: "smooth"
+                        });
+
+
+                    filterMarketplace();
+
+                }
+            );
+
+        });
+
+
+    $$(".region-card")
+        .forEach(card => {
+
+            card.addEventListener(
+                "click",
+                () => {
+
+                    const region =
+                        card.dataset.region;
+
+
+                    const select =
+                        getById(
+                            "specialistRegion"
+                        );
+
+
+                    if (select) {
+
+                        select.value =
+                            region;
+
+                    }
+
+
+                    document
+                        .getElementById(
+                            "specialists"
+                        )
+                        ?.scrollIntoView({
+                            behavior: "smooth"
+                        });
+
+
+                    filterSpecialists();
+
+                }
+            );
+
+        });
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function initNavigation() {
+
+    const mobileBtn =
+        getById("mobileMenuBtn");
+
+    const mobileMenu =
+        getById("mobileMenu");
+
+
+    mobileBtn?.addEventListener(
         "click",
-        handleGlobalClick
+        () => {
+
+            mobileBtn.classList.toggle("active");
+
+            mobileMenu?.classList.toggle(
+                "open"
+            );
+
+        }
     );
 
-    document.addEventListener(
-        "submit",
-        handleSubmit
-    );
 
-    document.addEventListener(
-        "input",
-        handleInput
-    );
+    $$(".mobile-menu a")
+        .forEach(link => {
 
-    document.addEventListener(
-        "change",
-        handleChange
-    );
+            link.addEventListener(
+                "click",
+                () => {
+
+                    mobileBtn?.classList.remove(
+                        "active"
+                    );
+
+                    mobileMenu?.classList.remove(
+                        "open"
+                    );
+
+                }
+            );
+
+        });
+
+
+    $$(".nav-link").forEach(link => {
+
+        link.addEventListener(
+            "click",
+            () => {
+
+                $$(".nav-link")
+                    .forEach(x =>
+                        x.classList.remove(
+                            "active"
+                        )
+                    );
+
+
+                link.classList.add("active");
+
+            }
+        );
+
+    });
+
+
+    getById("heroExploreBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                document
+                    .getElementById("marketplace")
+                    ?.scrollIntoView({
+                        behavior: "smooth"
+                    });
+
+            }
+        );
+
+
+    getById("ctaExploreBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                document
+                    .getElementById("marketplace")
+                    ?.scrollIntoView({
+                        behavior: "smooth"
+                    });
+
+            }
+        );
+
+
+    getById("heroRegisterBtn")
+        ?.addEventListener(
+            "click",
+            () => openModal("registerModal")
+        );
+
+
+    getById("ctaRegisterBtn")
+        ?.addEventListener(
+            "click",
+            () => openModal("registerModal")
+        );
+
+
+    getById("loginBtn")
+        ?.addEventListener(
+            "click",
+            () => openModal("loginModal")
+        );
+
+
+    getById("registerBtn")
+        ?.addEventListener(
+            "click",
+            () => openModal("registerModal")
+        );
+
+
+    getById("mobileLoginBtn")
+        ?.addEventListener(
+            "click",
+            () => openModal("loginModal")
+        );
+
+
+    getById("mobileRegisterBtn")
+        ?.addEventListener(
+            "click",
+            () => openModal("registerModal")
+        );
+
+
+    getById("globalSearchBtn")
+        ?.addEventListener(
+            "click",
+            () => openModal("searchModal")
+        );
+
+
+    getById("notificationBtn")
+        ?.addEventListener(
+            "click",
+            async () => {
+
+                if (!requireAuth())
+                    return;
+
+                openSideModal(
+                    "notificationsModal"
+                );
+
+                await loadNotifications();
+
+            }
+        );
+
+
+    getById("messageBtn")
+        ?.addEventListener(
+            "click",
+            async () => {
+
+                if (!requireAuth())
+                    return;
+
+                openChat();
+
+            }
+        );
+
+
+    getById("mobileProfileBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                if (state.user) {
+
+                    openProfile(
+                        state.user
+                    );
+
+                } else {
+
+                    openModal(
+                        "loginModal"
+                    );
+
+                }
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+function initModals() {
+
+    $("[data-close='searchModal']");
+
+    $$("[data-close]")
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    closeModal(
+                        button.dataset.close
+                    );
+
+                }
+            );
+
+        });
+
+
+    $$(".modal-overlay")
+        .forEach(overlay => {
+
+            overlay.addEventListener(
+                "click",
+                () => {
+
+                    const modal =
+                        overlay.closest(
+                            ".modal"
+                        );
+
+
+                    if (modal)
+                        closeModal(
+                            modal.id
+                        );
+
+                }
+            );
+
+        });
+
 
     document.addEventListener(
         "keydown",
         event => {
+
             if (event.key === "Escape") {
-                closeAllModals();
-                closeMobileMenu();
+
+                $$(".modal.open")
+                    .forEach(modal =>
+                        closeModal(modal.id)
+                    );
+
             }
+
         }
     );
+
+
+    getById("switchToRegister")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                closeModal("loginModal");
+
+                openModal(
+                    "registerModal"
+                );
+
+            }
+        );
+
+
+    getById("switchToLogin")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                closeModal("registerModal");
+
+                openModal(
+                    "loginModal"
+                );
+
+            }
+        );
+
+
+    getById("forgotPasswordBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                closeModal("loginModal");
+
+                openModal(
+                    "forgotModal"
+                );
+
+            }
+        );
+
+
+    getById("createProjectBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                if (requireAuth())
+                    openModal("projectModal");
+
+            }
+        );
+
+
+    getById("addServiceBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                if (requireAuth())
+                    openModal("serviceModal");
+
+            }
+        );
+
+
+    getById("addRealEstateBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                if (requireAuth())
+                    openModal(
+                        "realEstateModal"
+                    );
+
+            }
+        );
+
+
+    getById("userMenuBtn")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+                $("#userMenu")
+                    ?.classList.toggle(
+                        "open"
+                    );
+
+            }
+        );
+
+
+    document.addEventListener(
+        "click",
+        event => {
+
+            const menu =
+                getById("userMenu");
+
+            const button =
+                getById("userMenuBtn");
+
+
+            if (
+                menu &&
+                !menu.contains(event.target) &&
+                !button?.contains(event.target)
+            ) {
+
+                menu.classList.remove(
+                    "open"
+                );
+
+            }
+
+        }
+    );
+
 }
 
-/* =========================================================
-   GLOBAL CLICK
-   ========================================================= */
 
-function handleGlobalClick(event) {
-    const target =
-        event.target.closest(
-            "[data-action], [data-specialist], [data-service], [data-product], [data-job], [data-project], [data-realestate], [data-favorite], [data-conversation], [data-modal-close]"
-        );
+function openModal(id) {
 
-    if (!target) return;
+    const modal =
+        getById(id);
 
-    const action =
-        target.dataset.action;
+    if (!modal) return;
 
-    if (action === "login") {
-        openModal("loginModal");
-        return;
-    }
 
-    if (action === "register") {
-        openModal("registerModal");
-        return;
-    }
+    modal.classList.add("open");
 
-    if (action === "forgot-password") {
-        closeModal("loginModal");
-        openModal(
-            "forgotPasswordModal"
-        );
-        return;
-    }
+    document.body.classList.add(
+        "modal-open"
+    );
 
-    if (action === "logout") {
-        logout();
-        return;
-    }
 
-    if (action === "profile") {
-        openModal("profileModal");
-        return;
-    }
+    setTimeout(() => {
 
-    if (action === "notifications") {
-        openModal(
-            "notificationsModal"
-        );
-        return;
-    }
-
-    if (action === "chat") {
-        openModal("chatModal");
-        loadConversations();
-        return;
-    }
-
-    if (action === "mobile-menu") {
-        openMobileMenu();
-        return;
-    }
-
-    if (action === "close-mobile-menu") {
-        closeMobileMenu();
-        return;
-    }
-
-    if (action === "close-modal") {
-        closeModal(
-            target.dataset.modal ||
-                target.closest(".modal")?.id
-        );
-        return;
-    }
-
-    if (action === "search") {
-        openModal("searchModal");
-        setTimeout(
-            () =>
-                $("#globalSearch")?.focus(),
-            100
-        );
-        return;
-    }
-
-    if (action === "create-project") {
-        if (!requireAuth()) return;
-
-        openModal(
-            "createProjectModal"
-        );
-
-        return;
-    }
-
-    if (action === "add-service") {
-        if (!requireAuth()) return;
-
-        openModal("addServiceModal");
-
-        return;
-    }
-
-    if (action === "add-product") {
-        if (!requireAuth()) return;
-
-        openModal("addProductModal");
-
-        return;
-    }
-
-    if (action === "add-realestate") {
-        if (!requireAuth()) return;
-
-        openModal(
-            "addRealEstateModal"
-        );
-
-        return;
-    }
-
-    if (action === "switch-login") {
-        closeModal("registerModal");
-        openModal("loginModal");
-        return;
-    }
-
-    if (action === "switch-register") {
-        closeModal("loginModal");
-        openModal("registerModal");
-        return;
-    }
-
-    if (action === "switch-forgot") {
-        closeModal("loginModal");
-        openModal(
-            "forgotPasswordModal"
-        );
-        return;
-    }
-
-    if (target.dataset.specialist) {
-        openSpecialist(
-            target.dataset.specialist
-        );
-        return;
-    }
-
-    if (target.dataset.service) {
-        orderService(
-            target.dataset.service
-        );
-        return;
-    }
-
-    if (target.dataset.product) {
-        orderProduct(
-            target.dataset.product
-        );
-        return;
-    }
-
-    if (target.dataset.job) {
-        applyToJob(
-            target.dataset.job
-        );
-        return;
-    }
-
-    if (target.dataset.project) {
-        openProject(
-            target.dataset.project
-        );
-        return;
-    }
-
-    if (target.dataset.realestate) {
-        openRealEstate(
-            target.dataset.realestate
-        );
-        return;
-    }
-
-    if (target.dataset.favorite) {
-        toggleFavorite(
-            "specialist",
-            target.dataset.favorite,
-            target
-        );
-        return;
-    }
-
-    if (target.dataset.conversation) {
-        openConversation(
-            target.dataset.conversation
-        );
-    }
-}
-
-/* =========================================================
-   SUBMIT HANDLER
-   ========================================================= */
-
-function handleSubmit(event) {
-    const form = event.target;
-
-    if (!form.matches("form")) return;
-
-    event.preventDefault();
-
-    const id = form.id;
-
-    if (id === "loginForm") {
-        const data = new FormData(form);
-
-        login(
-            data.get("identifier") ||
-                data.get("email") ||
-                data.get("phone"),
-            data.get("password")
-        );
-
-        return;
-    }
-
-    if (id === "registerForm") {
-        const data = new FormData(form);
-
-        const password =
-            data.get("password");
-
-        const confirmPassword =
-            data.get("confirmPassword") ||
-            data.get("passwordConfirm");
-
-        if (
-            confirmPassword &&
-            password !== confirmPassword
-        ) {
-            showToast(
-                "Паролҳо мувофиқат намекунанд.",
-                "error"
+        const input =
+            modal.querySelector(
+                "input:not([type='checkbox'])"
             );
 
-            return;
+        input?.focus();
+
+    }, 250);
+
+}
+
+
+function closeModal(id) {
+
+    const modal =
+        getById(id);
+
+    if (!modal) return;
+
+
+    modal.classList.remove("open");
+
+
+    if (!$(".modal.open")) {
+
+        document.body.classList.remove(
+            "modal-open"
+        );
+
+    }
+
+}
+
+
+function openSideModal(id) {
+
+    const modal =
+        getById(id);
+
+    if (!modal) return;
+
+
+    modal.classList.add("open");
+
+}
+
+
+function openChat() {
+
+    const modal =
+        getById("chatModal");
+
+    if (!modal) return;
+
+
+    modal.classList.add("open");
+
+    loadConversations();
+
+}
+
+
+/* =========================================================
+   FORMS
+========================================================= */
+
+function initForms() {
+
+    getById("loginForm")
+        ?.addEventListener(
+            "submit",
+            handleLogin
+        );
+
+
+    getById("registerForm")
+        ?.addEventListener(
+            "submit",
+            handleRegister
+        );
+
+
+    getById("forgotForm")
+        ?.addEventListener(
+            "submit",
+            handleForgotPassword
+        );
+
+
+    getById("projectForm")
+        ?.addEventListener(
+            "submit",
+            handleCreateProject
+        );
+
+
+    getById("serviceForm")
+        ?.addEventListener(
+            "submit",
+            handleCreateService
+        );
+
+
+    getById("productForm")
+        ?.addEventListener(
+            "submit",
+            handleCreateProduct
+        );
+
+
+    getById("realEstateForm")
+        ?.addEventListener(
+            "submit",
+            handleCreateRealEstate
+        );
+
+
+    getById("chatForm")
+        ?.addEventListener(
+            "submit",
+            handleSendMessage
+        );
+
+
+    getById("logoutBtn")
+        ?.addEventListener(
+            "click",
+            () => logout()
+        );
+
+
+    getById("menuProfileBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                $("#userMenu")
+                    ?.classList.remove(
+                        "open"
+                    );
+
+                openProfile(state.user);
+
+            }
+        );
+
+
+    getById("menuMessagesBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                $("#userMenu")
+                    ?.classList.remove(
+                        "open"
+                    );
+
+                openChat();
+
+            }
+        );
+
+
+    getById("menuNotificationsBtn")
+        ?.addEventListener(
+            () => {
+
+                $("#userMenu")
+                    ?.classList.remove(
+                        "open"
+                    );
+
+                openSideModal(
+                    "notificationsModal"
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+function openProfile(user) {
+
+    const content =
+        getById("profileContent");
+
+    if (!content) return;
+
+
+    const name =
+        fullName(user) ||
+        user?.username ||
+        "User";
+
+
+    const avatar =
+        user?.avatar ||
+        user?.photo ||
+        "";
+
+
+    content.innerHTML = `
+
+        <div class="profile-cover"></div>
+
+        <div class="profile-main">
+
+            <div class="profile-avatar">
+
+                ${
+                    avatar
+                    ? `<img src="${escapeHTML(avatar)}" alt="">`
+                    : escapeHTML(
+                        getInitials(user)
+                    )
+                }
+
+            </div>
+
+
+            <div class="profile-info">
+
+                <div class="verified-badge">
+                    ✓
+                </div>
+
+                <h2>
+                    ${escapeHTML(name)}
+                </h2>
+
+                <span>
+                    ${
+                        escapeHTML(
+                            user?.role ||
+                            user?.title ||
+                            "User"
+                        )
+                    }
+                </span>
+
+                <p>
+                    ${
+                        escapeHTML(
+                            user?.bio ||
+                            "Профили корбар дар SMM.TJ"
+                        )
+                    }
+                </p>
+
+            </div>
+
+
+            <div class="profile-actions">
+
+                <button
+                    class="btn btn-primary"
+                    id="profileMessageBtn"
+                >
+                    💬 Паём
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="profile-details">
+
+            <div>
+                <small>Минтақа</small>
+                <strong>
+                    ${escapeHTML(
+                        user?.city ||
+                        user?.region ||
+                        "Тоҷикистон"
+                    )}
+                </strong>
+            </div>
+
+            <div>
+                <small>Рейтинг</small>
+                <strong>
+                    ★ ${Number(
+                        user?.rating || 5
+                    ).toFixed(1)}
+                </strong>
+            </div>
+
+            <div>
+                <small>Таҷриба</small>
+                <strong>
+                    ${user?.experience || 0} сол
+                </strong>
+            </div>
+
+        </div>
+
+    `;
+
+
+    openModal("profileModal");
+
+
+    getById("profileMessageBtn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                closeModal(
+                    "profileModal"
+                );
+
+                openChat();
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   DETAILS
+========================================================= */
+
+function openService(service) {
+
+    openDetailModal(
+        "Хизматрасонӣ",
+        service.title || service.name,
+        service.description,
+        service.price
+    );
+
+}
+
+
+function openProduct(product) {
+
+    openDetailModal(
+        "Маҳсулот",
+        product.title || product.name,
+        product.description,
+        product.price
+    );
+
+}
+
+
+function openProject(project) {
+
+    openDetailModal(
+        "Лоиҳа",
+        project.title,
+        project.description,
+        project.budget
+    );
+
+}
+
+
+function openRealEstate(item) {
+
+    openDetailModal(
+        item.type === "rent"
+            ? "Иҷора"
+            : "Фурӯш",
+        item.title,
+        item.description,
+        item.price
+    );
+
+}
+
+
+function openDetailModal(
+    label,
+    title,
+    description,
+    price
+) {
+
+    const content =
+        getById("profileContent");
+
+    if (!content) return;
+
+
+    content.innerHTML = `
+
+        <div class="detail-view">
+
+            <span class="modal-label">
+                ${escapeHTML(label)}
+            </span>
+
+            <h2>
+                ${escapeHTML(title || "")}
+            </h2>
+
+            <p>
+                ${escapeHTML(
+                    description || ""
+                )}
+            </p>
+
+            <div class="detail-price">
+                ${formatPrice(price)}
+            </div>
+
+            <button
+                class="btn btn-primary btn-full"
+                onclick="closeModal('profileModal')"
+            >
+                Бастан
+            </button>
+
+        </div>
+
+    `;
+
+
+    openModal("profileModal");
+
+}
+
+
+function openSearchItem(item) {
+
+    if (item._type === "specialist") {
+
+        openProfile(item);
+
+    } else if (item._type === "service") {
+
+        openService(item);
+
+    } else if (item._type === "job") {
+
+        openDetailModal(
+            "Кор",
+            item.title,
+            item.description,
+            item.salary
+        );
+
+    } else if (item._type === "project") {
+
+        openProject(item);
+
+    } else {
+
+        openDetailModal(
+            "Натиҷа",
+            item.title || item.name,
+            item.description,
+            item.price
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   USER MENU
+========================================================= */
+
+function updateUserMenu() {
+
+    if (!state.user) return;
+
+
+    const name =
+        fullName(state.user) ||
+        state.user.username ||
+        "User";
+
+
+    const menuName =
+        getById("menuUserName");
+
+    const menuEmail =
+        getById("menuUserEmail");
+
+    const avatar =
+        getById("menuAvatar");
+
+
+    if (menuName)
+        menuName.textContent = name;
+
+
+    if (menuEmail)
+        menuEmail.textContent =
+            state.user.email ||
+            state.user.phone ||
+            "";
+
+
+    if (avatar)
+        avatar.textContent =
+            getInitials(state.user);
+
+}
+
+
+/* =========================================================
+   COUNTERS
+========================================================= */
+
+function initCounters() {
+
+    const counters =
+        $$("[data-counter]");
+
+
+    if (!counters.length) return;
+
+
+    const observer =
+        new IntersectionObserver(
+            entries => {
+
+                entries.forEach(entry => {
+
+                    if (
+                        !entry.isIntersecting
+                    )
+                        return;
+
+
+                    const element =
+                        entry.target;
+
+
+                    animateCounter(
+                        element,
+                        Number(
+                            element.dataset.counter
+                        )
+                    );
+
+
+                    observer.unobserve(element);
+
+                });
+
+            },
+            {
+                threshold: 0.5
+            }
+        );
+
+
+    counters.forEach(
+        counter =>
+            observer.observe(counter)
+    );
+
+}
+
+
+function animateCounter(
+    element,
+    target
+) {
+
+    const duration = 1400;
+
+    const start =
+        performance.now();
+
+
+    function update(now) {
+
+        const progress =
+            Math.min(
+                (now - start) / duration,
+                1
+            );
+
+
+        const eased =
+            1 -
+            Math.pow(
+                1 - progress,
+                3
+            );
+
+
+        element.textContent =
+            Math.floor(
+                target * eased
+            ).toLocaleString("en-US") +
+            "+";
+
+
+        if (progress < 1) {
+
+            requestAnimationFrame(update);
+
         }
 
-        register(data);
-
-        return;
     }
 
-    if (id === "forgotPasswordForm") {
-        const data = new FormData(form);
 
-        forgotPassword(
-            data.get("identifier") ||
-                data.get("email") ||
-                data.get("phone")
-        );
+    requestAnimationFrame(update);
 
-        return;
-    }
-
-    if (id === "createProjectForm") {
-        createProject(form);
-        return;
-    }
-
-    if (id === "addServiceForm") {
-        createService(form);
-        return;
-    }
-
-    if (id === "addProductForm") {
-        createProduct(form);
-        return;
-    }
-
-    if (id === "addRealEstateForm") {
-        createRealEstate(form);
-        return;
-    }
-
-    if (id === "chatInputForm") {
-        const data =
-            new FormData(form);
-
-        sendMessage(
-            data.get("message") || ""
-        );
-
-        form.reset();
-    }
 }
 
+
 /* =========================================================
-   INPUT HANDLER
-   ========================================================= */
+   SCROLL ANIMATIONS
+========================================================= */
 
-function handleInput(event) {
-    const input = event.target;
+function initScrollAnimations() {
 
-    if (
-        input.matches(
-            "#globalSearch, [data-global-search]"
-        )
-    ) {
-        performGlobalSearch(
-            input.value
+    const elements =
+        $$(
+            ".section-heading, " +
+            ".category-card, " +
+            ".specialist-card, " +
+            ".marketplace-card, " +
+            ".job-card, " +
+            ".project-card, " +
+            ".real-estate-card, " +
+            ".review-card, " +
+            ".step-card, " +
+            ".region-card"
         );
 
-        return;
-    }
 
-    if (
-        input.matches(
-            "[data-specialist-search]"
-        )
-    ) {
-        state.filters.specialist.search =
-            input.value;
+    const observer =
+        new IntersectionObserver(
+            entries => {
 
-        renderSpecialists();
+                entries.forEach(entry => {
 
-        return;
-    }
+                    if (
+                        entry.isIntersecting
+                    ) {
 
-    if (
-        input.matches(
-            "[data-marketplace-search]"
-        )
-    ) {
-        state.filters.marketplace.search =
-            input.value;
+                        entry.target.classList.add(
+                            "visible"
+                        );
 
-        renderServices();
-        renderProducts();
+                        observer.unobserve(
+                            entry.target
+                        );
 
-        return;
-    }
+                    }
 
-    if (
-        input.matches("[data-job-search]")
-    ) {
-        state.filters.jobs.search =
-            input.value;
+                });
 
-        renderJobs();
+            },
+            {
+                threshold: 0.08
+            }
+        );
 
-        return;
-    }
 
-    if (
-        input.matches(
-            "[data-project-search]"
-        )
-    ) {
-        state.filters.projects.search =
-            input.value;
+    elements.forEach(
+        element =>
+            observer.observe(element)
+    );
 
-        renderProjects();
-
-        return;
-    }
-
-    if (
-        input.matches(
-            "[data-realestate-search]"
-        )
-    ) {
-        state.filters.realEstate.search =
-            input.value;
-
-        renderRealEstate();
-    }
 }
 
-/* =========================================================
-   CHANGE HANDLER
-   ========================================================= */
 
-function handleChange(event) {
+/* =========================================================
+   FAVORITE BUTTONS
+========================================================= */
+
+function initFavoriteButtons() {
+
+    document.addEventListener(
+        "click",
+        event => {
+
+            const button =
+                event.target.closest(
+                    ".favorite-btn"
+                );
+
+
+            if (!button) return;
+
+
+            event.stopPropagation();
+
+            button.classList.toggle(
+                "active"
+            );
+
+
+            if (
+                button.classList.contains(
+                    "active"
+                )
+            ) {
+
+                button.textContent = "♥";
+
+            } else {
+
+                button.textContent = "♡";
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function toast(
+    message,
+    type = "success"
+) {
+
+    const container =
+        getById("toastContainer");
+
+    if (!container) return;
+
+
+    const item =
+        document.createElement("div");
+
+
+    item.className =
+        `toast toast-${type}`;
+
+
+    item.innerHTML = `
+
+        <div class="toast-icon">
+            ${toastIcon(type)}
+        </div>
+
+        <div class="toast-content">
+            <strong>
+                ${toastTitle(type)}
+            </strong>
+
+            <span>
+                ${escapeHTML(message)}
+            </span>
+        </div>
+
+        <button class="toast-close">
+            ×
+        </button>
+
+    `;
+
+
+    container.appendChild(item);
+
+
+    requestAnimationFrame(() => {
+
+        item.classList.add("show");
+
+    });
+
+
+    item.querySelector(
+        ".toast-close"
+    )?.addEventListener(
+        "click",
+        () => removeToast(item)
+    );
+
+
+    setTimeout(
+        () => removeToast(item),
+        4500
+    );
+
+}
+
+
+function removeToast(item) {
+
+    item.classList.remove("show");
+
+    setTimeout(
+        () => item.remove(),
+        400
+    );
+
+}
+
+
+/* =========================================================
+   SKELETON
+========================================================= */
+
+function showSkeleton(
+    container,
+    count = 6
+) {
+
+    container.innerHTML = "";
+
+
+    for (let i = 0; i < count; i++) {
+
+        const skeleton =
+            document.createElement("div");
+
+
+        skeleton.className =
+            "skeleton-card";
+
+
+        skeleton.innerHTML = `
+
+            <div class="skeleton-image"></div>
+
+            <div class="skeleton-line large"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line short"></div>
+
+        `;
+
+
+        container.appendChild(skeleton);
+
+    }
+
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+function renderEmpty(
+    container,
+    message
+) {
+
+    if (!container) return;
+
+
+    container.innerHTML = `
+
+        <div class="empty-state">
+
+            <div>◌</div>
+
+            <h3>
+                Ҳоло маълумот нест
+            </h3>
+
+            <p>
+                ${escapeHTML(message)}
+            </p>
+
+        </div>
+
+    `;
+
+}
+
+
+function showEmpty(id) {
+
     const element =
-        event.target;
+        getById(id);
 
-    if (
-        element.matches(
-            "[data-specialist-region]"
-        )
-    ) {
-        state.filters.specialist.region =
-            element.value;
+    if (element)
+        element.hidden = false;
 
-        renderSpecialists();
-    }
-
-    if (
-        element.matches(
-            "[data-specialist-city]"
-        )
-    ) {
-        state.filters.specialist.city =
-            element.value;
-
-        renderSpecialists();
-    }
-
-    if (
-        element.matches(
-            "[data-specialist-rating]"
-        )
-    ) {
-        state.filters.specialist.rating =
-            element.value;
-
-        renderSpecialists();
-    }
-
-    if (
-        element.matches(
-            "[data-marketplace-category]"
-        )
-    ) {
-        state.filters.marketplace.category =
-            element.value;
-
-        renderServices();
-        renderProducts();
-    }
-
-    if (
-        element.matches(
-            "[data-marketplace-region]"
-        )
-    ) {
-        state.filters.marketplace.region =
-            element.value;
-
-        renderServices();
-        renderProducts();
-    }
-
-    if (
-        element.matches(
-            "[data-marketplace-city]"
-        )
-    ) {
-        state.filters.marketplace.city =
-            element.value;
-
-        renderServices();
-        renderProducts();
-    }
-
-    if (
-        element.matches(
-            "[data-marketplace-max-price]"
-        )
-    ) {
-        state.filters.marketplace.maxPrice =
-            element.value;
-
-        renderServices();
-        renderProducts();
-    }
-
-    if (
-        element.matches("[data-job-region]")
-    ) {
-        state.filters.jobs.region =
-            element.value;
-
-        renderJobs();
-    }
-
-    if (
-        element.matches("[data-job-city]")
-    ) {
-        state.filters.jobs.city =
-            element.value;
-
-        renderJobs();
-    }
-
-    if (
-        element.matches(
-            "[data-project-status]"
-        )
-    ) {
-        state.filters.projects.status =
-            element.value;
-
-        renderProjects();
-    }
-
-    if (
-        element.matches(
-            "[data-realestate-city]"
-        )
-    ) {
-        state.filters.realEstate.city =
-            element.value;
-
-        renderRealEstate();
-    }
-
-    if (
-        element.matches(
-            "[data-realestate-max-price]"
-        )
-    ) {
-        state.filters.realEstate.maxPrice =
-            element.value;
-
-        renderRealEstate();
-    }
 }
+
+
+function hideEmpty(id) {
+
+    const element =
+        getById(id);
+
+    if (element)
+        element.hidden = true;
+
+}
+
 
 /* =========================================================
-   MARKETPLACE TABS
-   ========================================================= */
+   UTILITIES
+========================================================= */
 
-function switchMarketplaceTab(tab) {
-    state.currentMarketplaceTab =
-        tab;
+function normalizeArray(data) {
 
-    $$(".marketplace-tab").forEach(
-        button => {
-            button.classList.toggle(
-                "active",
-                button.dataset.tab === tab
-            );
-        }
-    );
-
-    const servicesGrid =
-        byId("servicesGrid");
-
-    const productsGrid =
-        byId("productsGrid");
-
-    if (servicesGrid) {
-        servicesGrid.style.display =
-            tab === "services"
-                ? "grid"
-                : "none";
-    }
-
-    if (productsGrid) {
-        productsGrid.style.display =
-            tab === "products"
-                ? "grid"
-                : "none";
-    }
-}
-
-/* =========================================================
-   REAL ESTATE TABS
-   ========================================================= */
-
-function switchRealEstateTab(tab) {
-    state.currentRealEstateTab =
-        tab;
-
-    $$(".real-estate-tab").forEach(
-        button => {
-            button.classList.toggle(
-                "active",
-                button.dataset.tab === tab
-            );
-        }
-    );
-
-    renderRealEstate();
-}
-
-/* =========================================================
-   SPECIALIST DETAILS
-   ========================================================= */
-
-async function openSpecialist(id) {
-    try {
-        const specialist =
-            await apiRequest(
-                `/smm/${encodeURIComponent(
-                    id
-                )}`
-            );
-
-        renderProfileData(
-            specialist
-        );
-
-        openModal("profileModal");
-    } catch {
-        const specialist =
-            state.specialists.find(
-                item =>
-                    String(item.id) ===
-                    String(id)
-            );
-
-        if (specialist) {
-            renderProfileData(
-                specialist
-            );
-
-            openModal(
-                "profileModal"
-            );
-        } else {
-            showToast(
-                "Профили мутахассис ёфт нашуд.",
-                "error"
-            );
-        }
-    }
-}
-
-function renderProfileData(profile) {
-    $$("[data-profile-name]").forEach(
-        element => {
-            element.textContent =
-                profile.name ||
-                [
-                    profile.firstName,
-                    profile.lastName
-                ]
-                    .filter(Boolean)
-                    .join(" ") ||
-                profile.username ||
-                "Мутахассис";
-        }
-    );
-
-    $$("[data-profile-bio]").forEach(
-        element => {
-            element.textContent =
-                profile.bio || "";
-        }
-    );
-
-    $$("[data-profile-avatar]").forEach(
-        element => {
-            element.src =
-                profile.avatar ||
-                profile.photo ||
-                "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80";
-        }
-    );
-}
-
-/* =========================================================
-   PROJECT DETAILS
-   ========================================================= */
-
-async function openProject(id) {
-    try {
-        const project =
-            await apiRequest(
-                `/projects/${encodeURIComponent(
-                    id
-                )}`
-            );
-
-        showToast(
-            project.description ||
-                project.title ||
-                "Лоиҳа",
-            "info",
-            project.title ||
-                "Лоиҳа"
-        );
-    } catch (error) {
-        showToast(
-            error.message ||
-                "Лоиҳа ёфт нашуд.",
-            "error"
-        );
-    }
-}
-
-/* =========================================================
-   REAL ESTATE DETAILS
-   ========================================================= */
-
-async function openRealEstate(id) {
-    try {
-        const listing =
-            await apiRequest(
-                `/real-estate/${encodeURIComponent(
-                    id
-                )}`
-            );
-
-        showToast(
-            listing.description ||
-                "Маълумоти эълон.",
-            "info",
-            listing.title ||
-                "Амвол"
-        );
-    } catch (error) {
-        showToast(
-            error.message ||
-                "Эълон ёфт нашуд.",
-            "error"
-        );
-    }
-}
-
-/* =========================================================
-   SERVICE ORDER
-   ========================================================= */
-
-async function orderService(id) {
-    if (!requireAuth()) return;
-
-    try {
-        /*
-         * Агар backend-и фармоиш омода бошад,
-         * ин endpoint истифода мешавад.
-         */
-
-        await apiRequest(
-            "/orders",
-            {
-                method: "POST",
-                body: JSON.stringify({
-                    serviceId: id
-                })
-            }
-        );
-
-        showToast(
-            "Фармоиш қабул шуд.",
-            "success"
-        );
-    } catch (error) {
-        showToast(
-            error.message ||
-                "Фармоиш иҷро нашуд.",
-            "error"
-        );
-    }
-}
-
-/* =========================================================
-   PRODUCT ORDER
-   ========================================================= */
-
-async function orderProduct(id) {
-    if (!requireAuth()) return;
-
-    try {
-        await apiRequest(
-            "/orders",
-            {
-                method: "POST",
-                body: JSON.stringify({
-                    productId: id
-                })
-            }
-        );
-
-        showToast(
-            "Фармоиш қабул шуд.",
-            "success"
-        );
-    } catch (error) {
-        showToast(
-            error.message ||
-                "Фармоиш иҷро нашуд.",
-            "error"
-        );
-    }
-}
-
-/* =========================================================
-   AUTH REQUIREMENT
-   ========================================================= */
-
-function requireAuth() {
-    if (state.user) return true;
-
-    showToast(
-        "Барои иҷрои ин амал ба аккаунт ворид шавед.",
-        "warning"
-    );
-
-    openModal("loginModal");
-
-    return false;
-}
-
-/* =========================================================
-   UTILITY FUNCTIONS
-   ========================================================= */
-
-function normalizeList(data) {
-    if (Array.isArray(data)) {
+    if (Array.isArray(data))
         return data;
-    }
 
-    if (Array.isArray(data?.data)) {
+
+    if (Array.isArray(data?.data))
         return data.data;
-    }
 
-    if (Array.isArray(data?.items)) {
+
+    if (Array.isArray(data?.items))
         return data.items;
-    }
 
-    if (Array.isArray(data?.results)) {
+
+    if (Array.isArray(data?.results))
         return data.results;
-    }
+
 
     return [];
+
 }
+
+
+function fullName(user) {
+
+    if (!user) return "";
+
+
+    return [
+        user.firstName,
+        user.lastName
+    ]
+        .filter(Boolean)
+        .join(" ");
+
+}
+
+
+function getInitials(user) {
+
+    if (!user)
+        return "U";
+
+
+    const name =
+        fullName(user) ||
+        user.username ||
+        user.name ||
+        "User";
+
+
+    return name
+        .split(/\s+/)
+        .slice(0, 2)
+        .map(word =>
+            word.charAt(0)
+        )
+        .join("")
+        .toUpperCase();
+
+}
+
 
 function formatPrice(value) {
-    const number =
-        Number(value) || 0;
-
-    if (!number) {
-        return "Бо мувофиқа";
-    }
-
-    return (
-        new Intl.NumberFormat(
-            "tg-TJ"
-        ).format(number) +
-        " сомонӣ"
-    );
-}
-
-function formatDate(date) {
-    if (!date) return "";
-
-    const parsed =
-        new Date(date);
 
     if (
-        Number.isNaN(
-            parsed.getTime()
-        )
+        value === null ||
+        value === undefined ||
+        value === ""
     ) {
-        return "";
+
+        return "Созишӣ";
+
     }
 
-    return parsed.toLocaleDateString(
+
+    const number =
+        Number(value);
+
+
+    if (Number.isNaN(number))
+        return `${value} TJS`;
+
+
+    return (
+        number.toLocaleString("en-US") +
+        " TJS"
+    );
+
+}
+
+
+function formatDate(value) {
+
+    if (!value)
+        return "—";
+
+
+    const date =
+        new Date(value);
+
+
+    if (Number.isNaN(date.getTime()))
+        return "—";
+
+
+    return date.toLocaleDateString(
         "tg-TJ",
         {
             day: "2-digit",
@@ -3562,237 +4985,468 @@ function formatDate(date) {
             year: "numeric"
         }
     );
+
 }
 
-function emptyState(
-    title,
-    description
+
+function formatTime(value) {
+
+    if (!value)
+        return "";
+
+
+    const date =
+        new Date(value);
+
+
+    if (Number.isNaN(date.getTime()))
+        return "";
+
+
+    return date.toLocaleTimeString(
+        "tg-TJ",
+        {
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
+
+}
+
+
+function categoryName(category) {
+
+    const categories = {
+
+        smm: "SMM",
+        design: "Design",
+        marketing: "Marketing",
+        programming: "Programming",
+        video: "Video Editing",
+        photography: "Photography",
+        copywriting: "Copywriting",
+        business: "Business",
+        education: "Education",
+        services: "Services",
+        products: "Products"
+
+    };
+
+
+    if (
+        typeof category === "object"
+    ) {
+
+        return (
+            category.name ||
+            category.title ||
+            "Категория"
+        );
+
+    }
+
+
+    return (
+        categories[
+            String(category)
+                .toLowerCase()
+        ] ||
+        category ||
+        "Категория"
+    );
+
+}
+
+
+function propertyName(type) {
+
+    const names = {
+
+        apartment: "Квартира",
+        house: "Хона",
+        room: "Ҳуҷра",
+        office: "Офис",
+        commercial: "Тиҷоратӣ",
+        land: "Замин"
+
+    };
+
+
+    return (
+        names[type] ||
+        type ||
+        "Амвол"
+    );
+
+}
+
+
+function statusName(status) {
+
+    const statuses = {
+
+        OPEN: "Кушода",
+        IN_PROGRESS: "Дар кор",
+        COMPLETED: "Анҷом ёфт",
+        CANCELLED: "Бекоршуда"
+
+    };
+
+
+    return (
+        statuses[status] ||
+        status ||
+        "OPEN"
+    );
+
+}
+
+
+function debounce(
+    callback,
+    delay = 300
 ) {
-    return `
-        <div class="empty-state">
 
-            <i class="fa-regular fa-folder-open"></i>
+    let timeout;
 
-            <h3>
-                ${escapeHTML(title)}
-            </h3>
 
-            <p>
-                ${escapeHTML(description)}
-            </p>
+    return (...args) => {
 
-        </div>
-    `;
+        clearTimeout(timeout);
+
+
+        timeout =
+            setTimeout(
+                () =>
+                    callback(...args),
+                delay
+            );
+
+    };
+
 }
+
 
 function setButtonLoading(
-    selector,
+    button,
     loading
 ) {
-    const button = $(selector);
 
     if (!button) return;
 
+
     if (loading) {
+
         button.dataset.originalText =
             button.innerHTML;
 
         button.disabled = true;
 
-        button.innerHTML = `
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            Интизор шавед...
-        `;
+        button.innerHTML =
+            `<span class="button-loader"></span>`;
+
     } else {
+
         button.disabled = false;
 
-        if (
-            button.dataset.originalText
-        ) {
-            button.innerHTML =
-                button.dataset.originalText;
+        button.innerHTML =
+            button.dataset.originalText ||
+            "Ирсол кардан";
+
+    }
+
+}
+
+
+function requireAuth() {
+
+    if (state.user)
+        return true;
+
+
+    toast(
+        "Барои ин амал аввал ворид шавед.",
+        "warning"
+    );
+
+
+    openModal("loginModal");
+
+    return false;
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHTML(value) {
+
+    return String(
+        value ?? ""
+    )
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+/* =========================================================
+   ICON HELPERS
+========================================================= */
+
+function toastIcon(type) {
+
+    return {
+
+        success: "✓",
+        error: "!",
+        warning: "⚠",
+        info: "i"
+
+    }[type] || "i";
+
+}
+
+
+function toastTitle(type) {
+
+    return {
+
+        success: "Муваффақият",
+        error: "Хатогӣ",
+        warning: "Огоҳӣ",
+        info: "Маълумот"
+
+    }[type] || "Маълумот";
+
+}
+
+
+function notificationIcon(type) {
+
+    return {
+
+        proposal: "◆",
+        message: "◇",
+        review: "★",
+        project: "◈",
+        application: "▣",
+        admin: "⚙"
+
+    }[type] || "♢";
+
+}
+
+
+function searchTypeIcon(type) {
+
+    return {
+
+        specialist: "👤",
+        service: "◆",
+        job: "💼",
+        project: "◈",
+        product: "📦",
+        realEstate: "🏠"
+
+    }[type] || "⌕";
+
+}
+
+
+/* =========================================================
+   BUTTON / CARD INTERACTION
+========================================================= */
+
+document.addEventListener(
+    "mousemove",
+    event => {
+
+        const cards =
+            document.elementsFromPoint(
+                event.clientX,
+                event.clientY
+            );
+
+
+        const card =
+            cards.find(element =>
+                element.classList?.contains(
+                    "marketplace-card"
+                ) ||
+                element.classList?.contains(
+                    "specialist-card"
+                )
+            );
+
+
+        if (!card) return;
+
+
+        const rect =
+            card.getBoundingClientRect();
+
+
+        const x =
+            event.clientX - rect.left;
+
+
+        const y =
+            event.clientY - rect.top;
+
+
+        const rotateX =
+            ((y / rect.height) - 0.5) *
+            -5;
+
+
+        const rotateY =
+            ((x / rect.width) - 0.5) *
+            5;
+
+
+        card.style.setProperty(
+            "--rx",
+            `${rotateX}deg`
+        );
+
+
+        card.style.setProperty(
+            "--ry",
+            `${rotateY}deg`
+        );
+
+    }
+);
+
+
+/* =========================================================
+   HEADER SCROLL
+========================================================= */
+
+window.addEventListener(
+    "scroll",
+    () => {
+
+        const header =
+            getById("header");
+
+
+        if (!header) return;
+
+
+        if (window.scrollY > 30) {
+
+            header.classList.add(
+                "scrolled"
+            );
+
+        } else {
+
+            header.classList.remove(
+                "scrolled"
+            );
+
         }
+
+    },
+    {
+        passive: true
     }
-}
+);
+
 
 /* =========================================================
-   RENDER ALL
-   ========================================================= */
+   ACTIVE SECTION
+========================================================= */
 
-function renderAll() {
-    renderSpecialists();
-    renderServices();
-    renderProducts();
-    renderJobs();
-    renderProjects();
-    renderRealEstate();
-    renderReviews();
-    renderNotifications();
-
-    updateNotificationCount();
-
-    updateAuthUI();
-
-    switchMarketplaceTab(
-        state.currentMarketplaceTab
+const sections =
+    $$(
+        "main section[id]"
     );
 
-    switchRealEstateTab(
-        state.currentRealEstateTab
-    );
-}
 
-/* =========================================================
-   LOADING SCREEN
-   ========================================================= */
+if (sections.length) {
 
-function hideLoadingScreen() {
-    const screen =
-        byId("loadingScreen") ||
-        $(".loading-screen");
+    const sectionObserver =
+        new IntersectionObserver(
+            entries => {
 
-    if (!screen) return;
+                entries.forEach(entry => {
 
-    setTimeout(() => {
-        screen.classList.add(
-            "hidden"
-        );
-    }, 500);
-}
-
-/* =========================================================
-   ACTIVE NAV
-   ========================================================= */
-
-function setupNavigation() {
-    const links =
-        $$(".nav-link");
-
-    links.forEach(link => {
-        link.addEventListener(
-            "click",
-            () => {
-                links.forEach(item =>
-                    item.classList.remove(
-                        "active"
+                    if (
+                        !entry.isIntersecting
                     )
-                );
+                        return;
 
-                link.classList.add(
-                    "active"
-                );
 
-                closeMobileMenu();
+                    const id =
+                        entry.target.id;
+
+
+                    $$(".nav-link")
+                        .forEach(link => {
+
+                            link.classList.toggle(
+                                "active",
+                                link.getAttribute(
+                                    "href"
+                                ) === `#${id}`
+                            );
+
+                        });
+
+
+                    $$(".bottom-nav-item")
+                        .forEach(link => {
+
+                            link.classList.toggle(
+                                "active",
+                                link.getAttribute(
+                                    "href"
+                                ) === `#${id}`
+                            );
+
+                        });
+
+                });
+
+            },
+            {
+                threshold: 0.35
             }
         );
-    });
+
+
+    sections.forEach(section =>
+        sectionObserver.observe(section)
+    );
+
 }
 
-/* =========================================================
-   CLOSE MODAL BY BACKDROP
-   ========================================================= */
 
-function setupModalBackdrop() {
-    $$(".modal").forEach(modal => {
-        modal.addEventListener(
-            "click",
-            event => {
-                if (
-                    event.target ===
-                    modal
-                ) {
-                    closeModal(
-                        modal.id
-                    );
-                }
-            }
+/* =========================================================
+   GLOBAL ERROR PROTECTION
+========================================================= */
+
+window.addEventListener(
+    "unhandledrejection",
+    event => {
+
+        console.error(
+            "Unhandled Promise:",
+            event.reason
         );
-    });
-}
 
-/* =========================================================
-   INIT
-   ========================================================= */
-
-async function init() {
-    console.log(
-        "%cSMM.TJ",
-        "color:#8b5cf6;font-size:28px;font-weight:900"
-    );
-
-    console.log(
-        "SMM.TJ Marketplace initialized."
-    );
-
-    setupEvents();
-
-    setupNavigation();
-
-    setupModalBackdrop();
-
-    updateAuthUI();
-
-    hideLoadingScreen();
-
-    await loadInitialData();
-
-    if (state.user) {
-        await Promise.allSettled([
-            loadNotifications(),
-            loadConversations()
-        ]);
     }
+);
 
-    renderAll();
-}
-
-/* =========================================================
-   START
-   ========================================================= */
-
-if (
-    document.readyState ===
-    "loading"
-) {
-    document.addEventListener(
-        "DOMContentLoaded",
-        init
-    );
-} else {
-    init();
-}
 
 /* =========================================================
-   GLOBAL API
-   ========================================================= */
-
-window.SMMTJ = {
-    state,
-
-    login,
-    register,
-    logout,
-
-    createProject,
-    createService,
-    createProduct,
-    createRealEstate,
-
-    sendProposal,
-    sendMessage,
-
-    loadInitialData,
-    loadSpecialists,
-    loadServices,
-    loadProducts,
-    loadJobs,
-    loadProjects,
-    loadRealEstate,
-
-    showToast,
-    openModal,
-    closeModal,
-
-    switchMarketplaceTab,
-    switchRealEstateTab
-};
+   END
+========================================================= */
