@@ -1,1727 +1,4128 @@
-"use strict";
+/* =========================================================
+   SMM.TJ — MAIN WEBSITE
+   src/script.js
+========================================================= */
 
-/*
-====================================================
- SMM.TJ FRONTEND
-====================================================
+const API_BASE =
+    window.SMM_API_URL ||
+    "http://localhost:4000/api";
 
-IMPORTANT:
 
-This frontend does NOT fake authentication.
-
-When backend exists, change:
-
-API_URL
-
-to your real backend URL.
-
-Example:
-
-https://api.smm.tj/api
-
-====================================================
-*/
-
-
-const API_URL =
-  window.SMMTJ_API_URL ||
-  "http://localhost:4000/api";
-
-
-/* ==================================================
-   TRANSLATIONS
-================================================== */
-
-const translations = {
-
-  tj: {
-
-    home: "Асосӣ",
-    services: "Хизматрасониҳо",
-    specialists: "Мутахассисон",
-    how: "Чӣ тавр кор мекунад",
-
-    login: "Ворид шудан",
-    register: "Бақайдгирӣ",
-
-    heroTitle:
-      "Платформаи касбии SMM дар Тоҷикистон",
-
-    heroDescription:
-      "Беҳтарин мутахассиси SMM-ро пайдо кунед, лоиҳаи худро оғоз кунед ва натиҷаро назорат намоед.",
-
-    findSpecialist:
-      "Мутахассиси SMM пайдо кунед",
-
-    joinSpecialist:
-      "Ҳамчун SMM мутахассис ҳамроҳ шавед",
-
-    specialistsStat:
-      "Мутахассисон",
-
-    projectsStat:
-      "Лоиҳаҳо",
-
-    satisfaction:
-      "Қаноатмандӣ",
-
-    servicesTitle:
-      "Ҳамаи хизматҳои SMM дар як платформа",
-
-    servicesDescription:
-      "Аз контент то реклама — мутахассиси мувофиқро пайдо кунед.",
-
-    specialistsTitle:
-      "Мутахассисони SMM",
-
-    specialistsDescription:
-      "Мутахассиси мувофиқро аз рӯи таҷриба, рейтинг ва хизмат интихоб кунед.",
-
-    howTitle:
-      "Чӣ тавр кор мекунад?",
-
-    step1Title:
-      "Лоиҳа созед",
-
-    step1Text:
-      "Вазифа ва буҷаи худро муайян кунед.",
-
-    step2Title:
-      "Мутахассис интихоб кунед",
-
-    step2Text:
-      "Пешниҳодҳоро муқоиса кунед.",
-
-    step3Title:
-      "Корро оғоз кунед",
-
-    step3Text:
-      "Chat, tasks ва content calendar истифода баред.",
-
-    step4Title:
-      "Натиҷаро бинед",
-
-    step4Text:
-      "Analytics ва review-ро истифода баред.",
-
-    footer:
-      "Платформаи касбии SMM дар Тоҷикистон"
-
-  },
-
-
-  ru: {
-
-    home: "Главная",
-    services: "Услуги",
-    specialists: "Специалисты",
-    how: "Как это работает",
-
-    login: "Войти",
-    register: "Регистрация",
-
-    heroTitle:
-      "Профессиональная SMM-платформа в Таджикистане",
-
-    heroDescription:
-      "Найдите подходящего SMM-специалиста, создайте проект и контролируйте результат.",
-
-    findSpecialist:
-      "Найти SMM-специалиста",
-
-    joinSpecialist:
-      "Присоединиться как SMM-специалист",
-
-    specialistsStat:
-      "Специалистов",
-
-    projectsStat:
-      "Проектов",
-
-    satisfaction:
-      "Удовлетворённость",
-
-    servicesTitle:
-      "Все SMM-услуги на одной платформе",
-
-    servicesDescription:
-      "От контента до рекламы — найдите подходящего специалиста.",
-
-    specialistsTitle:
-      "SMM-специалисты",
-
-    specialistsDescription:
-      "Выбирайте специалиста по опыту, рейтингу и услугам.",
-
-    howTitle:
-      "Как это работает?",
-
-    step1Title:
-      "Создайте проект",
-
-    step1Text:
-      "Опишите задачу и бюджет.",
-
-    step2Title:
-      "Выберите специалиста",
-
-    step2Text:
-      "Сравните предложения.",
-
-    step3Title:
-      "Начните работу",
-
-    step3Text:
-      "Используйте чат, задачи и контент-календарь.",
-
-    step4Title:
-      "Смотрите результат",
-
-    step4Text:
-      "Используйте аналитику и отзывы.",
-
-    footer:
-      "Профессиональная SMM-платформа в Таджикистане"
-
-  },
-
-
-  en: {
-
-    home: "Home",
-    services: "Services",
-    specialists: "Specialists",
-    how: "How it works",
-
-    login: "Log in",
-    register: "Register",
-
-    heroTitle:
-      "Professional SMM platform in Tajikistan",
-
-    heroDescription:
-      "Find the right SMM specialist, create a project and track your results.",
-
-    findSpecialist:
-      "Find an SMM specialist",
-
-    joinSpecialist:
-      "Join as an SMM specialist",
-
-    specialistsStat:
-      "Specialists",
-
-    projectsStat:
-      "Projects",
-
-    satisfaction:
-      "Satisfaction",
-
-    servicesTitle:
-      "All SMM services in one platform",
-
-    servicesDescription:
-      "From content to advertising — find the right specialist.",
-
-    specialistsTitle:
-      "SMM Specialists",
-
-    specialistsDescription:
-      "Choose specialists by experience, rating and services.",
-
-    howTitle:
-      "How does it work?",
-
-    step1Title:
-      "Create a project",
-
-    step1Text:
-      "Describe your task and budget.",
-
-    step2Title:
-      "Choose a specialist",
-
-    step2Text:
-      "Compare proposals.",
-
-    step3Title:
-      "Start working",
-
-    step3Text:
-      "Use chat, tasks and content calendar.",
-
-    step4Title:
-      "See results",
-
-    step4Text:
-      "Use analytics and reviews.",
-
-    footer:
-      "Professional SMM platform in Tajikistan"
-
-  }
-
-};
-
-
-/* ==================================================
+/* =========================================================
    STATE
-================================================== */
+========================================================= */
 
 const state = {
+    accessToken:
+        localStorage.getItem("smm_access_token") || "",
 
-  language:
-    localStorage.getItem("smm_language") || "tj",
+    refreshToken:
+        localStorage.getItem("smm_refresh_token") || "",
 
-  authMode:
-    "login",
+    user: null,
 
-  user:
-    null,
+    currentCategory: "",
 
-  specialists:
-    []
+    currentSearch: "",
 
+    currentRegion: "",
+
+    currentCity: "",
+
+    marketplaceType: "services",
+
+    page: {
+        specialists: 1,
+        marketplace: 1,
+        jobs: 1,
+        projects: 1,
+        realEstate: 1
+    },
+
+    favorites: new Set(
+        JSON.parse(
+            localStorage.getItem(
+                "smm_favorites"
+            ) || "[]"
+        )
+    )
 };
 
 
-/* ==================================================
-   DOM READY
-================================================== */
+/* =========================================================
+   DOM
+========================================================= */
 
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
+const $ = (selector) =>
+    document.querySelector(selector);
 
-    initLanguage();
-
-    initNavigation();
-
-    initAuth();
-
-    initMobileMenu();
-
-    initButtons();
-
-    initYear();
-
-    loadCurrentUser();
-
-    loadSpecialists();
-
-  }
-);
-
-
-/* ==================================================
-   LANGUAGE
-================================================== */
-
-function initLanguage() {
-
-  const selector =
-    document.getElementById(
-      "languageSelector"
+const $$ = (selector) =>
+    Array.from(
+        document.querySelectorAll(selector)
     );
 
-  if (!selector) return;
+const byId = (id) =>
+    document.getElementById(id);
 
-  selector.value =
-    state.language;
 
-  selector.addEventListener(
-    "change",
-    event => {
+/* =========================================================
+   HTML SAFETY
+========================================================= */
 
-      state.language =
-        event.target.value;
-
-      localStorage.setItem(
-        "smm_language",
-        state.language
-      );
-
-      applyTranslations();
-
-    }
-  );
-
-  applyTranslations();
-
+function escapeHTML(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
 
 
-function applyTranslations() {
-
-  const dictionary =
-    translations[state.language];
-
-  if (!dictionary) return;
-
-  document
-    .querySelectorAll("[data-i18n]")
-    .forEach(element => {
-
-      const key =
-        element.dataset.i18n;
-
-      if (
-        Object.prototype.hasOwnProperty.call(
-          dictionary,
-          key
-        )
-      ) {
-
-        element.textContent =
-          dictionary[key];
-
-      }
-
-    });
-
-}
-
-
-/* ==================================================
-   NAVIGATION
-================================================== */
-
-function initNavigation() {
-
-  document
-    .querySelectorAll('a[href^="#"]')
-    .forEach(link => {
-
-      link.addEventListener(
-        "click",
-        event => {
-
-          const id =
-            link.getAttribute("href");
-
-          if (
-            !id ||
-            id === "#"
-          ) return;
-
-          const target =
-            document.querySelector(id);
-
-          if (!target) return;
-
-          event.preventDefault();
-
-          target.scrollIntoView({
-            behavior: "smooth"
-          });
-
-          const mobileMenu =
-            document.getElementById(
-              "mobileMenu"
-            );
-
-          if (mobileMenu) {
-
-            mobileMenu.classList.remove(
-              "active"
-            );
-
-          }
-
-        }
-      );
-
-    });
-
-}
-
-
-/* ==================================================
-   MOBILE MENU
-================================================== */
-
-function initMobileMenu() {
-
-  const button =
-    document.getElementById(
-      "mobileMenuButton"
-    );
-
-  const menu =
-    document.getElementById(
-      "mobileMenu"
-    );
-
-  if (!button || !menu) return;
-
-  button.addEventListener(
-    "click",
-    () => {
-
-      menu.classList.toggle(
-        "active"
-      );
-
-    }
-  );
-
-}
-
-
-/* ==================================================
-   AUTH MODAL
-================================================== */
-
-function initAuth() {
-
-  const modal =
-    document.getElementById(
-      "authModal"
-    );
-
-  const close =
-    document.getElementById(
-      "closeModal"
-    );
-
-  const login =
-    document.getElementById(
-      "loginButton"
-    );
-
-  const register =
-    document.getElementById(
-      "registerButton"
-    );
-
-  const form =
-    document.getElementById(
-      "authForm"
-    );
-
-  if (!modal) return;
-
-
-  login?.addEventListener(
-    "click",
-    () => {
-
-      state.authMode =
-        "login";
-
-      openAuthModal();
-
-    }
-  );
-
-
-  register?.addEventListener(
-    "click",
-    () => {
-
-      state.authMode =
-        "register";
-
-      openAuthModal();
-
-    }
-  );
-
-
-  close?.addEventListener(
-    "click",
-    closeAuthModal
-  );
-
-
-  modal.addEventListener(
-    "click",
-    event => {
-
-      if (
-        event.target === modal
-      ) {
-
-        closeAuthModal();
-
-      }
-
-    }
-  );
-
-
-  form?.addEventListener(
-    "submit",
-    handleAuthSubmit
-  );
-
-}
-
-
-function openAuthModal() {
-
-  const modal =
-    document.getElementById(
-      "authModal"
-    );
-
-  const title =
-    document.getElementById(
-      "modalTitle"
-    );
-
-  const submit =
-    document.getElementById(
-      "authSubmit"
-    );
-
-  const nameField =
-    document.getElementById(
-      "nameField"
-    );
-
-  const roleField =
-    document.getElementById(
-      "roleField"
-    );
-
-  const message =
-    document.getElementById(
-      "authMessage"
-    );
-
-
-  if (!modal) return;
-
-
-  const dictionary =
-    translations[state.language];
-
-
-  if (
-    state.authMode ===
-    "register"
-  ) {
-
-    title.textContent =
-      dictionary.register;
-
-    submit.textContent =
-      dictionary.register;
-
-    nameField.classList.remove(
-      "hidden"
-    );
-
-    roleField.classList.remove(
-      "hidden"
-    );
-
-  } else {
-
-    title.textContent =
-      dictionary.login;
-
-    submit.textContent =
-      dictionary.login;
-
-    nameField.classList.add(
-      "hidden"
-    );
-
-    roleField.classList.add(
-      "hidden"
-    );
-
-  }
-
-
-  message.textContent = "";
-
-  modal.classList.add(
-    "active"
-  );
-
-}
-
-
-function closeAuthModal() {
-
-  const modal =
-    document.getElementById(
-      "authModal"
-    );
-
-  modal?.classList.remove(
-    "active"
-  );
-
-}
-
-
-/* ==================================================
-   REAL AUTH REQUEST
-================================================== */
-
-async function handleAuthSubmit(
-  event
+/* =========================================================
+   API
+========================================================= */
+
+async function api(
+    endpoint,
+    options = {},
+    retry = true
 ) {
-
-  event.preventDefault();
-
-
-  const email =
-    document.getElementById(
-      "authEmail"
-    ).value.trim();
-
-  const password =
-    document.getElementById(
-      "authPassword"
-    ).value;
-
-  const name =
-    document.getElementById(
-      "authName"
-    ).value.trim();
-
-  const role =
-    document.getElementById(
-      "authRole"
-    ).value;
-
-  const message =
-    document.getElementById(
-      "authMessage"
+    const headers = new Headers(
+        options.headers || {}
     );
 
+    if (
+        options.body &&
+        !(options.body instanceof FormData)
+    ) {
+        headers.set(
+            "Content-Type",
+            "application/json"
+        );
+    }
 
-  if (!email || !password) {
+    if (state.accessToken) {
+        headers.set(
+            "Authorization",
+            `Bearer ${state.accessToken}`
+        );
+    }
 
-    message.textContent =
-      "Маълумотҳоро пур кунед.";
+    let response;
 
-    return;
+    try {
+        response = await fetch(
+            `${API_BASE}${endpoint}`,
+            {
+                ...options,
+                headers
+            }
+        );
+    } catch (error) {
+        toast(
+            "Ба сервер пайваст шудан имконнопазир аст.",
+            "error"
+        );
 
-  }
+        throw error;
+    }
 
+    if (
+        response.status === 401 &&
+        retry &&
+        state.refreshToken
+    ) {
+        const refreshed =
+            await refreshToken();
 
-  try {
-
-    message.textContent =
-      "Пайвастшавӣ...";
-
-
-    const endpoint =
-      state.authMode ===
-      "register"
-        ? "/auth/register"
-        : "/auth/login";
-
-
-    const body =
-      state.authMode ===
-      "register"
-        ? {
-            name,
-            email,
-            password,
-            role
-          }
-        : {
-            email,
-            password
-          };
-
-
-    const response =
-      await fetch(
-        API_URL + endpoint,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-
-          body:
-            JSON.stringify(body)
+        if (refreshed) {
+            return api(
+                endpoint,
+                options,
+                false
+            );
         }
-      );
+    }
 
+    let result;
 
-    const data =
-      await response.json();
+    const contentType =
+        response.headers.get(
+            "content-type"
+        ) || "";
 
+    if (
+        contentType.includes(
+            "application/json"
+        )
+    ) {
+        result =
+            await response.json();
+    } else {
+        result =
+            await response.text();
+    }
 
     if (!response.ok) {
-
-      throw new Error(
-        data.error ||
-        "REQUEST_FAILED"
-      );
-
+        throw new Error(
+            result?.message ||
+            result ||
+            `HTTP ${response.status}`
+        );
     }
 
+    return result;
+}
 
-    if (!data.token) {
 
-      throw new Error(
-        "AUTH_TOKEN_MISSING"
-      );
+/* =========================================================
+   AUTH
+========================================================= */
 
+async function refreshToken() {
+    if (!state.refreshToken) {
+        return false;
     }
 
+    try {
+        const response =
+            await fetch(
+                `${API_BASE}/auth/refresh`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body: JSON.stringify({
+                        refreshToken:
+                            state.refreshToken
+                    })
+                }
+            );
+
+        if (!response.ok) {
+            return false;
+        }
+
+        const data =
+            await response.json();
+
+        const access =
+            data.accessToken ||
+            data.data?.accessToken;
+
+        const refresh =
+            data.refreshToken ||
+            data.data?.refreshToken;
+
+        if (!access) {
+            return false;
+        }
+
+        saveTokens(
+            access,
+            refresh
+        );
+
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+
+function saveTokens(
+    accessToken,
+    refreshToken
+) {
+    state.accessToken =
+        accessToken;
 
     localStorage.setItem(
-      "smm_token",
-      data.token
+        "smm_access_token",
+        accessToken
     );
 
+    if (refreshToken) {
+        state.refreshToken =
+            refreshToken;
 
-    state.user =
-      data.user;
-
-
-    closeAuthModal();
-
-
-    redirectByRole(
-      data.user.role
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "SMM.TJ auth error:",
-      error
-    );
-
-
-    message.textContent =
-      "Ба сервер пайваст шудан имкон нашуд ё маълумот нодуруст аст.";
-
-  }
-
+        localStorage.setItem(
+            "smm_refresh_token",
+            refreshToken
+        );
+    }
 }
 
 
-/* ==================================================
-   CURRENT USER
-================================================== */
+function clearAuth() {
+    state.accessToken = "";
+    state.refreshToken = "";
+    state.user = null;
 
-async function loadCurrentUser() {
-
-  const token =
-    localStorage.getItem(
-      "smm_token"
+    localStorage.removeItem(
+        "smm_access_token"
     );
 
-  if (!token) return;
+    localStorage.removeItem(
+        "smm_refresh_token"
+    );
+}
 
 
-  try {
+/* =========================================================
+   TOAST
+========================================================= */
 
-    const response =
-      await fetch(
-        API_URL + "/me",
-        {
-          headers: {
-            Authorization:
-              "Bearer " + token
-          }
+function toast(
+    message,
+    type = "info"
+) {
+    let container =
+        byId("toast-container") ||
+        byId("admin-toast-container");
+
+    if (!container) {
+        container =
+            document.createElement(
+                "div"
+            );
+
+        container.id =
+            "toast-container";
+
+        document.body.appendChild(
+            container
+        );
+    }
+
+    const item =
+        document.createElement("div");
+
+    item.className =
+        `toast toast-${type}`;
+
+    item.innerHTML = `
+        <span>
+            ${
+                type === "success"
+                    ? "✓"
+                    : type === "error"
+                    ? "!"
+                    : "i"
+            }
+        </span>
+
+        <p>
+            ${escapeHTML(message)}
+        </p>
+
+        <button type="button">
+            ×
+        </button>
+    `;
+
+    container.appendChild(item);
+
+    item
+        .querySelector("button")
+        ?.addEventListener(
+            "click",
+            () => item.remove()
+        );
+
+    setTimeout(
+        () => item.remove(),
+        5000
+    );
+}
+
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+function openModal(id) {
+    const modal = byId(id);
+
+    if (!modal) return;
+
+    modal.hidden = false;
+
+    document.body.classList.add(
+        "modal-open"
+    );
+}
+
+
+function closeModal(id) {
+    const modal = byId(id);
+
+    if (!modal) return;
+
+    modal.hidden = true;
+
+    document.body.classList.remove(
+        "modal-open"
+    );
+}
+
+
+function closeAllModals() {
+    $$(".modal, .modal-overlay")
+        .forEach((modal) => {
+            modal.hidden = true;
+        });
+
+    document.body.classList.remove(
+        "modal-open"
+    );
+}
+
+
+/* =========================================================
+   AUTH UI
+========================================================= */
+
+async function loadCurrentUser() {
+    if (!state.accessToken) {
+        updateAuthUI();
+        return;
+    }
+
+    try {
+        const result =
+            await api(
+                "/auth/me"
+            );
+
+        state.user =
+            result.data ||
+            result.user ||
+            result;
+
+        updateAuthUI();
+    } catch {
+        clearAuth();
+        updateAuthUI();
+    }
+}
+
+
+function updateAuthUI() {
+    const loginButtons =
+        $$("[data-auth-login]");
+
+    const profileButtons =
+        $$("[data-auth-profile]");
+
+    const logoutButtons =
+        $$("[data-auth-logout]");
+
+
+    loginButtons.forEach(
+        (button) => {
+            button.hidden =
+                !!state.user;
         }
-      );
+    );
 
 
-    if (!response.ok) {
+    profileButtons.forEach(
+        (button) => {
+            button.hidden =
+                !state.user;
+        }
+    );
 
-      throw new Error(
-        "SESSION_EXPIRED"
-      );
 
+    logoutButtons.forEach(
+        (button) => {
+            button.hidden =
+                !state.user;
+        }
+    );
+
+
+    const name =
+        [
+            state.user?.firstName,
+            state.user?.lastName
+        ]
+            .filter(Boolean)
+            .join(" ") ||
+        state.user?.username ||
+        "Профил";
+
+
+    $$("[data-user-name]")
+        .forEach(
+            el =>
+                el.textContent = name
+        );
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+const loginForm =
+    byId("login-form");
+
+if (loginForm) {
+    loginForm.addEventListener(
+        "submit",
+        async (event) => {
+
+            event.preventDefault();
+
+            const form =
+                new FormData(
+                    loginForm
+                );
+
+            const identifier =
+                form.get("identifier") ||
+                form.get("email") ||
+                form.get("phone");
+
+            const password =
+                form.get("password");
+
+
+            if (
+                !identifier ||
+                !password
+            ) {
+                toast(
+                    "Email/телефон ва password-ро пур кунед.",
+                    "warning"
+                );
+                return;
+            }
+
+
+            const button =
+                loginForm.querySelector(
+                    "button[type='submit']"
+                );
+
+            if (button) {
+                button.disabled = true;
+            }
+
+
+            try {
+
+                const result =
+                    await api(
+                        "/auth/login",
+                        {
+                            method: "POST",
+                            body: JSON.stringify({
+                                identifier,
+                                email:
+                                    form.get(
+                                        "email"
+                                    ),
+                                phone:
+                                    form.get(
+                                        "phone"
+                                    ),
+                                password
+                            })
+                        }
+                    );
+
+
+                const data =
+                    result.data ||
+                    result;
+
+
+                saveTokens(
+                    data.accessToken ||
+                    data.token,
+                    data.refreshToken
+                );
+
+
+                state.user =
+                    data.user || null;
+
+
+                closeModal(
+                    "login-modal"
+                );
+
+
+                updateAuthUI();
+
+
+                toast(
+                    "Хуш омадед!",
+                    "success"
+                );
+
+
+                await loadHomeData();
+
+            } catch (error) {
+
+                toast(
+                    error.message ||
+                    "Воридшавӣ ноком шуд.",
+                    "error"
+                );
+
+            } finally {
+
+                if (button) {
+                    button.disabled = false;
+                }
+            }
+        }
+    );
+}
+
+
+/* =========================================================
+   REGISTER
+========================================================= */
+
+const registerForm =
+    byId("register-form");
+
+if (registerForm) {
+
+    registerForm.addEventListener(
+        "submit",
+        async (event) => {
+
+            event.preventDefault();
+
+            const form =
+                new FormData(
+                    registerForm
+                );
+
+
+            const password =
+                form.get("password");
+
+            const confirmPassword =
+                form.get(
+                    "confirmPassword"
+                ) ||
+                form.get(
+                    "passwordConfirm"
+                );
+
+
+            if (
+                password !==
+                confirmPassword
+            ) {
+
+                toast(
+                    "Паролҳо мувофиқ нестанд.",
+                    "warning"
+                );
+
+                return;
+            }
+
+
+            const payload = {
+
+                firstName:
+                    form.get(
+                        "firstName"
+                    ),
+
+                lastName:
+                    form.get(
+                        "lastName"
+                    ),
+
+                username:
+                    form.get(
+                        "username"
+                    ),
+
+                phone:
+                    form.get(
+                        "phone"
+                    ),
+
+                email:
+                    form.get(
+                        "email"
+                    ),
+
+                password,
+
+                confirmPassword,
+
+                region:
+                    form.get(
+                        "region"
+                    ),
+
+                city:
+                    form.get(
+                        "city"
+                    ),
+
+                role:
+                    form.get(
+                        "role"
+                    ) ||
+                    "CLIENT"
+            };
+
+
+            try {
+
+                const result =
+                    await api(
+                        "/auth/register",
+                        {
+                            method: "POST",
+                            body: JSON.stringify(
+                                payload
+                            )
+                        }
+                    );
+
+
+                const data =
+                    result.data ||
+                    result;
+
+
+                if (
+                    data.accessToken ||
+                    data.token
+                ) {
+
+                    saveTokens(
+                        data.accessToken ||
+                        data.token,
+                        data.refreshToken
+                    );
+
+                    state.user =
+                        data.user || null;
+
+                }
+
+
+                closeModal(
+                    "register-modal"
+                );
+
+
+                updateAuthUI();
+
+
+                toast(
+                    "Аккаунт бомуваффақият сохта шуд.",
+                    "success"
+                );
+
+
+                await loadHomeData();
+
+            } catch (error) {
+
+                toast(
+                    error.message ||
+                    "Регистрация ноком шуд.",
+                    "error"
+                );
+            }
+        }
+    );
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+async function logout() {
+
+    try {
+
+        if (state.refreshToken) {
+
+            await api(
+                "/auth/logout",
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        refreshToken:
+                            state.refreshToken
+                    })
+                }
+            );
+
+        }
+
+    } catch {
+        // local logout still happens
     }
 
 
-    state.user =
-      await response.json();
+    clearAuth();
 
+    updateAuthUI();
 
-  } catch {
-
-    localStorage.removeItem(
-      "smm_token"
+    toast(
+        "Шумо аз аккаунт баромадед.",
+        "success"
     );
 
-    state.user =
-      null;
-
-  }
-
+    await loadHomeData();
 }
 
 
-/* ==================================================
-   ROLE REDIRECT
-================================================== */
+/* =========================================================
+   SEARCH
+========================================================= */
 
-function redirectByRole(
-  role
+async function performSearch(
+    query = null
 ) {
 
-  if (role === "ADMIN") {
-
-    window.location.href =
-      "Admin.panel";
-
-    return;
-
-  }
+    const searchInput =
+        byId("global-search") ||
+        byId("search-input") ||
+        $(
+            "input[name='search']"
+        );
 
 
-  /*
-   * These pages should be created:
-   *
-   * client.html
-   * specialist.html
-   *
-   * They will be connected to the same API.
-   */
-
-  if (role === "CLIENT") {
-
-    window.location.href =
-      "client.html";
-
-    return;
-
-  }
+    const value =
+        query !== null
+            ? query
+            : searchInput?.value.trim() ||
+              "";
 
 
-  if (role === "SPECIALIST") {
+    state.currentSearch =
+        value;
 
-    window.location.href =
-      "specialist.html";
 
-  }
+    const modal =
+        byId("search-modal");
 
+
+    if (modal) {
+        closeModal(
+            "search-modal"
+        );
+    }
+
+
+    await Promise.allSettled([
+        loadSpecialists(),
+        loadMarketplace(),
+        loadJobs(),
+        loadProjects(),
+        loadRealEstate()
+    ]);
 }
 
 
-/* ==================================================
+/* =========================================================
+   SEARCH FORMS
+========================================================= */
+
+$$("form[data-search-form]")
+    .forEach(
+        (form) => {
+
+            form.addEventListener(
+                "submit",
+                async (event) => {
+
+                    event.preventDefault();
+
+                    const input =
+                        form.querySelector(
+                            "input"
+                        );
+
+                    await performSearch(
+                        input?.value || ""
+                    );
+                }
+            );
+
+        }
+    );
+
+
+/* =========================================================
    SPECIALISTS
-================================================== */
+========================================================= */
 
 async function loadSpecialists() {
 
-  const container =
-    document.getElementById(
-      "specialistGrid"
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        state.page.specialists
     );
 
-  if (!container) return;
+
+    params.set(
+        "limit",
+        "12"
+    );
 
 
-  try {
-
-    const response =
-      await fetch(
-        API_URL +
-        "/specialists?limit=6"
-      );
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        "SPECIALISTS_REQUEST_FAILED"
-      );
-
+    if (
+        state.currentSearch
+    ) {
+        params.set(
+            "search",
+            state.currentSearch
+        );
     }
 
 
-    const data =
-      await response.json();
+    if (
+        state.currentCategory
+    ) {
+        params.set(
+            "category",
+            state.currentCategory
+        );
+    }
 
 
-    state.specialists =
-      data.items || [];
+    if (
+        state.currentRegion
+    ) {
+        params.set(
+            "region",
+            state.currentRegion
+        );
+    }
 
 
-    renderSpecialists();
+    if (
+        state.currentCity
+    ) {
+        params.set(
+            "city",
+            state.currentCity
+        );
+    }
 
 
-  } catch (error) {
+    try {
 
-    console.error(
-      error
-    );
+        const result =
+            await api(
+                `/smm?${params}`
+            );
 
 
-    /*
-     * Do NOT insert fake specialists.
-     */
+        const specialists =
+            result.data ||
+            result.specialists ||
+            [];
 
-    container.innerHTML = `
-      <div class="specialist-card">
-        <strong>SMM.TJ</strong>
-        <p>
-          Барои дидани мутахассисони воқеӣ
-          сервери SMM.TJ бояд фаъол бошад.
-        </p>
-      </div>
-    `;
 
-  }
+        renderSpecialists(
+            specialists
+        );
 
+    } catch (error) {
+
+        console.error(
+            "Specialists:",
+            error
+        );
+    }
 }
 
 
-function renderSpecialists() {
+function renderSpecialists(
+    specialists
+) {
 
-  const container =
-    document.getElementById(
-      "specialistGrid"
+    const container =
+        byId(
+            "specialists-grid"
+        ) ||
+        byId(
+            "specialists-list"
+        );
+
+
+    if (!container) return;
+
+
+    if (!specialists.length) {
+
+        container.innerHTML = `
+            <div class="empty-state">
+                <h3>Мутахассис ёфт нашуд</h3>
+                <p>
+                    Филтрҳоро тағйир дода,
+                    дубора ҷустуҷӯ кунед.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        specialists
+            .map(
+                specialist =>
+                    specialistCard(
+                        specialist
+                    )
+            )
+            .join("");
+}
+
+
+function specialistCard(
+    specialist
+) {
+
+    const id =
+        specialist.id;
+
+
+    const name =
+        [
+            specialist.firstName,
+            specialist.lastName
+        ]
+            .filter(Boolean)
+            .join(" ") ||
+        specialist.name ||
+        specialist.username ||
+        "SMM Specialist";
+
+
+    const favorite =
+        state.favorites.has(id);
+
+
+    return `
+        <article
+            class="specialist-card"
+            data-id="${escapeHTML(id)}"
+        >
+
+            <div class="specialist-cover">
+
+                ${
+                    specialist.cover
+                        ? `
+                            <img
+                                src="${escapeHTML(
+                                    specialist.cover
+                                )}"
+                                alt=""
+                            >
+                        `
+                        : ""
+                }
+
+                <button
+                    type="button"
+                    class="favorite-button ${
+                        favorite
+                            ? "active"
+                            : ""
+                    }"
+                    data-favorite="${escapeHTML(id)}"
+                >
+                    ${favorite ? "♥" : "♡"}
+                </button>
+
+            </div>
+
+
+            <div class="specialist-content">
+
+                <div class="specialist-avatar">
+
+                    ${
+                        specialist.avatar
+                            ? `
+                                <img
+                                    src="${escapeHTML(
+                                        specialist.avatar
+                                    )}"
+                                    alt=""
+                                >
+                            `
+                            : escapeHTML(
+                                getInitials(
+                                    name
+                                )
+                            )
+                    }
+
+                </div>
+
+
+                <h3>
+                    ${escapeHTML(name)}
+                </h3>
+
+
+                <p class="specialist-bio">
+                    ${escapeHTML(
+                        specialist.bio || ""
+                    )}
+                </p>
+
+
+                <div class="specialist-meta">
+
+                    <span>
+                        ★ ${
+                            specialist.rating ??
+                            "—"
+                        }
+                    </span>
+
+                    <span>
+                        ${escapeHTML(
+                            specialist.region ||
+                            specialist.city ||
+                            ""
+                        )}
+                    </span>
+
+                </div>
+
+
+                <div class="specialist-skills">
+
+                    ${
+                        (
+                            specialist.skills ||
+                            []
+                        )
+                            .slice(0, 3)
+                            .map(
+                                skill =>
+                                    `<span>
+                                        ${escapeHTML(
+                                            typeof skill ===
+                                            "string"
+                                                ? skill
+                                                : skill.name
+                                        )}
+                                    </span>`
+                            )
+                            .join("")
+                    }
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="btn btn-primary full-width"
+                    data-specialist-id="${escapeHTML(
+                        id
+                    )}"
+                >
+                    Профилро дидан
+                </button>
+
+            </div>
+
+        </article>
+    `;
+}
+
+
+/* =========================================================
+   MARKETPLACE
+========================================================= */
+
+async function loadMarketplace() {
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        state.page.marketplace
     );
 
-  if (!container) return;
+
+    params.set(
+        "limit",
+        "12"
+    );
 
 
-  if (
-    !state.specialists.length
-  ) {
+    if (
+        state.currentSearch
+    ) {
+        params.set(
+            "search",
+            state.currentSearch
+        );
+    }
+
+
+    if (
+        state.currentCategory
+    ) {
+        params.set(
+            "category",
+            state.currentCategory
+        );
+    }
+
+
+    if (
+        state.currentRegion
+    ) {
+        params.set(
+            "region",
+            state.currentRegion
+        );
+    }
+
+
+    try {
+
+        const endpoint =
+            state.marketplaceType ===
+            "products"
+                ? "/products"
+                : "/services";
+
+
+        const result =
+            await api(
+                `${endpoint}?${params}`
+            );
+
+
+        const items =
+            result.data ||
+            result.services ||
+            result.products ||
+            [];
+
+
+        renderMarketplace(
+            items
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Marketplace:",
+            error
+        );
+    }
+}
+
+
+function renderMarketplace(
+    items
+) {
+
+    const container =
+        byId(
+            "marketplace-grid"
+        ) ||
+        byId(
+            "services-grid"
+        );
+
+
+    if (!container) return;
+
+
+    if (!items.length) {
+
+        container.innerHTML = `
+            <div class="empty-state">
+                Маълумот ёфт нашуд.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        items
+            .map(
+                item =>
+                    marketplaceCard(
+                        item
+                    )
+            )
+            .join("");
+}
+
+
+function marketplaceCard(
+    item
+) {
+
+    const id =
+        item.id;
+
+
+    const title =
+        item.title ||
+        item.name ||
+        "Хизмат";
+
+
+    return `
+        <article
+            class="marketplace-card"
+            data-id="${escapeHTML(id)}"
+        >
+
+            <div class="marketplace-image">
+
+                ${
+                    item.image
+                        ? `
+                            <img
+                                src="${escapeHTML(
+                                    item.image
+                                )}"
+                                alt="${escapeHTML(
+                                    title
+                                )}"
+                            >
+                        `
+                        : `
+                            <div class="image-placeholder">
+                                SMM.TJ
+                            </div>
+                        `
+                }
+
+            </div>
+
+
+            <div class="marketplace-content">
+
+                <span class="marketplace-category">
+                    ${escapeHTML(
+                        item.category?.name ||
+                        item.category ||
+                        ""
+                    )}
+                </span>
+
+
+                <h3>
+                    ${escapeHTML(title)}
+                </h3>
+
+
+                <div class="marketplace-author">
+
+                    ${escapeHTML(
+                        item.owner?.username ||
+                        item.user?.username ||
+                        item.seller?.businessName ||
+                        ""
+                    )}
+
+                </div>
+
+
+                <div class="marketplace-bottom">
+
+                    <strong>
+                        ${formatPrice(
+                            item.price
+                        )}
+                    </strong>
+
+
+                    <span>
+                        ★ ${
+                            item.rating ??
+                            "—"
+                        }
+                    </span>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="btn btn-secondary full-width"
+                    data-marketplace-id="${escapeHTML(
+                        id
+                    )}"
+                >
+                    Дидан
+                </button>
+
+            </div>
+
+        </article>
+    `;
+}
+
+
+/* =========================================================
+   JOBS
+========================================================= */
+
+async function loadJobs() {
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        state.page.jobs
+    );
+
+
+    params.set(
+        "limit",
+        "10"
+    );
+
+
+    if (
+        state.currentSearch
+    ) {
+        params.set(
+            "search",
+            state.currentSearch
+        );
+    }
+
+
+    if (
+        state.currentRegion
+    ) {
+        params.set(
+            "region",
+            state.currentRegion
+        );
+    }
+
+
+    try {
+
+        const result =
+            await api(
+                `/jobs?${params}`
+            );
+
+
+        const jobs =
+            result.data ||
+            result.jobs ||
+            [];
+
+
+        renderJobs(jobs);
+
+    } catch (error) {
+
+        console.error(
+            "Jobs:",
+            error
+        );
+    }
+}
+
+
+function renderJobs(
+    jobs
+) {
+
+    const container =
+        byId("jobs-grid") ||
+        byId("jobs-list");
+
+
+    if (!container) return;
+
+
+    if (!jobs.length) {
+
+        container.innerHTML = `
+            <div class="empty-state">
+                Ҷойи корӣ ёфт нашуд.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        jobs
+            .map(
+                job => `
+                    <article
+                        class="job-card"
+                        data-id="${escapeHTML(
+                            job.id
+                        )}"
+                    >
+
+                        <div class="job-card-top">
+
+                            <span>
+                                ${escapeHTML(
+                                    job.company?.name ||
+                                    job.company ||
+                                    "Company"
+                                )}
+                            </span>
+
+                            <small>
+                                ${escapeHTML(
+                                    job.employmentType ||
+                                    ""
+                                )}
+                            </small>
+
+                        </div>
+
+
+                        <h3>
+                            ${escapeHTML(
+                                job.title ||
+                                ""
+                            )}
+                        </h3>
+
+
+                        <p>
+                            ${escapeHTML(
+                                job.description ||
+                                ""
+                            )}
+                        </p>
+
+
+                        <div class="job-meta">
+
+                            <span>
+                                ${formatPrice(
+                                    job.salary
+                                )}
+                            </span>
+
+                            <span>
+                                ${escapeHTML(
+                                    job.city ||
+                                    job.region ||
+                                    ""
+                                )}
+                            </span>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            data-job-id="${escapeHTML(
+                                job.id
+                            )}"
+                        >
+                            Дидани вакансия
+                        </button>
+
+                    </article>
+                `
+            )
+            .join("");
+}
+
+
+/* =========================================================
+   PROJECTS
+========================================================= */
+
+async function loadProjects() {
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        state.page.projects
+    );
+
+
+    params.set(
+        "limit",
+        "10"
+    );
+
+
+    if (
+        state.currentSearch
+    ) {
+        params.set(
+            "search",
+            state.currentSearch
+        );
+    }
+
+
+    try {
+
+        const result =
+            await api(
+                `/projects?${params}`
+            );
+
+
+        const projects =
+            result.data ||
+            result.projects ||
+            [];
+
+
+        renderProjects(
+            projects
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Projects:",
+            error
+        );
+    }
+}
+
+
+function renderProjects(
+    projects
+) {
+
+    const container =
+        byId("projects-grid") ||
+        byId("projects-list");
+
+
+    if (!container) return;
+
+
+    container.innerHTML =
+        projects
+            .map(
+                project => `
+
+                    <article
+                        class="project-card"
+                        data-id="${escapeHTML(
+                            project.id
+                        )}"
+                    >
+
+                        <span class="project-status">
+                            ${escapeHTML(
+                                project.status ||
+                                "OPEN"
+                            )}
+                        </span>
+
+
+                        <h3>
+                            ${escapeHTML(
+                                project.title ||
+                                ""
+                            )}
+                        </h3>
+
+
+                        <p>
+                            ${escapeHTML(
+                                project.description ||
+                                ""
+                            )}
+                        </p>
+
+
+                        <div class="project-meta">
+
+                            <strong>
+                                ${formatPrice(
+                                    project.budget
+                                )}
+                            </strong>
+
+                            <span>
+                                ${escapeHTML(
+                                    project.category?.name ||
+                                    project.category ||
+                                    ""
+                                )}
+                            </span>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            data-project-id="${escapeHTML(
+                                project.id
+                            )}"
+                        >
+                            Дидан
+                        </button>
+
+                    </article>
+                `
+            )
+            .join("");
+}
+
+
+/* =========================================================
+   REAL ESTATE
+========================================================= */
+
+async function loadRealEstate() {
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        state.page.realEstate
+    );
+
+
+    params.set(
+        "limit",
+        "12"
+    );
+
+
+    if (
+        state.currentSearch
+    ) {
+        params.set(
+            "search",
+            state.currentSearch
+        );
+    }
+
+
+    if (
+        state.currentRegion
+    ) {
+        params.set(
+            "region",
+            state.currentRegion
+        );
+    }
+
+
+    if (
+        state.currentCity
+    ) {
+        params.set(
+            "city",
+            state.currentCity
+        );
+    }
+
+
+    try {
+
+        const result =
+            await api(
+                `/real-estate?${params}`
+            );
+
+
+        const listings =
+            result.data ||
+            result.listings ||
+            [];
+
+
+        renderRealEstate(
+            listings
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Real estate:",
+            error
+        );
+    }
+}
+
+
+function renderRealEstate(
+    listings
+) {
+
+    const container =
+        byId(
+            "real-estate-grid"
+        ) ||
+        byId(
+            "real-estate-list"
+        );
+
+
+    if (!container) return;
+
+
+    container.innerHTML =
+        listings
+            .map(
+                item => `
+
+                    <article
+                        class="real-estate-card"
+                        data-id="${escapeHTML(
+                            item.id
+                        )}"
+                    >
+
+                        <div class="real-estate-image">
+
+                            ${
+                                item.images?.[0]
+                                    ? `
+                                        <img
+                                            src="${escapeHTML(
+                                                item.images[0]
+                                            )}"
+                                            alt=""
+                                        >
+                                    `
+                                    : ""
+                            }
+
+                        </div>
+
+
+                        <div class="real-estate-content">
+
+                            <span>
+                                ${escapeHTML(
+                                    item.type ||
+                                    ""
+                                )}
+                            </span>
+
+
+                            <h3>
+                                ${escapeHTML(
+                                    item.title ||
+                                    ""
+                                )}
+                            </h3>
+
+
+                            <p>
+                                ${escapeHTML(
+                                    item.address ||
+                                    item.city ||
+                                    ""
+                                )}
+                            </p>
+
+
+                            <div class="real-estate-meta">
+
+                                <strong>
+                                    ${formatPrice(
+                                        item.price
+                                    )}
+                                </strong>
+
+                                <span>
+                                    ${
+                                        item.rooms
+                                            ? `${escapeHTML(
+                                                item.rooms
+                                            )} ҳуҷра`
+                                            : ""
+                                    }
+                                </span>
+
+                                <span>
+                                    ${
+                                        item.area
+                                            ? `${escapeHTML(
+                                                item.area
+                                            )} м²`
+                                            : ""
+                                    }
+                                </span>
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                class="btn btn-secondary full-width"
+                                data-real-estate-id="${escapeHTML(
+                                    item.id
+                                )}"
+                            >
+                                Дидан
+                            </button>
+
+                        </div>
+
+                    </article>
+                `
+            )
+            .join("");
+}
+
+
+/* =========================================================
+   CATEGORY FILTER
+========================================================= */
+
+$$("[data-category]")
+    .forEach(
+        (button) => {
+
+            button.addEventListener(
+                "click",
+                async () => {
+
+                    state.currentCategory =
+                        button.dataset.category ||
+                        "";
+
+
+                    $$(
+                        "[data-category]"
+                    ).forEach(
+                        item =>
+                            item.classList.remove(
+                                "active"
+                            )
+                    );
+
+
+                    button.classList.add(
+                        "active"
+                    );
+
+
+                    state.page
+                        .specialists = 1;
+
+                    state.page
+                        .marketplace = 1;
+
+
+                    await Promise.allSettled([
+                        loadSpecialists(),
+                        loadMarketplace()
+                    ]);
+                }
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   MARKETPLACE TABS
+========================================================= */
+
+$$("[data-marketplace-type]")
+    .forEach(
+        (button) => {
+
+            button.addEventListener(
+                "click",
+                async () => {
+
+                    state.marketplaceType =
+                        button.dataset
+                            .marketplaceType ||
+                        "services";
+
+
+                    $$(
+                        "[data-marketplace-type]"
+                    ).forEach(
+                        item =>
+                            item.classList.remove(
+                                "active"
+                            )
+                    );
+
+
+                    button.classList.add(
+                        "active"
+                    );
+
+
+                    await loadMarketplace();
+                }
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   FAVORITES
+========================================================= */
+
+async function toggleFavorite(
+    id
+) {
+
+    if (!state.user) {
+
+        openModal(
+            "login-modal"
+        );
+
+        toast(
+            "Барои нигоҳ доштан аввал ворид шавед.",
+            "warning"
+        );
+
+        return;
+    }
+
+
+    const isFavorite =
+        state.favorites.has(id);
+
+
+    try {
+
+        if (isFavorite) {
+
+            await api(
+                `/favorites/${encodeURIComponent(
+                    id
+                )}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+            state.favorites.delete(
+                id
+            );
+
+        } else {
+
+            await api(
+                "/favorites",
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        targetId: id
+                    })
+                }
+            );
+
+            state.favorites.add(
+                id
+            );
+        }
+
+
+        localStorage.setItem(
+            "smm_favorites",
+            JSON.stringify(
+                Array.from(
+                    state.favorites
+                )
+            )
+        );
+
+
+        toast(
+            isFavorite
+                ? "Аз захирашудаҳо хориҷ шуд."
+                : "Ба захирашудаҳо илова шуд.",
+            "success"
+        );
+
+
+        await loadSpecialists();
+
+    } catch (error) {
+
+        toast(
+            error.message ||
+            "Амалиёт иҷро нашуд.",
+            "error"
+        );
+    }
+}
+
+
+/* =========================================================
+   SPECIALIST PROFILE
+========================================================= */
+
+async function openSpecialist(
+    id
+) {
+
+    try {
+
+        const result =
+            await api(
+                `/smm/${encodeURIComponent(
+                    id
+                )}`
+            );
+
+
+        const specialist =
+            result.data ||
+            result.specialist ||
+            result;
+
+
+        renderSpecialistModal(
+            specialist
+        );
+
+
+        openModal(
+            "specialist-modal"
+        );
+
+    } catch (error) {
+
+        toast(
+            error.message ||
+            "Профил кушода нашуд.",
+            "error"
+        );
+    }
+}
+
+
+function renderSpecialistModal(
+    specialist
+) {
+
+    const container =
+        byId(
+            "specialist-modal-content"
+        );
+
+
+    if (!container) return;
+
+
+    const name =
+        [
+            specialist.firstName,
+            specialist.lastName
+        ]
+            .filter(Boolean)
+            .join(" ") ||
+        specialist.name ||
+        specialist.username ||
+        "SMM Specialist";
+
 
     container.innerHTML = `
-      <div class="specialist-card">
-        <strong>SMM.TJ</strong>
-        <p>
-          Ҳоло мутахассис пайдо нашуд.
-        </p>
-      </div>
-    `;
 
-    return;
+        <div class="profile-modal">
 
-  }
+            <div class="profile-modal-avatar">
 
+                ${
+                    specialist.avatar
+                        ? `
+                            <img
+                                src="${escapeHTML(
+                                    specialist.avatar
+                                )}"
+                                alt=""
+                            >
+                        `
+                        : escapeHTML(
+                            getInitials(
+                                name
+                            )
+                        )
+                }
 
-  container.innerHTML =
-    state.specialists
-      .map(
-        specialist => {
-
-          const user =
-            specialist.user || {};
-
-          const name =
-            escapeHTML(
-              user.name ||
-              "SMM Specialist"
-            );
-
-          const skills =
-            escapeHTML(
-              specialist.skills ||
-              "SMM"
-            );
-
-          const rating =
-            Number(
-              specialist.rating || 0
-            ).toFixed(1);
-
-          const projects =
-            Number(
-              specialist.completedProjects || 0
-            );
-
-          const price =
-            Number(
-              specialist.startingPrice || 0
-            );
+            </div>
 
 
-          const initial =
-            name
-              .charAt(0)
-              .toUpperCase();
+            <h2>
+                ${escapeHTML(name)}
+            </h2>
 
 
-          return `
+            <p>
+                ${escapeHTML(
+                    specialist.bio || ""
+                )}
+            </p>
 
-            <article
-              class="specialist-card"
+
+            <div class="profile-stats">
+
+                <span>
+                    ★ ${
+                        specialist.rating ??
+                        "—"
+                    }
+                </span>
+
+                <span>
+                    ${
+                        specialist.experience ??
+                        0
+                    } сол таҷриба
+                </span>
+
+                <span>
+                    ${escapeHTML(
+                        specialist.city ||
+                        specialist.region ||
+                        ""
+                    )}
+                </span>
+
+            </div>
+
+
+            <div class="profile-services">
+
+                ${
+                    (
+                        specialist.services ||
+                        []
+                    )
+                        .map(
+                            service => `
+
+                                <div class="service-row">
+
+                                    <strong>
+                                        ${escapeHTML(
+                                            service.title ||
+                                            service.name ||
+                                            ""
+                                        )}
+                                    </strong>
+
+                                    <span>
+                                        ${formatPrice(
+                                            service.price
+                                        )}
+                                    </span>
+
+                                </div>
+                            `
+                        )
+                        .join("")
+                }
+
+            </div>
+
+
+            <button
+                type="button"
+                class="btn btn-primary full-width"
+                data-request-specialist="${escapeHTML(
+                    specialist.id
+                )}"
             >
+                Мутахассисро дархост кардан
+            </button>
 
-              <div
-                class="specialist-top"
-              >
+        </div>
+    `;
+}
 
-                <div
-                  class="specialist-avatar"
-                >
-                  ${initial}
+
+/* =========================================================
+   REQUEST SPECIALIST
+========================================================= */
+
+async function requestSpecialist(
+    specialistId
+) {
+
+    if (!state.user) {
+
+        openModal(
+            "login-modal"
+        );
+
+        return;
+    }
+
+
+    const message =
+        prompt(
+            "Дархости худро нависед:"
+        );
+
+
+    if (!message) return;
+
+
+    try {
+
+        await api(
+            "/projects",
+            {
+                method: "POST",
+
+                body: JSON.stringify({
+                    specialistId,
+                    message
+                })
+            }
+        );
+
+
+        toast(
+            "Дархост фиристода шуд.",
+            "success"
+        );
+
+    } catch (error) {
+
+        toast(
+            error.message ||
+            "Дархост фиристода нашуд.",
+            "error"
+        );
+    }
+}
+
+
+/* =========================================================
+   PROJECT CREATE
+========================================================= */
+
+const projectForm =
+    byId(
+        "create-project-form"
+    );
+
+if (projectForm) {
+
+    projectForm.addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+
+            if (!state.user) {
+
+                openModal(
+                    "login-modal"
+                );
+
+                return;
+            }
+
+
+            const form =
+                new FormData(
+                    projectForm
+                );
+
+
+            const payload = {
+
+                title:
+                    form.get(
+                        "title"
+                    ),
+
+                description:
+                    form.get(
+                        "description"
+                    ),
+
+                category:
+                    form.get(
+                        "category"
+                    ),
+
+                budget:
+                    Number(
+                        form.get(
+                            "budget"
+                        ) || 0
+                    ),
+
+                deadline:
+                    form.get(
+                        "deadline"
+                    ),
+
+                region:
+                    form.get(
+                        "region"
+                    ),
+
+                city:
+                    form.get(
+                        "city"
+                    ),
+
+                skills:
+                    String(
+                        form.get(
+                            "skills"
+                        ) || ""
+                    )
+                        .split(",")
+                        .map(
+                            value =>
+                                value.trim()
+                        )
+                        .filter(Boolean)
+            };
+
+
+            try {
+
+                await api(
+                    "/projects",
+                    {
+                        method: "POST",
+                        body: JSON.stringify(
+                            payload
+                        )
+                    }
+                );
+
+
+                projectForm.reset();
+
+
+                closeModal(
+                    "create-project-modal"
+                );
+
+
+                toast(
+                    "Лоиҳа сохта шуд.",
+                    "success"
+                );
+
+
+                await loadProjects();
+
+            } catch (error) {
+
+                toast(
+                    error.message ||
+                    "Лоиҳа сохта нашуд.",
+                    "error"
+                );
+            }
+        }
+    );
+}
+
+
+/* =========================================================
+   JOB DETAILS
+========================================================= */
+
+async function openJob(
+    id
+) {
+
+    try {
+
+        const result =
+            await api(
+                `/jobs/${encodeURIComponent(
+                    id
+                )}`
+            );
+
+
+        const job =
+            result.data ||
+            result.job ||
+            result;
+
+
+        const container =
+            byId(
+                "job-modal-content"
+            );
+
+
+        if (!container) return;
+
+
+        container.innerHTML = `
+
+            <div class="job-details">
+
+                <h2>
+                    ${escapeHTML(
+                        job.title || ""
+                    )}
+                </h2>
+
+                <p>
+                    ${escapeHTML(
+                        job.description || ""
+                    )}
+                </p>
+
+                <div class="job-detail-meta">
+
+                    <span>
+                        ${formatPrice(
+                            job.salary
+                        )}
+                    </span>
+
+                    <span>
+                        ${escapeHTML(
+                            job.employmentType ||
+                            ""
+                        )}
+                    </span>
+
+                    <span>
+                        ${escapeHTML(
+                            job.experience ||
+                            ""
+                        )}
+                    </span>
+
+                    <span>
+                        ${escapeHTML(
+                            job.city ||
+                            job.region ||
+                            ""
+                        )}
+                    </span>
+
                 </div>
 
-                <div
-                  class="specialist-info"
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    data-apply-job="${escapeHTML(
+                        job.id
+                    )}"
                 >
+                    Ариза додан
+                </button>
 
-                  <strong>
-                    ${name}
-                  </strong>
-
-                  <span>
-                    ⭐ ${rating}
-                    · ${projects}
-                    projects
-                  </span>
-
-                </div>
-
-              </div>
+            </div>
+        `;
 
 
-              <p>
-                ${skills}
-              </p>
+        openModal(
+            "job-modal"
+        );
+
+    } catch (error) {
+
+        toast(
+            error.message ||
+            "Вакансия кушода нашуд.",
+            "error"
+        );
+    }
+}
 
 
-              <div
-                class="specialist-meta"
-              >
+/* =========================================================
+   APPLY JOB
+========================================================= */
 
-                <span class="tag">
-                  Verified
-                </span>
+async function applyJob(
+    jobId
+) {
 
-                <span class="tag">
-                  TJ
-                </span>
+    if (!state.user) {
 
-              </div>
+        openModal(
+            "login-modal"
+        );
+
+        return;
+    }
 
 
-              <div
-                style="
-                  display:flex;
-                  justify-content:space-between;
-                  align-items:center;
-                  gap:10px;
-                "
-              >
+    const message =
+        prompt(
+            "Паёми шумо барои корфармо:"
+        );
 
-                <strong>
-                  ${price} TJS
+
+    try {
+
+        await api(
+            "/applications",
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    jobId,
+                    message
+                })
+            }
+        );
+
+
+        toast(
+            "Ариза фиристода шуд.",
+            "success"
+        );
+
+    } catch (error) {
+
+        toast(
+            error.message ||
+            "Ариза фиристода нашуд.",
+            "error"
+        );
+    }
+}
+
+
+/* =========================================================
+   PRODUCT / SERVICE DETAILS
+========================================================= */
+
+async function openMarketplaceItem(
+    id
+) {
+
+    const endpoint =
+        state.marketplaceType ===
+        "products"
+            ? `/products/${encodeURIComponent(
+                id
+            )}`
+            : `/services/${encodeURIComponent(
+                id
+            )}`;
+
+
+    try {
+
+        const result =
+            await api(endpoint);
+
+
+        const item =
+            result.data ||
+            result.service ||
+            result.product ||
+            result;
+
+
+        const container =
+            byId(
+                "marketplace-modal-content"
+            );
+
+
+        if (!container) return;
+
+
+        container.innerHTML = `
+
+            <div class="marketplace-details">
+
+                <h2>
+                    ${escapeHTML(
+                        item.title ||
+                        item.name ||
+                        ""
+                    )}
+                </h2>
+
+
+                <p>
+                    ${escapeHTML(
+                        item.description ||
+                        ""
+                    )}
+                </p>
+
+
+                <strong class="detail-price">
+                    ${formatPrice(
+                        item.price
+                    )}
                 </strong>
 
+
+                <div class="detail-owner">
+
+                    ${escapeHTML(
+                        item.owner?.username ||
+                        item.user?.username ||
+                        item.seller?.businessName ||
+                        ""
+                    )}
+
+                </div>
+
+
                 <button
-                  class="btn btn-primary"
-                  onclick="
-                    window.SMMTJ.openSpecialist(
-                      ${Number(specialist.id)}
-                    )
-                  "
+                    type="button"
+                    class="btn btn-primary full-width"
+                    data-contact-owner="${escapeHTML(
+                        item.ownerId ||
+                        item.userId ||
+                        item.sellerId ||
+                        ""
+                    )}"
                 >
-                  View
+                    Тамос гирифтан
                 </button>
 
-              </div>
+            </div>
+        `;
 
-            </article>
 
-          `;
+        openModal(
+            "marketplace-modal"
+        );
 
-        }
-      )
-      .join("");
+    } catch (error) {
 
+        toast(
+            error.message ||
+            "Маълумот кушода нашуд.",
+            "error"
+        );
+    }
 }
 
 
-/* ==================================================
-   SPECIALIST ACTION
-================================================== */
+/* =========================================================
+   PROJECT DETAILS
+========================================================= */
 
-function openSpecialist(
-  specialistId
+async function openProject(
+    id
 ) {
 
-  /*
-   * This intentionally calls the backend
-   * instead of pretending a profile exists.
-   */
+    try {
 
-  window.location.hash =
-    "specialist-" +
-    specialistId;
+        const result =
+            await api(
+                `/projects/${encodeURIComponent(
+                    id
+                )}`
+            );
 
-}
 
+        const project =
+            result.data ||
+            result.project ||
+            result;
 
-/* ==================================================
-   MAIN BUTTONS
-================================================== */
 
-function initButtons() {
+        const container =
+            byId(
+                "project-modal-content"
+            );
 
-  const find =
-    document.getElementById(
-      "findSpecialistButton"
-    );
 
-  const join =
-    document.getElementById(
-      "joinSpecialistButton"
-    );
+        if (!container) return;
 
 
-  find?.addEventListener(
-    "click",
-    () => {
+        container.innerHTML = `
 
-      document
-        .getElementById(
-          "specialists"
-        )
-        ?.scrollIntoView({
-          behavior: "smooth"
-        });
+            <div class="project-details">
 
-    }
-  );
-
-
-  join?.addEventListener(
-    "click",
-    () => {
-
-      state.authMode =
-        "register";
-
-      openAuthModal();
-
-    }
-  );
-
-}
-
-
-/* ==================================================
-   YEAR
-================================================== */
-
-function initYear() {
-
-  const year =
-    document.getElementById(
-      "currentYear"
-    );
-
-  if (year) {
-
-    year.textContent =
-      new Date()
-        .getFullYear()
-        .toString();
-
-  }
-
-}
-
-
-/* ==================================================
-   LOGOUT
-================================================== */
-
-function logout() {
-
-  localStorage.removeItem(
-    "smm_token"
-  );
-
-  state.user =
-    null;
-
-  window.location.href =
-    "index.html";
-
-}
-
-
-/* ==================================================
-   ADMIN API
-================================================== */
-
-async function adminRequest(
-  endpoint,
-  options = {}
-) {
-
-  const token =
-    localStorage.getItem(
-      "smm_token"
-    );
-
-
-  if (!token) {
-
-    throw new Error(
-      "UNAUTHORIZED"
-    );
-
-  }
-
-
-  const response =
-    await fetch(
-      API_URL + endpoint,
-      {
-        ...options,
-
-        headers: {
-          "Content-Type":
-            "application/json",
-
-          ...(options.headers || {}),
-
-          Authorization:
-            "Bearer " + token
-        }
-      }
-    );
-
-
-  const data =
-    await response
-      .json()
-      .catch(() => ({}));
-
-
-  if (!response.ok) {
-
-    throw new Error(
-      data.error ||
-      "ADMIN_REQUEST_FAILED"
-    );
-
-  }
-
-
-  return data;
-
-}
-
-
-/* ==================================================
-   ADMIN STATS
-================================================== */
-
-async function loadAdminStats() {
-
-  try {
-
-    const stats =
-      await adminRequest(
-        "/admin/stats"
-      );
-
-
-    setText(
-      "totalUsers",
-      stats.users
-    );
-
-    setText(
-      "totalClients",
-      stats.clients
-    );
-
-    setText(
-      "totalSpecialists",
-      stats.specialists
-    );
-
-    setText(
-      "activeProjects",
-      stats.active
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "Admin stats:",
-      error
-    );
-
-  }
-
-}
-
-
-/* ==================================================
-   ADMIN PAGE
-================================================== */
-
-async function loadAdminPage(
-  page
-) {
-
-  const table =
-    document.getElementById(
-      "adminTableBody"
-    );
-
-  if (!table) return;
-
-
-  table.innerHTML = `
-    <tr>
-      <td colspan="6">
-        Loading...
-      </td>
-    </tr>
-  `;
-
-
-  try {
-
-    if (page === "dashboard") {
-
-      await loadAdminStats();
-
-      return;
-
-    }
-
-
-    /*
-     * These endpoints are expected to be
-     * implemented by the backend.
-     */
-
-    let endpoint;
-
-
-    switch (page) {
-
-      case "users":
-        endpoint = "/admin/users";
-        break;
-
-      case "projects":
-        endpoint = "/admin/projects";
-        break;
-
-      case "services":
-        endpoint = "/admin/services";
-        break;
-
-      case "reviews":
-        endpoint = "/admin/reviews";
-        break;
-
-      case "payments":
-        endpoint = "/admin/payments";
-        break;
-
-      case "settings":
-        endpoint = "/admin/settings";
-        break;
-
-      default:
-        return;
-
-    }
-
-
-    const data =
-      await adminRequest(
-        endpoint
-      );
-
-
-    renderAdminTable(
-      data
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      error
-    );
-
-
-    table.innerHTML = `
-      <tr>
-        <td colspan="6">
-          Backend endpoint ҳоло дастрас нест.
-        </td>
-      </tr>
-    `;
-
-  }
-
-}
-
-
-/* ==================================================
-   ADMIN TABLE
-================================================== */
-
-function renderAdminTable(
-  data
-) {
-
-  const table =
-    document.getElementById(
-      "adminTableBody"
-    );
-
-  if (!table) return;
-
-
-  const items =
-    Array.isArray(data)
-      ? data
-      : data.items || [];
-
-
-  if (!items.length) {
-
-    table.innerHTML = `
-      <tr>
-        <td colspan="6">
-          Маълумот нест.
-        </td>
-      </tr>
-    `;
-
-    return;
-
-  }
-
-
-  table.innerHTML =
-    items
-      .map(
-        item => {
-
-          return `
-
-            <tr>
-
-              <td>
-                ${escapeHTML(
-                  String(
-                    item.id ?? "—"
-                  )
-                )}
-              </td>
-
-              <td>
-                ${escapeHTML(
-                  item.name ||
-                  item.title ||
-                  "—"
-                )}
-              </td>
-
-              <td>
-                ${escapeHTML(
-                  item.email ||
-                  "—"
-                )}
-              </td>
-
-              <td>
-                ${escapeHTML(
-                  item.role ||
-                  item.status ||
-                  "—"
-                )}
-              </td>
-
-              <td>
-
-                <span
-                  class="admin-status"
-                >
-                  ${escapeHTML(
-                    item.status ||
-                    "ACTIVE"
-                  )}
+                <span>
+                    ${escapeHTML(
+                        project.status ||
+                        "OPEN"
+                    )}
                 </span>
 
-              </td>
+                <h2>
+                    ${escapeHTML(
+                        project.title ||
+                        ""
+                    )}
+                </h2>
 
-              <td>
+                <p>
+                    ${escapeHTML(
+                        project.description ||
+                        ""
+                    )}
+                </p>
+
+                <strong>
+                    ${formatPrice(
+                        project.budget
+                    )}
+                </strong>
+
 
                 <button
-                  class="admin-action"
-                  onclick="
-                    window.SMMTJ.adminView(
-                      ${Number(item.id)}
-                    )
-                  "
+                    type="button"
+                    class="btn btn-primary full-width"
+                    data-propose-project="${escapeHTML(
+                        project.id
+                    )}"
                 >
-                  View
+                    Пешниҳод фиристодан
                 </button>
 
-              </td>
+            </div>
+        `;
 
-            </tr>
 
-          `;
+        openModal(
+            "project-modal"
+        );
 
-        }
-      )
-      .join("");
+    } catch (error) {
 
+        toast(
+            error.message ||
+            "Лоиҳа кушода нашуд.",
+            "error"
+        );
+    }
 }
 
 
-/* ==================================================
-   ADMIN VIEW
-================================================== */
+/* =========================================================
+   PROPOSAL
+========================================================= */
 
-function adminView(
-  id
+async function proposeProject(
+    projectId
 ) {
 
-  console.log(
-    "Admin selected:",
-    id
-  );
+    if (!state.user) {
 
+        openModal(
+            "login-modal"
+        );
+
+        return;
+    }
+
+
+    const price =
+        prompt(
+            "Нархи пешниҳоди шумо:"
+        );
+
+
+    if (!price) return;
+
+
+    const message =
+        prompt(
+            "Паёми пешниҳоди шумо:"
+        ) || "";
+
+
+    try {
+
+        await api(
+            "/proposals",
+            {
+                method: "POST",
+
+                body: JSON.stringify({
+                    projectId,
+                    price: Number(price),
+                    message
+                })
+            }
+        );
+
+
+        toast(
+            "Пешниҳод фиристода шуд.",
+            "success"
+        );
+
+    } catch (error) {
+
+        toast(
+            error.message ||
+            "Пешниҳод фиристода нашуд.",
+            "error"
+        );
+    }
 }
 
 
-/* ==================================================
-   ADMIN LOGOUT
-================================================== */
+/* =========================================================
+   REAL ESTATE DETAILS
+========================================================= */
 
-const adminLogout =
-  document.getElementById(
-    "adminLogout"
-  );
+async function openRealEstate(
+    id
+) {
 
-adminLogout?.addEventListener(
-  "click",
-  logout
+    try {
+
+        const result =
+            await api(
+                `/real-estate/${encodeURIComponent(
+                    id
+                )}`
+            );
+
+
+        const item =
+            result.data ||
+            result.listing ||
+            result;
+
+
+        const container =
+            byId(
+                "real-estate-modal-content"
+            );
+
+
+        if (!container) return;
+
+
+        container.innerHTML = `
+
+            <div class="real-estate-details">
+
+                ${
+                    item.images?.length
+                        ? `
+                            <div class="property-gallery">
+
+                                ${item.images
+                                    .map(
+                                        image =>
+                                            `
+                                                <img
+                                                    src="${escapeHTML(
+                                                        image
+                                                    )}"
+                                                    alt=""
+                                                >
+                                            `
+                                    )
+                                    .join("")}
+
+                            </div>
+                        `
+                        : ""
+                }
+
+
+                <h2>
+                    ${escapeHTML(
+                        item.title ||
+                        ""
+                    )}
+                </h2>
+
+
+                <p>
+                    ${escapeHTML(
+                        item.description ||
+                        ""
+                    )}
+                </p>
+
+
+                <strong>
+                    ${formatPrice(
+                        item.price
+                    )}
+                </strong>
+
+
+                <div>
+                    ${escapeHTML(
+                        item.address ||
+                        item.city ||
+                        ""
+                    )}
+                </div>
+
+
+                <button
+                    type="button"
+                    class="btn btn-primary full-width"
+                    data-contact-owner="${escapeHTML(
+                        item.ownerId ||
+                        item.userId ||
+                        ""
+                    )}"
+                >
+                    Тамос гирифтан
+                </button>
+
+            </div>
+        `;
+
+
+        openModal(
+            "real-estate-modal"
+        );
+
+    } catch (error) {
+
+        toast(
+            error.message ||
+            "Амвол кушода нашуд.",
+            "error"
+        );
+    }
+}
+
+
+/* =========================================================
+   CONTACT USER
+========================================================= */
+
+async function contactUser(
+    userId
+) {
+
+    if (!state.user) {
+
+        openModal(
+            "login-modal"
+        );
+
+        return;
+    }
+
+
+    if (!userId) {
+
+        toast(
+            "Истифодабаранда муайян нашуд.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    try {
+
+        const result =
+            await api(
+                "/messages/conversations",
+                {
+                    method: "POST",
+
+                    body: JSON.stringify({
+                        userId
+                    })
+                }
+            );
+
+
+        const conversation =
+            result.data ||
+            result.conversation ||
+            result;
+
+
+        if (
+            conversation?.id
+        ) {
+
+            window.location.href =
+                `/messages.html?id=${encodeURIComponent(
+                    conversation.id
+                )}`;
+
+        }
+
+    } catch (error) {
+
+        toast(
+            error.message ||
+            "Чат кушода нашуд.",
+            "error"
+        );
+    }
+}
+
+
+/* =========================================================
+   NOTIFICATIONS
+========================================================= */
+
+async function loadNotifications() {
+
+    if (!state.user) return;
+
+
+    try {
+
+        const result =
+            await api(
+                "/notifications"
+            );
+
+
+        const notifications =
+            result.data ||
+            result.notifications ||
+            [];
+
+
+        const container =
+            byId(
+                "notification-list"
+            );
+
+
+        if (!container) return;
+
+
+        container.innerHTML =
+            notifications.length
+                ? notifications
+                    .map(
+                        notification => `
+                            <div
+                                class="notification-item ${
+                                    notification.read
+                                        ? ""
+                                        : "unread"
+                                }"
+                                data-notification-id="${escapeHTML(
+                                    notification.id
+                                )}"
+                            >
+
+                                <strong>
+                                    ${escapeHTML(
+                                        notification.title ||
+                                        ""
+                                    )}
+                                </strong>
+
+                                <p>
+                                    ${escapeHTML(
+                                        notification.message ||
+                                        ""
+                                    )}
+                                </p>
+
+                                <small>
+                                    ${formatDate(
+                                        notification.createdAt
+                                    )}
+                                </small>
+
+                            </div>
+                        `
+                    )
+                    .join("")
+                : `
+                    <div class="empty-state">
+                        Огоҳинома нест.
+                    </div>
+                `;
+
+
+        updateNotificationCount(
+            notifications.filter(
+                item =>
+                    !item.read
+            ).length
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Notifications:",
+            error
+        );
+    }
+}
+
+
+function updateNotificationCount(
+    count
+) {
+
+    $$(
+        "[data-notification-count]"
+    ).forEach(
+        badge => {
+
+            badge.textContent =
+                count > 99
+                    ? "99+"
+                    : String(count);
+
+            badge.hidden =
+                count <= 0;
+
+        }
+    );
+}
+
+
+/* =========================================================
+   REGIONS / CITIES
+========================================================= */
+
+async function loadRegions() {
+
+    try {
+
+        const result =
+            await api(
+                "/regions"
+            );
+
+
+        const regions =
+            result.data ||
+            result.regions ||
+            [];
+
+
+        $$(
+            "select[name='region'], [data-region-select]"
+        )
+            .forEach(
+                select => {
+
+                    const current =
+                        select.value;
+
+
+                    select.innerHTML = `
+                        <option value="">
+                            Ҳамаи минтақаҳо
+                        </option>
+                    `;
+
+
+                    regions.forEach(
+                        region => {
+
+                            const option =
+                                document.createElement(
+                                    "option"
+                                );
+
+                            option.value =
+                                region.id ||
+                                region.name;
+
+
+                            option.textContent =
+                                region.nameTg ||
+                                region.name;
+
+
+                            select.appendChild(
+                                option
+                            );
+                        }
+                    );
+
+
+                    select.value =
+                        current;
+
+                }
+            );
+
+    } catch {
+        // Regions endpoint may be unavailable
+    }
+}
+
+
+/* =========================================================
+   REGION FILTER
+========================================================= */
+
+$$(
+    "select[name='region'], [data-region-select]"
+)
+    .forEach(
+        select => {
+
+            select.addEventListener(
+                "change",
+                async () => {
+
+                    state.currentRegion =
+                        select.value;
+
+
+                    state.page
+                        .specialists = 1;
+
+                    state.page
+                        .marketplace = 1;
+
+                    state.page
+                        .jobs = 1;
+
+                    state.page
+                        .realEstate = 1;
+
+
+                    await Promise.allSettled([
+                        loadSpecialists(),
+                        loadMarketplace(),
+                        loadJobs(),
+                        loadRealEstate()
+                    ]);
+                }
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function goTo(
+    page
+) {
+
+    const routes = {
+        home: "/",
+        specialists:
+            "/specialists.html",
+        marketplace:
+            "/marketplace.html",
+        jobs:
+            "/jobs.html",
+        projects:
+            "/projects.html",
+        "real-estate":
+            "/real-estate.html",
+        profile:
+            "/profile.html",
+        messages:
+            "/messages.html"
+    };
+
+
+    if (
+        routes[page]
+    ) {
+        window.location.href =
+            routes[page];
+    }
+}
+
+
+$$("[data-route]")
+    .forEach(
+        link => {
+
+            link.addEventListener(
+                "click",
+                event => {
+
+                    event.preventDefault();
+
+                    goTo(
+                        link.dataset.route
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   MOBILE MENU
+========================================================= */
+
+const menuButton =
+    byId("mobile-menu-button") ||
+    byId("menu-button");
+
+
+if (menuButton) {
+
+    menuButton.addEventListener(
+        "click",
+        () => {
+
+            const menu =
+                byId(
+                    "mobile-menu"
+                ) ||
+                byId(
+                    "mobile-nav"
+                );
+
+
+            menu?.classList.toggle(
+                "open"
+            );
+
+        }
+    );
+}
+
+
+/* =========================================================
+   MODAL CLOSE EVENTS
+========================================================= */
+
+$$(
+    "[data-close-modal]"
+)
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    closeModal(
+                        button.dataset
+                            .closeModal
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+$$(
+    ".modal-overlay"
+)
+    .forEach(
+        overlay => {
+
+            overlay.addEventListener(
+                "click",
+                event => {
+
+                    if (
+                        event.target ===
+                        overlay
+                    ) {
+                        overlay.hidden =
+                            true;
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Escape"
+        ) {
+            closeAllModals();
+        }
+
+    }
 );
 
 
-/* ==================================================
-   SEARCH
-================================================== */
+/* =========================================================
+   GLOBAL CLICK HANDLER
+========================================================= */
 
-document
-  .getElementById(
-    "adminSearch"
-  )
-  ?.addEventListener(
-    "input",
-    event => {
+document.addEventListener(
+    "click",
+    async event => {
 
-      const query =
-        event.target.value
-          .toLowerCase()
-          .trim();
+        const target =
+            event.target;
 
 
-      document
-        .querySelectorAll(
-          "#adminTableBody tr"
-        )
-        .forEach(row => {
+        /* Login */
 
-          row.style.display =
-            row.textContent
-              .toLowerCase()
-              .includes(query)
-                ? ""
-                : "none";
+        const login =
+            target.closest(
+                "[data-open-login]"
+            );
 
-        });
+        if (login) {
+
+            openModal(
+                "login-modal"
+            );
+
+            return;
+        }
+
+
+        /* Register */
+
+        const register =
+            target.closest(
+                "[data-open-register]"
+            );
+
+        if (register) {
+
+            openModal(
+                "register-modal"
+            );
+
+            return;
+        }
+
+
+        /* Create project */
+
+        const createProject =
+            target.closest(
+                "[data-create-project]"
+            );
+
+        if (createProject) {
+
+            if (!state.user) {
+
+                openModal(
+                    "login-modal"
+                );
+
+                return;
+            }
+
+            openModal(
+                "create-project-modal"
+            );
+
+            return;
+        }
+
+
+        /* Logout */
+
+        const logoutButton =
+            target.closest(
+                "[data-auth-logout]"
+            );
+
+        if (logoutButton) {
+
+            await logout();
+
+            return;
+        }
+
+
+        /* Favorite */
+
+        const favorite =
+            target.closest(
+                "[data-favorite]"
+            );
+
+        if (favorite) {
+
+            event.stopPropagation();
+
+            await toggleFavorite(
+                favorite.dataset
+                    .favorite
+            );
+
+            return;
+        }
+
+
+        /* Specialist */
+
+        const specialist =
+            target.closest(
+                "[data-specialist-id]"
+            );
+
+        if (
+            specialist &&
+            !target.closest(
+                "[data-favorite]"
+            )
+        ) {
+
+            await openSpecialist(
+                specialist.dataset
+                    .specialistId
+            );
+
+            return;
+        }
+
+
+        /* Marketplace */
+
+        const marketplace =
+            target.closest(
+                "[data-marketplace-id]"
+            );
+
+        if (marketplace) {
+
+            await openMarketplaceItem(
+                marketplace.dataset
+                    .marketplaceId
+            );
+
+            return;
+        }
+
+
+        /* Job */
+
+        const job =
+            target.closest(
+                "[data-job-id]"
+            );
+
+        if (job) {
+
+            await openJob(
+                job.dataset.jobId
+            );
+
+            return;
+        }
+
+
+        /* Apply job */
+
+        const apply =
+            target.closest(
+                "[data-apply-job]"
+            );
+
+        if (apply) {
+
+            await applyJob(
+                apply.dataset
+                    .applyJob
+            );
+
+            return;
+        }
+
+
+        /* Project */
+
+        const project =
+            target.closest(
+                "[data-project-id]"
+            );
+
+        if (project) {
+
+            await openProject(
+                project.dataset
+                    .projectId
+            );
+
+            return;
+        }
+
+
+        /* Proposal */
+
+        const proposal =
+            target.closest(
+                "[data-propose-project]"
+            );
+
+        if (proposal) {
+
+            await proposeProject(
+                proposal.dataset
+                    .proposeProject
+            );
+
+            return;
+        }
+
+
+        /* Real estate */
+
+        const property =
+            target.closest(
+                "[data-real-estate-id]"
+            );
+
+        if (property) {
+
+            await openRealEstate(
+                property.dataset
+                    .realEstateId
+            );
+
+            return;
+        }
+
+
+        /* Contact */
+
+        const contact =
+            target.closest(
+                "[data-contact-owner]"
+            );
+
+        if (contact) {
+
+            await contactUser(
+                contact.dataset
+                    .contactOwner
+            );
+
+            return;
+        }
+
+
+        /* Request specialist */
+
+        const request =
+            target.closest(
+                "[data-request-specialist]"
+            );
+
+        if (request) {
+
+            await requestSpecialist(
+                request.dataset
+                    .requestSpecialist
+            );
+
+            return;
+        }
+
+
+        /* Notifications */
+
+        const notificationButton =
+            target.closest(
+                "[data-open-notifications]"
+            );
+
+        if (
+            notificationButton
+        ) {
+
+            if (!state.user) {
+
+                openModal(
+                    "login-modal"
+                );
+
+                return;
+            }
+
+            openModal(
+                "notification-modal"
+            );
+
+            await loadNotifications();
+
+            return;
+        }
 
     }
-  );
+);
 
 
-/* ==================================================
-   UTILITIES
-================================================== */
+/* =========================================================
+   HERO SEARCH
+========================================================= */
 
-function setText(
-  id,
-  value
-) {
+const heroSearch =
+    byId(
+        "hero-search"
+    ) ||
+    byId(
+        "main-search"
+    );
 
-  const element =
-    document.getElementById(id);
 
-  if (element) {
+if (heroSearch) {
 
-    element.textContent =
-      String(value ?? "—");
+    heroSearch.addEventListener(
+        "keydown",
+        async event => {
 
-  }
+            if (
+                event.key !==
+                "Enter"
+            ) {
+                return;
+            }
 
+
+            await performSearch(
+                heroSearch.value
+            );
+        }
+    );
 }
 
 
-function escapeHTML(
-  value
+/* =========================================================
+   PRICE FORMAT
+========================================================= */
+
+function formatPrice(
+    value
 ) {
 
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return "Нарх муайян нашудааст";
+    }
 
+
+    const number =
+        Number(
+            String(value)
+                .replace(
+                    /[^\d.-]/g,
+                    ""
+                )
+        );
+
+
+    if (
+        Number.isNaN(number)
+    ) {
+        return escapeHTML(
+            value
+        );
+    }
+
+
+    return (
+        new Intl.NumberFormat(
+            "tg-TJ"
+        ).format(number)
+        + " с."
+    );
 }
 
 
-/* ==================================================
-   PUBLIC API
-================================================== */
+/* =========================================================
+   DATE FORMAT
+========================================================= */
 
-window.SMMTJ = {
+function formatDate(
+    value
+) {
 
-  state,
-
-  API_URL,
-
-  openSpecialist,
-
-  loadAdminPage,
-
-  loadAdminStats,
-
-  adminView,
-
-  logout
-
-};
+    if (!value) {
+        return "";
+    }
 
 
-/* ==================================================
-   AUTO ADMIN LOAD
-================================================== */
+    const date =
+        new Date(value);
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return value;
+    }
+
+
+    return new Intl.DateTimeFormat(
+        "tg-TJ",
+        {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+        }
+    ).format(date);
+}
+
+
+/* =========================================================
+   INITIALS
+========================================================= */
+
+function getInitials(
+    name
+) {
+
+    return String(name)
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(
+            word =>
+                word.charAt(0)
+        )
+        .join("")
+        .toUpperCase();
+}
+
+
+/* =========================================================
+   HOME DATA
+========================================================= */
+
+async function loadHomeData() {
+
+    await Promise.allSettled([
+
+        loadSpecialists(),
+
+        loadMarketplace(),
+
+        loadJobs(),
+
+        loadProjects(),
+
+        loadRealEstate()
+
+    ]);
+
+
+    if (state.user) {
+        await loadNotifications();
+    }
+}
+
+
+/* =========================================================
+   LOADING SCREEN
+========================================================= */
+
+function hideLoader() {
+
+    const loader =
+        byId(
+            "loading-screen"
+        ) ||
+        byId(
+            "loader"
+        );
+
+
+    if (!loader) return;
+
+
+    loader.classList.add(
+        "loaded"
+    );
+
+
+    setTimeout(
+        () => {
+            loader.hidden = true;
+        },
+        400
+    );
+}
+
+
+/* =========================================================
+   ACTIVE NAV
+========================================================= */
+
+function setActiveNav() {
+
+    const path =
+        window.location.pathname;
+
+
+    $$(
+        "nav a, .navbar a, [data-route]"
+    )
+        .forEach(
+            link => {
+
+                const href =
+                    link.getAttribute(
+                        "href"
+                    );
+
+
+                if (
+                    href &&
+                    href !== "/" &&
+                    path.includes(
+                        href.replace(
+                            ".html",
+                            ""
+                        )
+                    )
+                ) {
+
+                    link.classList.add(
+                        "active"
+                    );
+
+                }
+
+            }
+        );
+}
+
+
+/* =========================================================
+   INIT
+========================================================= */
+
+async function init() {
+
+    try {
+
+        setActiveNav();
+
+        await loadCurrentUser();
+
+        await loadRegions();
+
+        await loadHomeData();
+
+    } catch (error) {
+
+        console.error(
+            "SMM.TJ init:",
+            error
+        );
+
+    } finally {
+
+        hideLoader();
+
+    }
+}
+
 
 if (
-  document.getElementById(
-    "adminTableBody"
-  )
+    document.readyState ===
+    "loading"
 ) {
 
-  loadAdminStats();
+    document.addEventListener(
+        "DOMContentLoaded",
+        init
+    );
+
+} else {
+
+    init();
 
 }
+
+
+/* =========================================================
+   GLOBAL API
+========================================================= */
+
+window.SMMTJ = {
+    state,
+
+    api,
+
+    toast,
+
+    openModal,
+
+    closeModal,
+
+    logout,
+
+    performSearch,
+
+    loadSpecialists,
+
+    loadMarketplace,
+
+    loadJobs,
+
+    loadProjects,
+
+    loadRealEstate,
+
+    loadNotifications
+};
