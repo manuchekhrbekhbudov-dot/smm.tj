@@ -2,1830 +2,1818 @@
 <html lang="tg">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta name="description"
-          content="SMM.TJ — Платформаи касбии SMM дар Тоҷикистон. Мутахассисон, хизматрасониҳо, лоиҳаҳо, ҷойҳои корӣ ва бозорро пайдо кунед.">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <meta name="keywords"
-          content="SMM Тоҷикистон, SMM.TJ, маркетинг, дизайнер, программист, фрилансер, кор, хизматрасонӣ">
+    <meta
+        name="description"
+        content="SMM.TJ — Платформаи касбии SMM дар Тоҷикистон"
+    >
 
-    <meta name="author" content="SMM.TJ">
+    <meta
+        name="theme-color"
+        content="#000000"
+    >
 
     <title>SMM.TJ — Платформаи касбии SMM дар Тоҷикистон</title>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-          rel="stylesheet">
-
-    <!-- Main stylesheet -->
-    <link rel="stylesheet" href="/src/style.css">
+    <!-- IMPORTANT:
+         index.html, style.css ва script.js
+         дар як папка мебошанд.
+    -->
+    <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
-<!-- =========================================================
+<!-- =====================================================
      LOADING SCREEN
-========================================================= -->
+===================================================== -->
 
-<div id="app-loader" class="app-loader">
-    <div class="loader-logo">
-        <span>SMM</span><b>.TJ</b>
+<div id="loading-screen">
+    <div class="loader-content">
+        <div class="loader-logo">SMM</div>
+        <div class="loader-spinner"></div>
+        <p>Платформа бор шуда истодааст...</p>
     </div>
-
-    <div class="loader-spinner"></div>
-
-    <p>Платформа бор шуда истодааст...</p>
 </div>
 
 
-<!-- =========================================================
+<!-- =====================================================
      APP
-========================================================= -->
+===================================================== -->
 
-<div id="app" class="app">
+<div id="app">
 
 
-    <!-- =====================================================
-         NAVBAR
-    ====================================================== -->
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
 
-    <header class="navbar" id="navbar">
+<header class="navbar" id="navbar">
 
-        <div class="container navbar-inner">
+    <div class="container navbar-inner">
 
-            <!-- Logo -->
+        <a href="#home" class="logo">
+            <div class="logo-mark">S</div>
+            <strong>SMM<span>.TJ</span></strong>
+        </a>
 
-            <a href="/" class="brand" aria-label="SMM.TJ">
-                <span class="brand-main">SMM</span>
-                <span class="brand-dot">.TJ</span>
+
+        <nav class="nav-links" id="desktop-nav">
+
+            <a href="#home" class="active">
+                Асосӣ
             </a>
 
+            <a href="#specialists">
+                Мутахассисон
+            </a>
 
-            <!-- Desktop navigation -->
+            <a href="#marketplace">
+                Marketplace
+            </a>
 
-            <nav class="desktop-nav" aria-label="Навигатсия">
+            <a href="#jobs">
+                Ҷойҳои корӣ
+            </a>
 
-                <a href="#home" class="nav-link active">
-                    <span>Асосӣ</span>
-                </a>
+            <a href="#projects">
+                Лоиҳаҳо
+            </a>
 
-                <a href="#specialists" class="nav-link">
-                    <span>Мутахассисон</span>
-                </a>
+            <a href="#real-estate">
+                Амвол
+            </a>
 
-                <a href="#marketplace" class="nav-link">
-                    <span>Marketplace</span>
-                </a>
-
-                <a href="#jobs" class="nav-link">
-                    <span>Ҷойҳои корӣ</span>
-                </a>
-
-                <a href="#projects" class="nav-link">
-                    <span>Лоиҳаҳо</span>
-                </a>
-
-                <a href="#real-estate" class="nav-link">
-                    <span>Амвол</span>
-                </a>
-
-            </nav>
+        </nav>
 
 
-            <!-- Navbar actions -->
+        <div class="nav-actions">
 
-            <div class="navbar-actions">
+            <button
+                class="btn btn-secondary"
+                id="open-search"
+                type="button"
+                aria-label="Ҷустуҷӯ"
+            >
+                🔎
+            </button>
 
-                <!-- Search -->
+            <button
+                class="btn btn-secondary"
+                id="open-notifications"
+                type="button"
+                aria-label="Огоҳиномаҳо"
+            >
+                🔔
+                <span
+                    id="notification-count"
+                    class="notification-count"
+                >
+                    0
+                </span>
+            </button>
 
-                <button
-                    type="button"
-                    class="icon-button"
-                    id="open-search"
-                    aria-label="Ҷустуҷӯ">
+            <button
+                class="btn btn-secondary"
+                id="open-messages"
+                type="button"
+            >
+                💬
+            </button>
 
-                    <svg width="20"
-                         height="20"
-                         viewBox="0 0 24 24"
-                         fill="none"
-                         stroke="currentColor"
-                         stroke-width="2">
+            <button
+                class="btn btn-secondary"
+                id="open-login"
+                type="button"
+            >
+                Даромадан
+            </button>
 
-                        <circle cx="11" cy="11" r="7"></circle>
-                        <path d="m20 20-3.5-3.5"></path>
+            <button
+                class="btn btn-primary"
+                id="open-register"
+                type="button"
+            >
+                Сабти ном
+            </button>
 
-                    </svg>
+            <button
+                class="btn btn-secondary"
+                id="open-mobile-menu"
+                type="button"
+                aria-label="Меню"
+            >
+                ☰
+            </button>
 
-                </button>
+        </div>
 
+    </div>
 
-                <!-- Notifications -->
-
-                <button
-                    type="button"
-                    class="icon-button notification-button"
-                    id="notification-button"
-                    aria-label="Огоҳиномаҳо">
-
-                    <svg width="20"
-                         height="20"
-                         viewBox="0 0 24 24"
-                         fill="none"
-                         stroke="currentColor"
-                         stroke-width="2">
-
-                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-
-                    </svg>
-
-                    <span
-                        class="notification-count"
-                        id="notification-count">
-                        0
-                    </span>
-
-                </button>
-
-
-                <!-- Messages -->
-
-                <button
-                    type="button"
-                    class="icon-button"
-                    id="messages-button"
-                    aria-label="Паёмҳо">
-
-                    <svg width="20"
-                         height="20"
-                         viewBox="0 0 24 24"
-                         fill="none"
-                         stroke="currentColor"
-                         stroke-width="2">
-
-                        <path d="M21 11.5a8.38 8.38 0 0 1-9 8.5
-                                 8.5 8.5 0 0 1-4-.98L3 21l1.98-4.02
-                                 A8.5 8.5 0 1 1 21 11.5Z"></path>
-
-                    </svg>
-
-                    <span class="message-count" id="message-count">
-                        0
-                    </span>
-
-                </button>
+</header>
 
 
-                <!-- Profile / Login -->
+<!-- =====================================================
+     MOBILE MENU
+===================================================== -->
 
-                <div class="navbar-auth" id="navbar-auth">
+<div
+    class="mobile-menu"
+    id="mobile-menu"
+    hidden
+>
 
-                    <button
-                        type="button"
-                        class="btn btn-primary"
-                        id="login-button">
+    <div class="mobile-menu-inner">
 
-                        Ворид шудан
+        <button
+            class="mobile-menu-close"
+            id="close-mobile-menu"
+            type="button"
+        >
+            ×
+        </button>
 
-                    </button>
+        <a href="#home">
+            🏠 Асосӣ
+        </a>
 
+        <a href="#specialists">
+            👨‍💻 Мутахассисон
+        </a>
+
+        <a href="#marketplace">
+            🛒 Marketplace
+        </a>
+
+        <a href="#jobs">
+            💼 Ҷойҳои корӣ
+        </a>
+
+        <a href="#projects">
+            📋 Лоиҳаҳо
+        </a>
+
+        <a href="#real-estate">
+            🏠 Амвол
+        </a>
+
+        <a href="#regions">
+            📍 Минтақаҳо
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<main>
+
+<section
+    class="hero"
+    id="home"
+>
+
+    <div class="container hero-content">
+
+        <div class="hero-badge">
+            <span>✦</span>
+            Платформаи касбии SMM дар Тоҷикистон
+        </div>
+
+
+        <h1>
+            Кор, мизоҷ ва
+            <span>имкониятҳо</span>
+            дар як ҷо
+        </h1>
+
+
+        <p class="hero-description">
+            Мутахассиси SMM ёбед, хизматрасонии худро пешниҳод кунед,
+            лоиҳа гиред, ҷойи кор ёбед ва бизнеси худро дар SMM.TJ рушд диҳед.
+        </p>
+
+
+        <!-- HERO SEARCH -->
+
+        <form
+            class="hero-search-box"
+            id="hero-search-form"
+        >
+
+            <input
+                type="search"
+                id="hero-search-input"
+                placeholder="SMM, дизайн, маркетинг, барномасозӣ..."
+                autocomplete="off"
+            >
+
+            <select
+                id="hero-search-category"
+            >
+
+                <option value="">
+                    Ҳама категорияҳо
+                </option>
+
+                <option value="SMM">
+                    SMM
+                </option>
+
+                <option value="Design">
+                    Дизайн
+                </option>
+
+                <option value="Marketing">
+                    Маркетинг
+                </option>
+
+                <option value="Programming">
+                    Барномасозӣ
+                </option>
+
+                <option value="Video Editing">
+                    Видео
+                </option>
+
+                <option value="Photography">
+                    Суратгирӣ
+                </option>
+
+                <option value="Copywriting">
+                    Копирайтинг
+                </option>
+
+                <option value="Education">
+                    Маориф
+                </option>
+
+                <option value="Services">
+                    Хизматрасонӣ
+                </option>
+
+                <option value="Products">
+                    Маҳсулот
+                </option>
+
+            </select>
+
+            <button
+                class="btn btn-primary"
+                type="submit"
+            >
+                Ҷустуҷӯ
+            </button>
+
+        </form>
+
+
+        <div class="hero-actions">
+
+            <button
+                class="btn btn-primary"
+                id="hero-find-specialist"
+                type="button"
+            >
+                👨‍💻 Мутахассис ёфтан
+            </button>
+
+            <button
+                class="btn btn-secondary"
+                id="hero-create-project"
+                type="button"
+            >
+                ➕ Лоиҳа эҷод кардан
+            </button>
+
+            <button
+                class="btn btn-secondary"
+                id="hero-find-job"
+                type="button"
+            >
+                💼 Кор ёфтан
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     STATS
+===================================================== -->
+
+<section class="stats">
+
+    <div class="container">
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <div
+                    class="stat-number"
+                    id="stat-specialists"
+                >
+                    0
                 </div>
 
+                <div class="stat-label">
+                    Мутахассисон
+                </div>
+            </div>
 
-                <!-- Mobile menu -->
 
-                <button
-                    type="button"
-                    class="mobile-menu-button"
-                    id="mobile-menu-button"
-                    aria-label="Меню">
+            <div class="stat-card">
+                <div
+                    class="stat-number"
+                    id="stat-services"
+                >
+                    0
+                </div>
 
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                <div class="stat-label">
+                    Хизматрасониҳо
+                </div>
+            </div>
 
-                </button>
 
+            <div class="stat-card">
+                <div
+                    class="stat-number"
+                    id="stat-projects"
+                >
+                    0
+                </div>
+
+                <div class="stat-label">
+                    Лоиҳаҳо
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div
+                    class="stat-number"
+                    id="stat-users"
+                >
+                    0
+                </div>
+
+                <div class="stat-label">
+                    Истифодабарандагон
+                </div>
             </div>
 
         </div>
 
-    </header>
+    </div>
+
+</section>
 
 
-    <!-- =====================================================
-         MOBILE MENU
-    ====================================================== -->
+<!-- =====================================================
+     CATEGORIES
+===================================================== -->
 
-    <aside class="mobile-menu" id="mobile-menu">
+<section
+    class="section"
+    id="categories"
+>
 
-        <div class="mobile-menu-header">
+    <div class="container">
 
-            <a href="/" class="brand">
-                <span class="brand-main">SMM</span>
-                <span class="brand-dot">.TJ</span>
+        <div class="section-header">
+
+            <div>
+                <h2 class="section-title">
+                    Категорияҳо
+                </h2>
+
+                <p class="section-description">
+                    Соҳаи лозимаатонро интихоб кунед.
+                </p>
+            </div>
+
+            <a
+                href="#marketplace"
+                class="section-link"
+            >
+                Ҳамааш →
             </a>
 
+        </div>
+
+
+        <div
+            class="categories-grid"
+            id="categories-grid"
+        >
+
             <button
+                class="category-card"
+                data-category="SMM"
                 type="button"
-                class="icon-button"
-                id="close-mobile-menu"
-                aria-label="Пӯшидан">
+            >
+                <div class="category-icon">
+                    📱
+                </div>
 
-                ✕
+                <div>
+                    <h3>SMM</h3>
+                    <span>Instagram, Telegram...</span>
+                </div>
+            </button>
 
+
+            <button
+                class="category-card"
+                data-category="Design"
+                type="button"
+            >
+                <div class="category-icon">
+                    🎨
+                </div>
+
+                <div>
+                    <h3>Дизайн</h3>
+                    <span>Logo, UI/UX...</span>
+                </div>
+            </button>
+
+
+            <button
+                class="category-card"
+                data-category="Marketing"
+                type="button"
+            >
+                <div class="category-icon">
+                    📈
+                </div>
+
+                <div>
+                    <h3>Маркетинг</h3>
+                    <span>Реклама ва стратегия</span>
+                </div>
+            </button>
+
+
+            <button
+                class="category-card"
+                data-category="Programming"
+                type="button"
+            >
+                <div class="category-icon">
+                    💻
+                </div>
+
+                <div>
+                    <h3>Барномасозӣ</h3>
+                    <span>Web, App, Software</span>
+                </div>
+            </button>
+
+
+            <button
+                class="category-card"
+                data-category="Video Editing"
+                type="button"
+            >
+                <div class="category-icon">
+                    🎬
+                </div>
+
+                <div>
+                    <h3>Видео</h3>
+                    <span>Монтаж ва Reels</span>
+                </div>
+            </button>
+
+
+            <button
+                class="category-card"
+                data-category="Photography"
+                type="button"
+            >
+                <div class="category-icon">
+                    📸
+                </div>
+
+                <div>
+                    <h3>Суратгирӣ</h3>
+                    <span>Фото ва контент</span>
+                </div>
+            </button>
+
+
+            <button
+                class="category-card"
+                data-category="Copywriting"
+                type="button"
+            >
+                <div class="category-icon">
+                    ✍️
+                </div>
+
+                <div>
+                    <h3>Копирайтинг</h3>
+                    <span>Матн ва контент</span>
+                </div>
+            </button>
+
+
+            <button
+                class="category-card"
+                data-category="Business"
+                type="button"
+            >
+                <div class="category-icon">
+                    💼
+                </div>
+
+                <div>
+                    <h3>Бизнес</h3>
+                    <span>Хизматрасонӣ</span>
+                </div>
+            </button>
+
+
+            <button
+                class="category-card"
+                data-category="Education"
+                type="button"
+            >
+                <div class="category-icon">
+                    🎓
+                </div>
+
+                <div>
+                    <h3>Маориф</h3>
+                    <span>Курс ва омӯзиш</span>
+                </div>
+            </button>
+
+
+            <button
+                class="category-card"
+                data-category="Services"
+                type="button"
+            >
+                <div class="category-icon">
+                    🛠️
+                </div>
+
+                <div>
+                    <h3>Хизматҳо</h3>
+                    <span>Хизматрасониҳои гуногун</span>
+                </div>
+            </button>
+
+
+            <button
+                class="category-card"
+                data-category="Products"
+                type="button"
+            >
+                <div class="category-icon">
+                    🛒
+                </div>
+
+                <div>
+                    <h3>Маҳсулот</h3>
+                    <span>Маҳсулот ва молҳо</span>
+                </div>
+            </button>
+
+
+            <button
+                class="category-card"
+                data-category="All"
+                type="button"
+            >
+                <div class="category-icon">
+                    ✦
+                </div>
+
+                <div>
+                    <h3>Ҳама</h3>
+                    <span>Дидани Marketplace</span>
+                </div>
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     SPECIALISTS
+===================================================== -->
+
+<section
+    class="section"
+    id="specialists"
+>
+
+    <div class="container">
+
+        <div class="section-header">
+
+            <div>
+
+                <h2 class="section-title">
+                    Мутахассисони SMM
+                </h2>
+
+                <p class="section-description">
+                    Мутахассисро аз рӯи таҷриба, рейтинг ва минтақа интихоб кунед.
+                </p>
+
+            </div>
+
+            <a
+                href="#specialists"
+                class="section-link"
+                id="view-all-specialists"
+            >
+                Ҳама мутахассисон →
+            </a>
+
+        </div>
+
+
+        <!-- FILTERS -->
+
+        <div class="filters">
+
+            <input
+                class="filter-input"
+                id="specialist-search"
+                type="search"
+                placeholder="Ҷустуҷӯи мутахассис..."
+            >
+
+            <select
+                class="filter-select"
+                id="specialist-category"
+            >
+
+                <option value="">
+                    Категория
+                </option>
+
+                <option value="SMM">
+                    SMM
+                </option>
+
+                <option value="Marketing">
+                    Маркетинг
+                </option>
+
+                <option value="Design">
+                    Дизайн
+                </option>
+
+                <option value="Video Editing">
+                    Видео
+                </option>
+
+            </select>
+
+
+            <select
+                class="filter-select"
+                id="specialist-region"
+            >
+
+                <option value="">
+                    Ҳама минтақаҳо
+                </option>
+
+                <option value="Душанбе">
+                    Душанбе
+                </option>
+
+                <option value="Суғд">
+                    Суғд
+                </option>
+
+                <option value="Хатлон">
+                    Хатлон
+                </option>
+
+                <option value="ВМКБ">
+                    ВМКБ
+                </option>
+
+                <option value="НТҶ">
+                    НТҶ
+                </option>
+
+            </select>
+
+
+            <select
+                class="filter-select"
+                id="specialist-rating"
+            >
+
+                <option value="">
+                    Рейтинг
+                </option>
+
+                <option value="5">
+                    5 ⭐
+                </option>
+
+                <option value="4">
+                    4+ ⭐
+                </option>
+
+                <option value="3">
+                    3+ ⭐
+                </option>
+
+            </select>
+
+
+            <select
+                class="filter-select"
+                id="specialist-sort"
+            >
+
+                <option value="newest">
+                    Навтарин
+                </option>
+
+                <option value="rating">
+                    Рейтинг
+                </option>
+
+                <option value="experience">
+                    Таҷриба
+                </option>
+
+                <option value="popular">
+                    Машҳур
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div
+            class="specialists-grid"
+            id="specialists-grid"
+        >
+            <!-- JS loads specialists here -->
+        </div>
+
+
+        <div
+            class="empty-state"
+            id="specialists-empty"
+            hidden
+        >
+            <h3>Мутахассис ёфт нашуд</h3>
+            <p>
+                Филтр ё ҷустуҷӯро тағйир диҳед.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     MARKETPLACE
+===================================================== -->
+
+<section
+    class="section"
+    id="marketplace"
+>
+
+    <div class="container">
+
+        <div class="section-header">
+
+            <div>
+
+                <h2 class="section-title">
+                    Marketplace
+                </h2>
+
+                <p class="section-description">
+                    Хизматрасонӣ ва маҳсулоти воқеиро пайдо кунед.
+                </p>
+
+            </div>
+
+            <button
+                class="section-link"
+                id="add-marketplace-item"
+                type="button"
+            >
+                + Илова кардан
             </button>
 
         </div>
 
 
-        <nav class="mobile-nav">
+        <div class="marketplace-tabs">
 
-            <a href="#home">Асосӣ</a>
-            <a href="#specialists">Мутахассисон</a>
-            <a href="#marketplace">Marketplace</a>
-            <a href="#jobs">Ҷойҳои корӣ</a>
-            <a href="#projects">Лоиҳаҳо</a>
-            <a href="#real-estate">Амвол</a>
-            <a href="#how-it-works">Чӣ тавр кор мекунад?</a>
-            <a href="#reviews">Назарҳо</a>
+            <button
+                class="marketplace-tab active"
+                data-market-type="services"
+                type="button"
+            >
+                Хизматрасониҳо
+            </button>
 
-        </nav>
+            <button
+                class="marketplace-tab"
+                data-market-type="products"
+                type="button"
+            >
+                Маҳсулот
+            </button>
 
-    </aside>
+        </div>
 
 
-    <main>
+        <div class="filters">
+
+            <input
+                class="filter-input"
+                id="marketplace-search"
+                type="search"
+                placeholder="Ҷустуҷӯ..."
+            >
 
 
-        <!-- =================================================
-             HERO
-        ================================================== -->
+            <select
+                class="filter-select"
+                id="marketplace-category"
+            >
 
-        <section id="home" class="hero-section">
+                <option value="">
+                    Ҳама категорияҳо
+                </option>
 
-            <div class="hero-background">
+                <option value="SMM">SMM</option>
+                <option value="Design">Дизайн</option>
+                <option value="Marketing">Маркетинг</option>
+                <option value="Programming">Барномасозӣ</option>
+                <option value="Video Editing">Видео</option>
+                <option value="Photography">Суратгирӣ</option>
+                <option value="Copywriting">Копирайтинг</option>
 
-                <div class="hero-glow hero-glow-one"></div>
-                <div class="hero-glow hero-glow-two"></div>
+            </select>
+
+
+            <select
+                class="filter-select"
+                id="marketplace-region"
+            >
+
+                <option value="">
+                    Ҳама минтақаҳо
+                </option>
+
+                <option value="Душанбе">Душанбе</option>
+                <option value="Суғд">Суғд</option>
+                <option value="Хатлон">Хатлон</option>
+                <option value="ВМКБ">ВМКБ</option>
+                <option value="НТҶ">НТҶ</option>
+
+            </select>
+
+
+            <select
+                class="filter-select"
+                id="marketplace-sort"
+            >
+
+                <option value="newest">
+                    Навтарин
+                </option>
+
+                <option value="price_low">
+                    Арзон → гарон
+                </option>
+
+                <option value="price_high">
+                    Гарон → арзон
+                </option>
+
+                <option value="rating">
+                    Рейтинг
+                </option>
+
+                <option value="popular">
+                    Машҳур
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div
+            class="marketplace-grid"
+            id="marketplace-grid"
+        >
+            <!-- JS -->
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     JOBS
+===================================================== -->
+
+<section
+    class="section"
+    id="jobs"
+>
+
+    <div class="container">
+
+        <div class="section-header">
+
+            <div>
+
+                <h2 class="section-title">
+                    Ҷойҳои корӣ
+                </h2>
+
+                <p class="section-description">
+                    Вакансияҳои навро пайдо кунед ва ариза фиристед.
+                </p>
 
             </div>
 
+            <button
+                class="section-link"
+                id="create-job"
+                type="button"
+            >
+                + Эълони вакансия
+            </button>
 
-            <div class="container hero-container">
+        </div>
 
-                <div class="hero-content">
 
-                    <div class="hero-badge">
+        <div class="filters">
 
-                        <span class="status-dot"></span>
+            <input
+                class="filter-input"
+                id="job-search"
+                type="search"
+                placeholder="Ҷустуҷӯи вакансия..."
+            >
 
-                        Платформаи нав барои Тоҷикистон
+            <select
+                class="filter-select"
+                id="job-region"
+            >
 
-                    </div>
+                <option value="">
+                    Минтақа
+                </option>
 
+                <option value="Душанбе">Душанбе</option>
+                <option value="Суғд">Суғд</option>
+                <option value="Хатлон">Хатлон</option>
+                <option value="ВМКБ">ВМКБ</option>
+                <option value="НТҶ">НТҶ</option>
 
-                    <h1 class="hero-title">
+            </select>
 
-                        Мутахассисро ёбед.
-                        <span>Кор пайдо кунед.</span>
-                        Бизнесро рушд диҳед.
 
-                    </h1>
+            <select
+                class="filter-select"
+                id="job-employment"
+            >
 
+                <option value="">
+                    Навъи кор
+                </option>
 
-                    <p class="hero-description">
+                <option value="FULL_TIME">
+                    Full-time
+                </option>
 
-                        SMM.TJ — платформаи касбии Тоҷикистон барои
-                        пайдо кардани SMM-мутахассисон, хизматрасониҳо,
-                        лоиҳаҳо, ҷойҳои корӣ ва имкониятҳои нав.
+                <option value="PART_TIME">
+                    Part-time
+                </option>
 
-                    </p>
+                <option value="REMOTE">
+                    Remote
+                </option>
 
+                <option value="FREELANCE">
+                    Freelance
+                </option>
 
-                    <!-- Hero search -->
+            </select>
 
-                    <div class="hero-search" id="hero-search">
+        </div>
 
-                        <div class="search-icon">
 
-                            <svg width="22"
-                                 height="22"
-                                 viewBox="0 0 24 24"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 stroke-width="2">
+        <div
+            class="jobs-grid"
+            id="jobs-grid"
+        >
+            <!-- JS -->
+        </div>
 
-                                <circle cx="11" cy="11" r="7"></circle>
-                                <path d="m20 20-3.5-3.5"></path>
+    </div>
 
-                            </svg>
+</section>
 
-                        </div>
 
+<!-- =====================================================
+     PROJECTS
+===================================================== -->
 
-                        <input
-                            type="search"
-                            id="main-search-input"
-                            placeholder="Мутахассис, хизмат, кор ё лоиҳа ҷустуҷӯ кунед..."
-                            autocomplete="off"
-                        >
+<section
+    class="section"
+    id="projects"
+>
 
+    <div class="container">
 
-                        <button
-                            type="button"
-                            class="search-submit"
-                            id="main-search-button">
+        <div class="section-header">
 
-                            Ҷустуҷӯ
+            <div>
 
-                        </button>
+                <h2 class="section-title">
+                    Лоиҳаҳо
+                </h2>
 
-                    </div>
-
-
-                    <!-- Hero actions -->
-
-                    <div class="hero-actions">
-
-                        <a
-                            href="#specialists"
-                            class="btn btn-primary btn-large">
-
-                            Мутахассис пайдо кардан
-
-                        </a>
-
-
-                        <button
-                            type="button"
-                            class="btn btn-secondary btn-large"
-                            id="create-project-button">
-
-                            Лоиҳа эҷод кардан
-
-                        </button>
-
-                    </div>
-
-
-                    <!-- Hero stats -->
-
-                    <div class="hero-stats">
-
-                        <div class="stat-item">
-
-                            <strong id="stat-specialists">0</strong>
-                            <span>Мутахассисон</span>
-
-                        </div>
-
-
-                        <div class="stat-item">
-
-                            <strong id="stat-services">0</strong>
-                            <span>Хизматрасониҳо</span>
-
-                        </div>
-
-
-                        <div class="stat-item">
-
-                            <strong id="stat-projects">0</strong>
-                            <span>Лоиҳаҳо</span>
-
-                        </div>
-
-
-                        <div class="stat-item">
-
-                            <strong id="stat-users">0</strong>
-                            <span>Истифодабарандагон</span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Hero visual -->
-
-                <div class="hero-visual">
-
-                    <div class="hero-card hero-card-main">
-
-                        <div class="hero-card-top">
-
-                            <span class="verified-badge">
-                                ✓ Verified
-                            </span>
-
-                            <span class="online-status">
-                                Online
-                            </span>
-
-                        </div>
-
-
-                        <div class="hero-avatar">
-
-                            <div class="avatar-placeholder">
-                                SMM
-                            </div>
-
-                        </div>
-
-
-                        <h3>Мутахассиси SMM</h3>
-
-                        <p>Social Media Marketing</p>
-
-
-                        <div class="rating">
-
-                            <span>★</span>
-                            <strong>5.0</strong>
-                            <small>(0 review)</small>
-
-                        </div>
-
-
-                        <div class="hero-card-footer">
-
-                            <span>Душанбе</span>
-                            <strong>Аз 500 сомонӣ</strong>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="floating-card floating-card-one">
-
-                        <span class="floating-icon">✓</span>
-
-                        <div>
-                            <strong>Лоиҳа ёфт шуд</strong>
-                            <small>Натиҷаҳои воқеӣ</small>
-                        </div>
-
-                    </div>
-
-
-                    <div class="floating-card floating-card-two">
-
-                        <span class="floating-icon">₿</span>
-
-                        <div>
-                            <strong>Пардохти бехатар</strong>
-                            <small>Муомилоти воқеӣ</small>
-                        </div>
-
-                    </div>
-
-                </div>
+                <p class="section-description">
+                    Лоиҳаи худро эҷод кунед ва аз мутахассисон proposal гиред.
+                </p>
 
             </div>
 
-        </section>
+            <button
+                class="btn btn-primary"
+                id="create-project"
+                type="button"
+            >
+                + Эҷоди лоиҳа
+            </button>
+
+        </div>
 
 
-        <!-- =================================================
-             CATEGORIES
-        ================================================== -->
+        <div class="filters">
 
-        <section class="section categories-section" id="categories">
-
-            <div class="container">
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span class="section-label">
-                            Хизматрасониҳо
-                        </span>
-
-                        <h2>
-                            Категорияҳоро интихоб кунед
-                        </h2>
-
-                    </div>
-
-                    <a href="#marketplace" class="section-link">
-                        Ҳамаашро дидан →
-                    </a>
-
-                </div>
+            <input
+                class="filter-input"
+                id="project-search"
+                type="search"
+                placeholder="Ҷустуҷӯи лоиҳа..."
+            >
 
 
-                <div
-                    class="categories-grid"
-                    id="categories-list">
+            <select
+                class="filter-select"
+                id="project-category"
+            >
 
-                    <!-- Categories will be loaded from API -->
+                <option value="">
+                    Категория
+                </option>
 
-                </div>
+                <option value="SMM">SMM</option>
+                <option value="Design">Дизайн</option>
+                <option value="Marketing">Маркетинг</option>
+                <option value="Programming">Барномасозӣ</option>
+                <option value="Video Editing">Видео</option>
+
+            </select>
 
 
-                <div
-                    class="empty-state"
-                    id="categories-empty"
-                    hidden>
+            <select
+                class="filter-select"
+                id="project-status"
+            >
 
-                    <h3>Категорияҳо ҳоло дастрас нестанд</h3>
-                    <p>Баъдтар аз нав кӯшиш кунед.</p>
+                <option value="">
+                    Ҳама ҳолатҳо
+                </option>
 
-                </div>
+                <option value="OPEN">
+                    Open
+                </option>
+
+                <option value="IN_PROGRESS">
+                    In Progress
+                </option>
+
+                <option value="COMPLETED">
+                    Completed
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div
+            class="projects-grid"
+            id="projects-grid"
+        >
+            <!-- JS -->
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     REAL ESTATE
+===================================================== -->
+
+<section
+    class="section"
+    id="real-estate"
+>
+
+    <div class="container">
+
+        <div class="section-header">
+
+            <div>
+
+                <h2 class="section-title">
+                    Амволи ғайриманқул
+                </h2>
+
+                <p class="section-description">
+                    Хона, квартира, офис, замин ва дигар объектҳоро ёбед.
+                </p>
 
             </div>
 
-        </section>
+            <button
+                class="btn btn-primary"
+                id="add-real-estate"
+                type="button"
+            >
+                + Эълон гузоштан
+            </button>
 
+        </div>
+
+
+        <div class="real-estate-tabs">
 
-        <!-- =================================================
-             POPULAR SMM SPECIALISTS
-        ================================================== -->
+            <button
+                class="real-estate-tab active"
+                data-real-type="ALL"
+                type="button"
+            >
+                Ҳама
+            </button>
 
-        <section
-            class="section specialists-section"
-            id="specialists">
+            <button
+                class="real-estate-tab"
+                data-real-type="SALE"
+                type="button"
+            >
+                Фурӯш
+            </button>
 
-            <div class="container">
+            <button
+                class="real-estate-tab"
+                data-real-type="RENT"
+                type="button"
+            >
+                Иҷора
+            </button>
 
-                <div class="section-heading">
+        </div>
 
-                    <div>
 
-                        <span class="section-label">
-                            Мутахассисон
-                        </span>
+        <div class="filters">
 
-                        <h2>
-                            SMM-мутахассисони платформа
-                        </h2>
+            <input
+                class="filter-input"
+                id="real-estate-search"
+                type="search"
+                placeholder="Ҷустуҷӯи амвол..."
+            >
 
-                        <p>
-                            Мутахассиси мувофиқро аз рӯйи малака,
-                            рейтинг, таҷриба ва минтақа интихоб кунед.
-                        </p>
 
-                    </div>
+            <select
+                class="filter-select"
+                id="real-estate-category"
+            >
 
+                <option value="">
+                    Навъи объект
+                </option>
 
-                    <a
-                        href="/specialists"
-                        class="section-link">
+                <option value="APARTMENT">
+                    Квартира
+                </option>
 
-                        Ҳамаи мутахассисон →
+                <option value="HOUSE">
+                    Хона
+                </option>
 
-                    </a>
+                <option value="ROOM">
+                    Ҳуҷра
+                </option>
 
-                </div>
+                <option value="OFFICE">
+                    Офис
+                </option>
 
+                <option value="COMMERCIAL">
+                    Тиҷоратӣ
+                </option>
 
-                <!-- Filters -->
+                <option value="LAND">
+                    Замин
+                </option>
 
-                <div class="filter-bar">
+            </select>
 
-                    <div class="filter-search">
 
-                        <input
-                            type="search"
-                            id="specialist-search"
-                            placeholder="Ҷустуҷӯи мутахассис..."
-                        >
+            <select
+                class="filter-select"
+                id="real-estate-region"
+            >
 
-                    </div>
+                <option value="">
+                    Минтақа
+                </option>
 
+                <option value="Душанбе">
+                    Душанбе
+                </option>
 
-                    <select id="specialist-region-filter">
+                <option value="Суғд">
+                    Суғд
+                </option>
 
-                        <option value="">
-                            Ҳамаи минтақаҳо
-                        </option>
+                <option value="Хатлон">
+                    Хатлон
+                </option>
 
-                        <option value="DUSHANBE">
-                            Душанбе
-                        </option>
+                <option value="ВМКБ">
+                    ВМКБ
+                </option>
 
-                        <option value="SUGHD">
-                            Суғд
-                        </option>
+                <option value="НТҶ">
+                    НТҶ
+                </option>
 
-                        <option value="KHATLON">
-                            Хатлон
-                        </option>
+            </select>
 
-                        <option value="GBAO">
-                            ВМКБ
-                        </option>
 
-                        <option value="RRP">
-                            НТҶ
-                        </option>
+            <select
+                class="filter-select"
+                id="real-estate-sort"
+            >
 
-                    </select>
+                <option value="newest">
+                    Навтарин
+                </option>
 
+                <option value="price_low">
+                    Арзон → гарон
+                </option>
 
-                    <select id="specialist-rating-filter">
+                <option value="price_high">
+                    Гарон → арзон
+                </option>
 
-                        <option value="">
-                            Ҳамаи рейтингҳо
-                        </option>
+            </select>
 
-                        <option value="5">
-                            5.0
-                        </option>
+        </div>
 
-                        <option value="4">
-                            4.0+
-                        </option>
 
-                        <option value="3">
-                            3.0+
-                        </option>
+        <div
+            class="real-estate-grid"
+            id="real-estate-grid"
+        >
+            <!-- JS -->
+        </div>
 
-                    </select>
+    </div>
 
+</section>
 
-                    <select id="specialist-sort">
 
-                        <option value="newest">
-                            Навтарин
-                        </option>
+<!-- =====================================================
+     REGIONS
+===================================================== -->
 
-                        <option value="rating">
-                            Рейтинг
-                        </option>
+<section
+    class="section"
+    id="regions"
+>
 
-                        <option value="popular">
-                            Машҳур
-                        </option>
+    <div class="container">
 
-                    </select>
+        <div class="section-header">
 
-                </div>
+            <div>
 
+                <h2 class="section-title">
+                    Минтақаҳо
+                </h2>
 
-                <!-- Specialists -->
-
-                <div
-                    class="cards-grid specialists-grid"
-                    id="specialists-list">
-
-                    <!-- Real specialists from API -->
-
-                </div>
-
-
-                <div
-                    class="empty-state"
-                    id="specialists-empty"
-                    hidden>
-
-                    <div class="empty-icon">⌕</div>
-
-                    <h3>
-                        Мутахассис ёфт нашуд
-                    </h3>
-
-                    <p>
-                        Филтр ё калимаи ҷустуҷӯро тағйир диҳед.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             MARKETPLACE
-        ================================================== -->
-
-        <section
-            class="section marketplace-section"
-            id="marketplace">
-
-            <div class="container">
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span class="section-label">
-                            Marketplace
-                        </span>
-
-                        <h2>
-                            Хизматрасониҳои дастрас
-                        </h2>
-
-                        <p>
-                            Хизматрасонӣ, маҳсулот ва пешниҳодҳои
-                            воқеиро пайдо кунед.
-                        </p>
-
-                    </div>
-
-
-                    <a
-                        href="/marketplace"
-                        class="section-link">
-
-                        Marketplace →
-
-                    </a>
-
-                </div>
-
-
-                <!-- Marketplace filters -->
-
-                <div class="marketplace-toolbar">
-
-                    <div class="marketplace-tabs">
-
-                        <button
-                            class="market-tab active"
-                            data-market-type="services">
-
-                            Хизматрасонӣ
-
-                        </button>
-
-
-                        <button
-                            class="market-tab"
-                            data-market-type="products">
-
-                            Маҳсулот
-
-                        </button>
-
-                    </div>
-
-
-                    <select id="marketplace-category">
-
-                        <option value="">
-                            Ҳамаи категорияҳо
-                        </option>
-
-                        <option value="smm">
-                            SMM
-                        </option>
-
-                        <option value="design">
-                            Design
-                        </option>
-
-                        <option value="marketing">
-                            Marketing
-                        </option>
-
-                        <option value="programming">
-                            Programming
-                        </option>
-
-                        <option value="video">
-                            Video Editing
-                        </option>
-
-                        <option value="photography">
-                            Photography
-                        </option>
-
-                        <option value="copywriting">
-                            Copywriting
-                        </option>
-
-                        <option value="business">
-                            Business
-                        </option>
-
-                        <option value="education">
-                            Education
-                        </option>
-
-                    </select>
-
-
-                    <select id="marketplace-sort">
-
-                        <option value="newest">
-                            Навтарин
-                        </option>
-
-                        <option value="price_low">
-                            Нархи паст
-                        </option>
-
-                        <option value="price_high">
-                            Нархи баланд
-                        </option>
-
-                        <option value="rating">
-                            Рейтинг
-                        </option>
-
-                        <option value="popular">
-                            Машҳур
-
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div
-                    class="cards-grid marketplace-grid"
-                    id="marketplace-list">
-
-                    <!-- Real services/products from API -->
-
-                </div>
-
-
-                <div
-                    class="empty-state"
-                    id="marketplace-empty"
-                    hidden>
-
-                    <h3>
-                        Ҳоло пешниҳод вуҷуд надорад
-                    </h3>
-
-                    <p>
-                        Хизматрасонӣ ё маҳсулоти нав баъдтар пайдо мешавад.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             LATEST JOBS
-        ================================================== -->
-
-        <section
-            class="section jobs-section"
-            id="jobs">
-
-            <div class="container">
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span class="section-label">
-                            Карьера
-                        </span>
-
-                        <h2>
-                            Ҷойҳои кории нав
-                        </h2>
-
-                        <p>
-                            Вакансияҳои воқеиро ҷустуҷӯ кунед
-                            ва ба онҳо ариза фиристед.
-                        </p>
-
-                    </div>
-
-
-                    <a
-                        href="/jobs"
-                        class="section-link">
-
-                        Ҳамаи ҷойҳои корӣ →
-
-                    </a>
-
-                </div>
-
-
-                <div
-                    class="jobs-list"
-                    id="jobs-list">
-
-                    <!-- Real jobs from API -->
-
-                </div>
-
-
-                <div
-                    class="empty-state"
-                    id="jobs-empty"
-                    hidden>
-
-                    <h3>
-                        Ҳоло вакансия нест
-                    </h3>
-
-                    <p>
-                        Вакансияҳои нав дар ин ҷо пайдо мешаванд.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             PROJECTS
-        ================================================== -->
-
-        <section
-            class="section projects-section"
-            id="projects">
-
-            <div class="container">
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span class="section-label">
-                            Лоиҳаҳо
-                        </span>
-
-                        <h2>
-                            Лоиҳаҳои кушода
-                        </h2>
-
-                        <p>
-                            Лоиҳаи худро ҷойгир кунед ё ба лоиҳаҳои
-                            дигарон пешниҳод фиристед.
-                        </p>
-
-                    </div>
-
-
-                    <button
-                        type="button"
-                        class="btn btn-primary"
-                        id="project-create-cta">
-
-                        + Лоиҳа эҷод кардан
-
-                    </button>
-
-                </div>
-
-
-                <div
-                    class="project-grid"
-                    id="projects-list">
-
-                    <!-- Real projects -->
-
-                </div>
-
-
-                <div
-                    class="empty-state"
-                    id="projects-empty"
-                    hidden>
-
-                    <h3>
-                        Ҳоло лоиҳаи кушода нест
-                    </h3>
-
-                    <p>
-                        Аввалин лоиҳаи худро эҷод кунед.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             REAL ESTATE
-        ================================================== -->
-
-        <section
-            class="section real-estate-section"
-            id="real-estate">
-
-            <div class="container">
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span class="section-label">
-                            Амвол
-                        </span>
-
-                        <h2>
-                            Амволи ғайриманқул
-                        </h2>
-
-                        <p>
-                            Хона, квартира, офис, замин ва дигар
-                            объектҳоро барои иҷора ё фурӯш пайдо кунед.
-                        </p>
-
-                    </div>
-
-
-                    <a
-                        href="/real-estate"
-                        class="section-link">
-
-                        Ҳамаи амвол →
-
-                    </a>
-
-                </div>
-
-
-                <!-- Real estate filters -->
-
-                <div class="real-estate-filters">
-
-                    <button
-                        class="real-estate-filter active"
-                        data-type="all">
-
-                        Ҳама
-
-                    </button>
-
-                    <button
-                        class="real-estate-filter"
-                        data-type="rent">
-
-                        Иҷора
-
-                    </button>
-
-                    <button
-                        class="real-estate-filter"
-                        data-type="sale">
-
-                        Фурӯш
-
-                    </button>
-
-
-                    <select id="real-estate-category">
-
-                        <option value="">
-                            Ҳамаи намудҳо
-                        </option>
-
-                        <option value="apartment">
-                            Квартира
-                        </option>
-
-                        <option value="house">
-                            Хона
-                        </option>
-
-                        <option value="room">
-                            Ҳуҷра
-                        </option>
-
-                        <option value="office">
-                            Офис
-                        </option>
-
-                        <option value="commercial">
-                            Тиҷоратӣ
-                        </option>
-
-                        <option value="land">
-                            Замин
-                        </option>
-
-                    </select>
-
-
-                    <select id="real-estate-region">
-
-                        <option value="">
-                            Ҳамаи минтақаҳо
-                        </option>
-
-                        <option value="DUSHANBE">
-                            Душанбе
-                        </option>
-
-                        <option value="SUGHD">
-                            Суғд
-                        </option>
-
-                        <option value="KHATLON">
-                            Хатлон
-                        </option>
-
-                        <option value="GBAO">
-                            ВМКБ
-                        </option>
-
-                        <option value="RRP">
-                            НТҶ
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div
-                    class="real-estate-grid"
-                    id="real-estate-list">
-
-                    <!-- Real estate from API -->
-
-                </div>
-
-
-                <div
-                    class="empty-state"
-                    id="real-estate-empty"
-                    hidden>
-
-                    <h3>
-                        Амвол ёфт нашуд
-                    </h3>
-
-                    <p>
-                        Филтрҳои ҷустуҷӯро тағйир диҳед.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             REGIONS
-        ================================================== -->
-
-        <section
-            class="section regions-section"
-            id="regions">
-
-            <div class="container">
-
-                <div class="section-heading centered">
-
-                    <span class="section-label">
-                        Тоҷикистон
-                    </span>
-
-                    <h2>
-                        Аз рӯйи минтақа ҷустуҷӯ кунед
-                    </h2>
-
-                    <p>
-                        Мутахассисон, хизматрасониҳо, ҷойҳои корӣ
-                        ва амволро аз минтақаи худ пайдо кунед.
-                    </p>
-
-                </div>
-
-
-                <div class="regions-grid">
-
-                    <button
-                        type="button"
-                        class="region-card"
-                        data-region="DUSHANBE">
-
-                        <span class="region-number">
-                            01
-                        </span>
-
-                        <strong>
-                            Душанбе
-                        </strong>
-
-                        <small>
-                            Пойтахт
-                        </small>
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="region-card"
-                        data-region="SUGHD">
-
-                        <span class="region-number">
-                            02
-                        </span>
-
-                        <strong>
-                            Суғд
-                        </strong>
-
-                        <small>
-                            Вилоят
-                        </small>
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="region-card"
-                        data-region="KHATLON">
-
-                        <span class="region-number">
-                            03
-                        </span>
-
-                        <strong>
-                            Хатлон
-                        </strong>
-
-                        <small>
-                            Вилоят
-                        </small>
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="region-card"
-                        data-region="GBAO">
-
-                        <span class="region-number">
-                            04
-                        </span>
-
-                        <strong>
-                            ВМКБ
-                        </strong>
-
-                        <small>
-                            Вилоят
-                        </small>
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="region-card"
-                        data-region="RRP">
-
-                        <span class="region-number">
-                            05
-                        </span>
-
-                        <strong>
-                            НТҶ
-                        </strong>
-
-                        <small>
-                            Ноҳияҳо
-                        </small>
-
-                    </button>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             HOW IT WORKS
-        ================================================== -->
-
-        <section
-            class="section how-it-works-section"
-            id="how-it-works">
-
-            <div class="container">
-
-                <div class="section-heading centered">
-
-                    <span class="section-label">
-                        Чӣ тавр кор мекунад?
-                    </span>
-
-                    <h2>
-                        Аз ҷустуҷӯ то натиҷа
-                    </h2>
-
-                    <p>
-                        SMM.TJ барои мизоҷон ва мутахассисон
-                        раванди оддӣ ва равшан пешниҳод мекунад.
-                    </p>
-
-                </div>
-
-
-                <div class="steps-grid">
-
-                    <article class="step-card">
-
-                        <span class="step-number">
-                            01
-                        </span>
-
-                        <div class="step-icon">
-                            🔎
-                        </div>
-
-                        <h3>
-                            Ҷустуҷӯ кунед
-                        </h3>
-
-                        <p>
-                            Мутахассис, хизматрасонӣ, лоиҳа,
-                            вакансия ё амволи мувофиқро пайдо кунед.
-                        </p>
-
-                    </article>
-
-
-                    <article class="step-card">
-
-                        <span class="step-number">
-                            02
-                        </span>
-
-                        <div class="step-icon">
-                            👤
-                        </div>
-
-                        <h3>
-                            Профилро бинед
-                        </h3>
-
-                        <p>
-                            Таҷриба, малака, портфолио,
-                            нарх, рейтинг ва назарҳоро санҷед.
-                        </p>
-
-                    </article>
-
-
-                    <article class="step-card">
-
-                        <span class="step-number">
-                            03
-                        </span>
-
-                        <div class="step-icon">
-                            💬
-                        </div>
-
-                        <h3>
-                            Муошират кунед
-                        </h3>
-
-                        <p>
-                            Бо мизоҷ ё мутахассис тавассути
-                            чат мустақиман тамос гиред.
-                        </p>
-
-                    </article>
-
-
-                    <article class="step-card">
-
-                        <span class="step-number">
-                            04
-                        </span>
-
-                        <div class="step-icon">
-                            🚀
-                        </div>
-
-                        <h3>
-                            Корро оғоз кунед
-                        </h3>
-
-                        <p>
-                            Лоиҳа ё хизматрасониро анҷом диҳед
-                            ва натиҷаи воқеӣ гиред.
-                        </p>
-
-                    </article>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             REVIEWS
-        ================================================== -->
-
-        <section
-            class="section reviews-section"
-            id="reviews">
-
-            <div class="container">
-
-                <div class="section-heading">
-
-                    <div>
-
-                        <span class="section-label">
-                            Назарҳо
-                        </span>
-
-                        <h2>
-                            Фикри истифодабарандагон
-                        </h2>
-
-                        <p>
-                            Рейтинг ва назарҳо танҳо аз
-                            муносибатҳои воқеӣ сохта мешаванд.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div
-                    class="reviews-grid"
-                    id="reviews-list">
-
-                    <!-- Real reviews from API -->
-
-                </div>
-
-
-                <div
-                    class="empty-state"
-                    id="reviews-empty"
-                    hidden>
-
-                    <h3>
-                        Ҳоло назар вуҷуд надорад
-                    </h3>
-
-                    <p>
-                        Баъд аз анҷоми лоиҳаҳо назарҳо пайдо мешаванд.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             CTA
-        ================================================== -->
-
-        <section class="cta-section">
-
-            <div class="container">
-
-                <div class="cta-card">
-
-                    <div class="cta-glow"></div>
-
-                    <div class="cta-content">
-
-                        <span class="section-label">
-                            SMM.TJ
-                        </span>
-
-                        <h2>
-                            Қадами навбатии худро имрӯз оғоз кунед.
-                        </h2>
-
-                        <p>
-                            Мизоҷ пайдо кунед, мутахассис ёбед,
-                            хизматрасонӣ пешниҳод кунед ё лоиҳаи худро ҷойгир намоед.
-                        </p>
-
-
-                        <div class="cta-actions">
-
-                            <button
-                                type="button"
-                                class="btn btn-primary btn-large"
-                                id="cta-register">
-
-                                Сабти ном
-
-                            </button>
-
-
-                            <button
-                                type="button"
-                                class="btn btn-secondary btn-large"
-                                id="cta-project">
-
-                                Лоиҳа эҷод кардан
-
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <!-- =====================================================
-         FOOTER
-    ====================================================== -->
-
-    <footer class="footer">
-
-        <div class="container">
-
-            <div class="footer-main">
-
-                <!-- Brand -->
-
-                <div class="footer-brand">
-
-                    <a href="/" class="brand">
-
-                        <span class="brand-main">SMM</span>
-                        <span class="brand-dot">.TJ</span>
-
-                    </a>
-
-                    <p>
-                        Платформаи касбии SMM дар Тоҷикистон.
-                    </p>
-
-
-                    <div class="social-links">
-
-                        <a
-                            href="#"
-                            aria-label="Instagram"
-                            data-social="instagram">
-
-                            Instagram
-
-                        </a>
-
-                        <a
-                            href="#"
-                            aria-label="Telegram"
-                            data-social="telegram">
-
-                            Telegram
-
-                        </a>
-
-                        <a
-                            href="#"
-                            aria-label="WhatsApp"
-                            data-social="whatsapp">
-
-                            WhatsApp
-
-                        </a>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Platform -->
-
-                <div class="footer-column">
-
-                    <h3>
-                        Платформа
-                    </h3>
-
-                    <a href="#specialists">
-                        Мутахассисон
-                    </a>
-
-                    <a href="#marketplace">
-                        Marketplace
-                    </a>
-
-                    <a href="#projects">
-                        Лоиҳаҳо
-                    </a>
-
-                    <a href="#jobs">
-                        Ҷойҳои корӣ
-                    </a>
-
-                    <a href="#real-estate">
-                        Амвол
-                    </a>
-
-                </div>
-
-
-                <!-- For users -->
-
-                <div class="footer-column">
-
-                    <h3>
-                        Барои истифодабаранда
-                    </h3>
-
-                    <a href="#" id="footer-register">
-                        Сабти ном
-                    </a>
-
-                    <a href="#" id="footer-login">
-                        Ворид шудан
-                    </a>
-
-                    <a href="/profile">
-                        Профил
-                    </a>
-
-                    <a href="/messages">
-                        Паёмҳо
-                    </a>
-
-                    <a href="/help">
-                        Кӯмак
-                    </a>
-
-                </div>
-
-
-                <!-- Legal -->
-
-                <div class="footer-column">
-
-                    <h3>
-                        Маълумот
-                    </h3>
-
-                    <a href="/about">
-                        Дар бораи мо
-                    </a>
-
-                    <a href="/terms">
-                        Шартҳои истифода
-                    </a>
-
-                    <a href="/privacy">
-                        Махфият
-                    </a>
-
-                    <a href="/rules">
-                        Қоидаҳои платформа
-                    </a>
-
-                    <a href="/contact">
-                        Тамос
-
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <div class="footer-bottom">
-
-                <span>
-                    © <span id="current-year"></span> SMM.TJ. Ҳамаи ҳуқуқҳо ҳифз шудаанд.
-                </span>
-
-
-                <div class="footer-language">
-
-                    <button
-                        type="button"
-                        class="language-button active"
-                        data-language="tg">
-
-                        Тоҷикӣ
-
-                    </button>
-
-                    <button
-                        type="button"
-                        class="language-button"
-                        data-language="ru">
-
-                        Русский
-
-                    </button>
-
-                    <button
-                        type="button"
-                        class="language-button"
-                        data-language="en">
-
-                        English
-
-                    </button>
-
-                </div>
+                <p class="section-description">
+                    Хизматрасонӣ ва имкониятҳоро аз рӯи минтақа ҷустуҷӯ кунед.
+                </p>
 
             </div>
 
         </div>
 
-    </footer>
+
+        <div class="regions-grid">
+
+            <button
+                class="region-card"
+                data-region="Душанбе"
+                type="button"
+            >
+                <strong>Душанбе</strong>
+                <span>Пойтахт</span>
+            </button>
 
 
-    <!-- =====================================================
-         MOBILE BOTTOM NAVIGATION
-    ====================================================== -->
-
-    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
-
-        <a href="#home" class="bottom-nav-item active">
-
-            <span class="bottom-icon">⌂</span>
-            <span>Асосӣ</span>
-
-        </a>
+            <button
+                class="region-card"
+                data-region="Суғд"
+                type="button"
+            >
+                <strong>Суғд</strong>
+                <span>Вилоят</span>
+            </button>
 
 
-        <a href="#specialists" class="bottom-nav-item">
-
-            <span class="bottom-icon">👤</span>
-            <span>Мутахассис</span>
-
-        </a>
-
-
-        <button
-            type="button"
-            class="bottom-nav-create"
-            id="mobile-create-button">
-
-            <span>+</span>
-
-        </button>
+            <button
+                class="region-card"
+                data-region="Хатлон"
+                type="button"
+            >
+                <strong>Хатлон</strong>
+                <span>Вилоят</span>
+            </button>
 
 
-        <a href="#marketplace" class="bottom-nav-item">
-
-            <span class="bottom-icon">▣</span>
-            <span>Бозор</span>
-
-        </a>
-
-
-        <a href="/profile" class="bottom-nav-item">
-
-            <span class="bottom-icon">●</span>
-            <span>Профил</span>
-
-        </a>
-
-    </nav>
+            <button
+                class="region-card"
+                data-region="ВМКБ"
+                type="button"
+            >
+                <strong>ВМКБ</strong>
+                <span>Вилоят</span>
+            </button>
 
 
-</div>
+            <button
+                class="region-card"
+                data-region="НТҶ"
+                type="button"
+            >
+                <strong>НТҶ</strong>
+                <span>Ноҳияҳо</span>
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
 
 
-<!-- =========================================================
+<!-- =====================================================
+     HOW IT WORKS
+===================================================== -->
+
+<section
+    class="section"
+    id="how-it-works"
+>
+
+    <div class="container">
+
+        <div class="section-header">
+
+            <div>
+
+                <h2 class="section-title">
+                    Чӣ тавр кор мекунад?
+                </h2>
+
+                <p class="section-description">
+                    Аз бақайдгирӣ то гирифтани кор — ҳама чиз дар як платформа.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="steps-grid">
+
+            <div class="step-card">
+
+                <div class="step-number">
+                    01
+                </div>
+
+                <h3>
+                    Сабти ном кунед
+                </h3>
+
+                <p>
+                    Ҳисоби худро ҳамчун Client, SMM Specialist ё Seller созед.
+                </p>
+
+            </div>
+
+
+            <div class="step-card">
+
+                <div class="step-number">
+                    02
+                </div>
+
+                <h3>
+                    Хизмат ё корро ёбед
+                </h3>
+
+                <p>
+                    Мутахассис, хизматрасонӣ, лоиҳа, вакансия ё маҳсулоти лозимиро ҷустуҷӯ кунед.
+                </p>
+
+            </div>
+
+
+            <div class="step-card">
+
+                <div class="step-number">
+                    03
+                </div>
+
+                <h3>
+                    Ҳамкорӣ кунед
+                </h3>
+
+                <p>
+                    Proposal фиристед, шартҳоро мувофиқа кунед ва тавассути чат муошират кунед.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     REVIEWS
+===================================================== -->
+
+<section
+    class="section"
+    id="reviews"
+>
+
+    <div class="container">
+
+        <div class="section-header">
+
+            <div>
+
+                <h2 class="section-title">
+                    Андешаҳои корбарон
+                </h2>
+
+                <p class="section-description">
+                    Таҷрибаи воқеии истифодабарандагони платформа.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="reviews-grid"
+            id="reviews-grid"
+        >
+            <!-- JS -->
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     CTA
+===================================================== -->
+
+<section class="cta">
+
+    <div class="container">
+
+        <div class="cta-box">
+
+            <h2>
+                Омодаед оғоз кунед?
+            </h2>
+
+            <p>
+                Ба SMM.TJ ҳамроҳ шавед ва имкониятҳои нави кору бизнесро пайдо кунед.
+            </p>
+
+            <div class="hero-actions">
+
+                <button
+                    class="btn btn-primary"
+                    id="cta-register"
+                    type="button"
+                >
+                    Сабти ном
+                </button>
+
+                <button
+                    class="btn btn-secondary"
+                    id="cta-project"
+                    type="button"
+                >
+                    Лоиҳа эҷод кардан
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer class="footer">
+
+    <div class="container">
+
+        <div class="footer-grid">
+
+
+            <div class="footer-brand">
+
+                <a
+                    href="#home"
+                    class="logo"
+                >
+
+                    <div class="logo-mark">
+                        S
+                    </div>
+
+                    <strong>
+                        SMM<span>.TJ</span>
+                    </strong>
+
+                </a>
+
+                <p>
+                    Платформаи касбии SMM дар Тоҷикистон.
+                    Ҷои кор, бизнес ва хизматрасонӣ дар як ҷо.
+                </p>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>
+                    Платформа
+                </h4>
+
+                <a href="#specialists">
+                    Мутахассисон
+                </a>
+
+                <a href="#marketplace">
+                    Marketplace
+                </a>
+
+                <a href="#jobs">
+                    Ҷойҳои корӣ
+                </a>
+
+                <a href="#projects">
+                    Лоиҳаҳо
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>
+                    Хизматҳо
+                </h4>
+
+                <a href="#marketplace">
+                    SMM
+                </a>
+
+                <a href="#marketplace">
+                    Дизайн
+                </a>
+
+                <a href="#marketplace">
+                    Маркетинг
+                </a>
+
+                <a href="#marketplace">
+                    Барномасозӣ
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h4>
+                    Маълумот
+                </h4>
+
+                <a href="#how-it-works">
+                    Чӣ тавр кор мекунад
+                </a>
+
+                <a href="#regions">
+                    Минтақаҳо
+                </a>
+
+                <a href="#">
+                    Қоидаҳо
+                </a>
+
+                <a href="#">
+                    Privacy Policy
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-bottom">
+
+            <span>
+                © 2026 SMM.TJ. Ҳама ҳуқуқҳо ҳифз шудаанд.
+            </span>
+
+            <span>
+                Тоҷикистон 🇹🇯
+            </span>
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+<!-- =====================================================
+     MOBILE BOTTOM NAV
+===================================================== -->
+
+<nav
+    class="mobile-bottom-nav"
+    id="mobile-bottom-nav"
+>
+
+    <a
+        href="#home"
+        class="active"
+    >
+        <span>🏠</span>
+        <small>Асосӣ</small>
+    </a>
+
+    <a href="#specialists">
+        <span>👨‍💻</span>
+        <small>SMM</small>
+    </a>
+
+    <a href="#marketplace">
+        <span>🛒</span>
+        <small>Market</small>
+    </a>
+
+    <a href="#jobs">
+        <span>💼</span>
+        <small>Кор</small>
+    </a>
+
+    <a
+        href="#profile"
+        id="mobile-profile"
+    >
+        <span>👤</span>
+        <small>Профил</small>
+    </a>
+
+</nav>
+
+
+<!-- =====================================================
      SEARCH MODAL
-========================================================= -->
+===================================================== -->
 
 <div
-    class="modal-overlay"
+    class="modal"
     id="search-modal"
-    hidden>
+    hidden
+>
 
-    <div class="modal search-modal">
+    <div class="modal-content search-modal-content">
 
         <div class="modal-header">
 
@@ -1834,66 +1822,120 @@
             </h2>
 
             <button
-                type="button"
                 class="modal-close"
-                data-close-modal="search-modal">
-
-                ✕
-
+                data-close-modal="search-modal"
+                type="button"
+            >
+                ×
             </button>
 
         </div>
 
 
-        <div class="modal-body">
+        <form id="global-search-form">
 
-            <div class="large-search">
+            <div class="form-group">
 
-                <svg width="22"
-                     height="22"
-                     viewBox="0 0 24 24"
-                     fill="none"
-                     stroke="currentColor"
-                     stroke-width="2">
-
-                    <circle cx="11" cy="11" r="7"></circle>
-                    <path d="m20 20-3.5-3.5"></path>
-
-                </svg>
+                <label for="global-search">
+                    Чиро меҷӯед?
+                </label>
 
                 <input
-                    type="search"
+                    class="input"
                     id="global-search"
-                    placeholder="Чӣ меҷӯед?"
+                    type="search"
+                    placeholder="SMM, дизайнер, квартира..."
+                    autocomplete="off"
                 >
 
             </div>
 
 
-            <div class="search-options">
+            <div class="form-row">
 
-                <button data-search-type="specialists">
-                    Мутахассисон
-                </button>
+                <div class="form-group">
 
-                <button data-search-type="services">
-                    Хизматрасониҳо
-                </button>
+                    <label for="global-category">
+                        Категория
+                    </label>
 
-                <button data-search-type="jobs">
-                    Ҷойҳои корӣ
-                </button>
+                    <select
+                        class="select"
+                        id="global-category"
+                    >
 
-                <button data-search-type="projects">
-                    Лоиҳаҳо
-                </button>
+                        <option value="">
+                            Ҳама
+                        </option>
 
-                <button data-search-type="real-estate">
-                    Амвол
-                </button>
+                        <option value="SMM">SMM</option>
+                        <option value="Design">Дизайн</option>
+                        <option value="Marketing">Маркетинг</option>
+                        <option value="Programming">Барномасозӣ</option>
+                        <option value="Jobs">Кор</option>
+                        <option value="RealEstate">Амвол</option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="global-region">
+                        Минтақа
+                    </label>
+
+                    <select
+                        class="select"
+                        id="global-region"
+                    >
+
+                        <option value="">
+                            Ҳама
+                        </option>
+
+                        <option value="Душанбе">
+                            Душанбе
+                        </option>
+
+                        <option value="Суғд">
+                            Суғд
+                        </option>
+
+                        <option value="Хатлон">
+                            Хатлон
+                        </option>
+
+                        <option value="ВМКБ">
+                            ВМКБ
+                        </option>
+
+                        <option value="НТҶ">
+                            НТҶ
+                        </option>
+
+                    </select>
+
+                </div>
 
             </div>
 
+
+            <button
+                class="btn btn-primary full-width"
+                type="submit"
+            >
+                Ҷустуҷӯ
+            </button>
+
+        </form>
+
+
+        <div
+            class="search-results"
+            id="search-results"
+        >
         </div>
 
     </div>
@@ -1901,61 +1943,57 @@
 </div>
 
 
-<!-- =========================================================
+<!-- =====================================================
      LOGIN MODAL
-========================================================= -->
+===================================================== -->
 
 <div
-    class="modal-overlay"
+    class="modal"
     id="login-modal"
-    hidden>
+    hidden
+>
 
-    <div class="modal auth-modal">
+    <div class="modal-content">
 
         <div class="modal-header">
 
             <div>
-
-                <span class="section-label">
-                    SMM.TJ
-                </span>
-
                 <h2>
-                    Ворид шудан
+                    Даромадан
                 </h2>
 
+                <p>
+                    Ба ҳисоби SMM.TJ ворид шавед.
+                </p>
             </div>
 
-
             <button
-                type="button"
                 class="modal-close"
-                data-close-modal="login-modal">
-
-                ✕
-
+                data-close-modal="login-modal"
+                type="button"
+            >
+                ×
             </button>
 
         </div>
 
 
-        <form
-            id="login-form"
-            class="auth-form">
+        <form id="login-form">
 
             <div class="form-group">
 
                 <label for="login-identifier">
-                    Телефон ё Email
+                    Email ё рақами телефон
                 </label>
 
                 <input
+                    class="input"
                     id="login-identifier"
                     name="identifier"
                     type="text"
                     required
                     autocomplete="username"
-                    placeholder="+992 ... ё email@example.com"
+                    placeholder="+992... ё email@example.com"
                 >
 
             </div>
@@ -1964,122 +2002,98 @@
             <div class="form-group">
 
                 <label for="login-password">
-                    Рамз
+                    Парол
                 </label>
 
                 <input
+                    class="input"
                     id="login-password"
                     name="password"
                     type="password"
                     required
                     autocomplete="current-password"
-                    placeholder="Рамзи худро ворид кунед"
+                    placeholder="••••••••"
                 >
 
             </div>
 
 
-            <div class="form-row-between">
-
-                <label class="checkbox-label">
-
-                    <input
-                        type="checkbox"
-                        name="remember">
-
-                    <span>
-                        Маро дар хотир дор
-                    </span>
-
-                </label>
-
+            <div class="form-row">
 
                 <button
-                    type="button"
-                    class="text-button"
-                    id="forgot-password-button">
-
-                    Рамзро фаромӯш кардед?
-
+                    class="btn btn-primary"
+                    type="submit"
+                >
+                    Даромадан
                 </button>
 
-            </div>
-
-
-            <button
-                type="submit"
-                class="btn btn-primary btn-full">
-
-                Ворид шудан
-
-            </button>
-
-
-            <div class="auth-switch">
-
-                Ҳоло аккаунт надоред?
-
                 <button
+                    class="btn btn-secondary"
+                    id="open-forgot-password"
                     type="button"
-                    class="text-button"
-                    id="open-register-from-login">
-
-                    Сабти ном
-
+                >
+                    Паролро фаромӯш кардед?
                 </button>
 
             </div>
 
         </form>
 
+
+        <p class="modal-switch">
+            Ҳисоб надоред?
+
+            <button
+                type="button"
+                id="switch-to-register"
+            >
+                Сабти ном
+            </button>
+        </p>
+
     </div>
 
 </div>
 
 
-<!-- =========================================================
+<!-- =====================================================
      REGISTER MODAL
-========================================================= -->
+===================================================== -->
 
 <div
-    class="modal-overlay"
+    class="modal"
     id="register-modal"
-    hidden>
+    hidden
+>
 
-    <div class="modal auth-modal register-modal">
+    <div class="modal-content">
 
         <div class="modal-header">
 
             <div>
-
-                <span class="section-label">
-                    SMM.TJ
-                </span>
-
                 <h2>
                     Сабти ном
                 </h2>
 
+                <p>
+                    Ҳисоби нави SMM.TJ созед.
+                </p>
             </div>
 
-
             <button
-                type="button"
                 class="modal-close"
-                data-close-modal="register-modal">
-
-                ✕
-
+                data-close-modal="register-modal"
+                type="button"
+            >
+                ×
             </button>
 
         </div>
 
 
-        <form
-            id="register-form"
-            class="auth-form">
+        <form id="register-form">
 
-            <div class="form-grid-two">
+            <div class="form-row">
 
                 <div class="form-group">
 
@@ -2088,11 +2102,12 @@
                     </label>
 
                     <input
+                        class="input"
                         id="register-first-name"
                         name="firstName"
                         type="text"
                         required
-                        placeholder="Номи шумо"
+                        autocomplete="given-name"
                     >
 
                 </div>
@@ -2105,11 +2120,12 @@
                     </label>
 
                     <input
+                        class="input"
                         id="register-last-name"
                         name="lastName"
                         type="text"
                         required
-                        placeholder="Насаб"
+                        autocomplete="family-name"
                     >
 
                 </div>
@@ -2124,6 +2140,7 @@
                 </label>
 
                 <input
+                    class="input"
                     id="register-username"
                     name="username"
                     type="text"
@@ -2135,7 +2152,7 @@
             </div>
 
 
-            <div class="form-grid-two">
+            <div class="form-row">
 
                 <div class="form-group">
 
@@ -2144,11 +2161,13 @@
                     </label>
 
                     <input
+                        class="input"
                         id="register-phone"
                         name="phone"
                         type="tel"
                         required
-                        placeholder="+992 ..."
+                        autocomplete="tel"
+                        placeholder="+992..."
                     >
 
                 </div>
@@ -2161,10 +2180,12 @@
                     </label>
 
                     <input
+                        class="input"
                         id="register-email"
                         name="email"
                         type="email"
-                        placeholder="email@example.com"
+                        autocomplete="email"
+                        placeholder="example@gmail.com"
                     >
 
                 </div>
@@ -2172,22 +2193,22 @@
             </div>
 
 
-            <div class="form-grid-two">
+            <div class="form-row">
 
                 <div class="form-group">
 
                     <label for="register-password">
-                        Рамз
+                        Парол
                     </label>
 
                     <input
+                        class="input"
                         id="register-password"
                         name="password"
                         type="password"
                         required
-                        autocomplete="new-password"
                         minlength="8"
-                        placeholder="Минимум 8 символ"
+                        autocomplete="new-password"
                     >
 
                 </div>
@@ -2195,18 +2216,18 @@
 
                 <div class="form-group">
 
-                    <label for="register-confirm-password">
-                        Такрори рамз
+                    <label for="register-password-confirm">
+                        Такрори парол
                     </label>
 
                     <input
-                        id="register-confirm-password"
+                        class="input"
+                        id="register-password-confirm"
                         name="confirmPassword"
                         type="password"
                         required
-                        autocomplete="new-password"
                         minlength="8"
-                        placeholder="Рамзро такрор кунед"
+                        autocomplete="new-password"
                     >
 
                 </div>
@@ -2214,40 +2235,42 @@
             </div>
 
 
-            <div class="form-grid-two">
+            <div class="form-row">
 
                 <div class="form-group">
 
                     <label for="register-region">
-                        Вилоят / минтақа
+                        Вилоят
                     </label>
 
                     <select
+                        class="select"
                         id="register-region"
                         name="region"
-                        required>
+                        required
+                    >
 
                         <option value="">
                             Интихоб кунед
                         </option>
 
-                        <option value="DUSHANBE">
+                        <option value="Душанбе">
                             Душанбе
                         </option>
 
-                        <option value="SUGHD">
+                        <option value="Суғд">
                             Суғд
                         </option>
 
-                        <option value="KHATLON">
+                        <option value="Хатлон">
                             Хатлон
                         </option>
 
-                        <option value="GBAO">
+                        <option value="ВМКБ">
                             ВМКБ
                         </option>
 
-                        <option value="RRP">
+                        <option value="НТҶ">
                             НТҶ
                         </option>
 
@@ -2259,15 +2282,15 @@
                 <div class="form-group">
 
                     <label for="register-city">
-                        Шаҳр / ноҳия
+                        Шаҳр
                     </label>
 
                     <input
+                        class="input"
                         id="register-city"
                         name="city"
                         type="text"
                         required
-                        placeholder="Шаҳр ё ноҳия"
                     >
 
                 </div>
@@ -2278,28 +2301,26 @@
             <div class="form-group">
 
                 <label for="register-role">
-                    Ман ҳамчун
+                    Нақш
                 </label>
 
                 <select
+                    class="select"
                     id="register-role"
                     name="role"
-                    required>
-
-                    <option value="">
-                        Интихоб кунед
-                    </option>
+                    required
+                >
 
                     <option value="CLIENT">
-                        Мизоҷ
+                        👤 Client — мизоҷ
                     </option>
 
                     <option value="SMM_SPECIALIST">
-                        SMM-мутахассис
+                        👨‍💻 SMM Specialist
                     </option>
 
                     <option value="SELLER">
-                        Фурӯшанда / Бизнес
+                        🛒 Seller — фурӯшанда
                     </option>
 
                 </select>
@@ -2307,43 +2328,101 @@
             </div>
 
 
-            <label class="checkbox-label terms-checkbox">
+            <label class="checkbox-label">
 
                 <input
-                    type="checkbox"
+                    id="register-terms"
                     name="terms"
-                    required>
+                    type="checkbox"
+                    required
+                >
 
                 <span>
-                    Ман бо шартҳои истифода ва сиёсати махфият розӣ ҳастам.
+                    Ман қоидаҳои SMM.TJ-ро қабул мекунам.
                 </span>
 
             </label>
 
 
             <button
+                class="btn btn-primary full-width"
                 type="submit"
-                class="btn btn-primary btn-full">
-
-                Эҷод кардани аккаунт
-
+            >
+                Эҷоди ҳисоб
             </button>
 
+        </form>
 
-            <div class="auth-switch">
 
-                Аллакай аккаунт доред?
+        <p class="modal-switch">
+            Аллакай ҳисоб доред?
 
-                <button
-                    type="button"
-                    class="text-button"
-                    id="open-login-from-register">
+            <button
+                type="button"
+                id="switch-to-login"
+            >
+                Даромадан
+            </button>
+        </p>
 
-                    Ворид шудан
+    </div>
 
-                </button>
+</div>
+
+
+<!-- =====================================================
+     FORGOT PASSWORD MODAL
+===================================================== -->
+
+<div
+    class="modal"
+    id="forgot-password-modal"
+    hidden
+>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>
+                Барқароркунии парол
+            </h2>
+
+            <button
+                class="modal-close"
+                data-close-modal="forgot-password-modal"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="forgot-password-form">
+
+            <div class="form-group">
+
+                <label for="forgot-identifier">
+                    Email ё телефон
+                </label>
+
+                <input
+                    class="input"
+                    id="forgot-identifier"
+                    type="text"
+                    required
+                >
 
             </div>
+
+
+            <button
+                class="btn btn-primary full-width"
+                type="submit"
+            >
+                Ирсол кардан
+            </button>
 
         </form>
 
@@ -2352,47 +2431,42 @@
 </div>
 
 
-<!-- =========================================================
+<!-- =====================================================
      CREATE PROJECT MODAL
-========================================================= -->
+===================================================== -->
 
 <div
-    class="modal-overlay"
-    id="project-modal"
-    hidden>
+    class="modal"
+    id="create-project-modal"
+    hidden
+>
 
-    <div class="modal project-modal">
+    <div class="modal-content">
 
         <div class="modal-header">
 
             <div>
-
-                <span class="section-label">
-                    Лоиҳа
-                </span>
-
                 <h2>
-                    Лоиҳаи нав эҷод кунед
+                    Эҷоди лоиҳа
                 </h2>
 
+                <p>
+                    Лоиҳаи худро ба мутахассисон пешниҳод кунед.
+                </p>
             </div>
 
-
             <button
-                type="button"
                 class="modal-close"
-                data-close-modal="project-modal">
-
-                ✕
-
+                data-close-modal="create-project-modal"
+                type="button"
+            >
+                ×
             </button>
 
         </div>
 
 
-        <form
-            id="project-form"
-            class="project-form">
+        <form id="create-project-form">
 
             <div class="form-group">
 
@@ -2401,11 +2475,12 @@
                 </label>
 
                 <input
+                    class="input"
                     id="project-title"
                     name="title"
                     type="text"
                     required
-                    placeholder="Масалан: Пешбурди Instagram"
+                    maxlength="150"
                 >
 
             </div>
@@ -2413,60 +2488,44 @@
 
             <div class="form-group">
 
-                <label for="project-description">
-                    Тавсифи лоиҳа
+                <label for="project-description-input">
+                    Тавсиф
                 </label>
 
                 <textarea
-                    id="project-description"
+                    class="textarea"
+                    id="project-description-input"
                     name="description"
-                    rows="5"
                     required
-                    placeholder="Лоиҳаи худро пурра шарҳ диҳед..."></textarea>
+                ></textarea>
 
             </div>
 
 
-            <div class="form-grid-two">
+            <div class="form-row">
 
                 <div class="form-group">
 
-                    <label for="project-category">
+                    <label for="project-category-input">
                         Категория
                     </label>
 
                     <select
-                        id="project-category"
+                        class="select"
+                        id="project-category-input"
                         name="category"
-                        required>
+                        required
+                    >
 
                         <option value="">
                             Интихоб кунед
                         </option>
 
-                        <option value="SMM">
-                            SMM
-                        </option>
-
-                        <option value="DESIGN">
-                            Design
-                        </option>
-
-                        <option value="MARKETING">
-                            Marketing
-                        </option>
-
-                        <option value="PROGRAMMING">
-                            Programming
-                        </option>
-
-                        <option value="VIDEO">
-                            Video Editing
-                        </option>
-
-                        <option value="COPYWRITING">
-                            Copywriting
-                        </option>
+                        <option value="SMM">SMM</option>
+                        <option value="Design">Дизайн</option>
+                        <option value="Marketing">Маркетинг</option>
+                        <option value="Programming">Барномасозӣ</option>
+                        <option value="Video Editing">Видео</option>
 
                     </select>
 
@@ -2480,12 +2539,14 @@
                     </label>
 
                     <input
+                        class="input"
                         id="project-budget"
                         name="budget"
                         type="number"
                         min="0"
+                        step="1"
                         required
-                        placeholder="0 сомонӣ"
+                        placeholder="500"
                     >
 
                 </div>
@@ -2493,7 +2554,7 @@
             </div>
 
 
-            <div class="form-grid-two">
+            <div class="form-row">
 
                 <div class="form-group">
 
@@ -2502,10 +2563,10 @@
                     </label>
 
                     <input
+                        class="input"
                         id="project-deadline"
                         name="deadline"
                         type="date"
-                        required
                     >
 
                 </div>
@@ -2513,37 +2574,25 @@
 
                 <div class="form-group">
 
-                    <label for="project-region">
+                    <label for="project-region-input">
                         Минтақа
                     </label>
 
                     <select
-                        id="project-region"
-                        name="region">
+                        class="select"
+                        id="project-region-input"
+                        name="region"
+                    >
 
                         <option value="">
                             Ҳама
                         </option>
 
-                        <option value="DUSHANBE">
-                            Душанбе
-                        </option>
-
-                        <option value="SUGHD">
-                            Суғд
-                        </option>
-
-                        <option value="KHATLON">
-                            Хатлон
-                        </option>
-
-                        <option value="GBAO">
-                            ВМКБ
-                        </option>
-
-                        <option value="RRP">
-                            НТҶ
-                        </option>
+                        <option value="Душанбе">Душанбе</option>
+                        <option value="Суғд">Суғд</option>
+                        <option value="Хатлон">Хатлон</option>
+                        <option value="ВМКБ">ВМКБ</option>
+                        <option value="НТҶ">НТҶ</option>
 
                     </select>
 
@@ -2552,12 +2601,62 @@
             </div>
 
 
+            <div class="form-group">
+
+                <label for="project-city-input">
+                    Шаҳр
+                </label>
+
+                <input
+                    class="input"
+                    id="project-city-input"
+                    name="city"
+                    type="text"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="project-skills">
+                    Skills
+                </label>
+
+                <input
+                    class="input"
+                    id="project-skills"
+                    name="skills"
+                    type="text"
+                    placeholder="Instagram, Reels, Ads..."
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="project-files">
+                    Файлҳо / тасвирҳо
+                </label>
+
+                <input
+                    class="input"
+                    id="project-files"
+                    name="files"
+                    type="file"
+                    multiple
+                    accept=".jpg,.jpeg,.png,.webp,.mp4,.pdf,.doc,.docx"
+                >
+
+            </div>
+
+
             <button
+                class="btn btn-primary full-width"
                 type="submit"
-                class="btn btn-primary btn-full">
-
-                Ҷойгир кардани лоиҳа
-
+            >
+                Эҷоди лоиҳа
             </button>
 
         </form>
@@ -2567,92 +2666,955 @@
 </div>
 
 
-<!-- =========================================================
-     NOTIFICATION PANEL
-========================================================= -->
+<!-- =====================================================
+     PROFILE MODAL
+===================================================== -->
 
-<aside
-    class="notification-panel"
-    id="notification-panel"
-    hidden>
+<div
+    class="modal"
+    id="profile-modal"
+    hidden
+>
 
-    <div class="panel-header">
+    <div class="modal-content">
 
-        <h3>
-            Огоҳиномаҳо
-        </h3>
+        <div class="modal-header">
 
-        <button
-            type="button"
-            class="text-button"
-            id="mark-notifications-read">
+            <h2>
+                Профил
+            </h2>
 
-            Ҳама хонда шуд
+            <button
+                class="modal-close"
+                data-close-modal="profile-modal"
+                type="button"
+            >
+                ×
+            </button>
 
-        </button>
-
-    </div>
+        </div>
 
 
-    <div
-        class="notification-list"
-        id="notification-list">
+        <div id="profile-content">
 
-        <div class="empty-state small">
-
-            <p>
-                Огоҳиномаи нав нест.
-            </p>
+            <!-- JS -->
 
         </div>
 
     </div>
 
-</aside>
+</div>
 
 
-<!-- =========================================================
-     TOAST CONTAINER
-========================================================= -->
+<!-- =====================================================
+     NOTIFICATION PANEL
+===================================================== -->
 
 <div
-    class="toast-container"
-    id="toast-container"
-    aria-live="polite"
-    aria-atomic="true">
+    class="modal"
+    id="notifications-modal"
+    hidden
+>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+
+                <h2>
+                    Огоҳиномаҳо
+                </h2>
+
+                <p>
+                    Огоҳиномаҳои ҳисоби шумо.
+                </p>
+
+            </div>
+
+            <button
+                class="modal-close"
+                data-close-modal="notifications-modal"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div
+            id="notifications-list"
+            class="notifications-list"
+        >
+            <!-- JS -->
+        </div>
+
+
+        <button
+            class="btn btn-secondary full-width"
+            id="mark-notifications-read"
+            type="button"
+        >
+            Ҳамаро хондашуда кардан
+        </button>
+
+    </div>
 
 </div>
 
 
-<!-- =========================================================
+<!-- =====================================================
+     CHAT MODAL
+===================================================== -->
+
+<div
+    class="modal"
+    id="messages-modal"
+    hidden
+>
+
+    <div class="modal-content chat-modal-content">
+
+        <div class="modal-header">
+
+            <h2>
+                Паёмҳо
+            </h2>
+
+            <button
+                class="modal-close"
+                data-close-modal="messages-modal"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="chat-layout">
+
+            <aside
+                class="conversation-list"
+                id="conversation-list"
+            >
+                <!-- JS -->
+            </aside>
+
+
+            <section class="chat-window">
+
+                <div
+                    class="chat-header"
+                    id="chat-header"
+                >
+                    Паёмҳоро интихоб кунед
+                </div>
+
+
+                <div
+                    class="chat-messages"
+                    id="chat-messages"
+                >
+                    <!-- JS -->
+                </div>
+
+
+                <form
+                    class="chat-input"
+                    id="chat-form"
+                >
+
+                    <input
+                        id="chat-message-input"
+                        type="text"
+                        placeholder="Паём нависед..."
+                        autocomplete="off"
+                    >
+
+                    <input
+                        id="chat-file"
+                        type="file"
+                        hidden
+                    >
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        id="chat-attach"
+                        aria-label="Файл"
+                    >
+                        📎
+                    </button>
+
+                    <button
+                        class="btn btn-primary"
+                        type="submit"
+                    >
+                        Ирсол
+                    </button>
+
+                </form>
+
+            </section>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     ADD SERVICE MODAL
+===================================================== -->
+
+<div
+    class="modal"
+    id="add-service-modal"
+    hidden
+>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>
+                Иловаи хизматрасонӣ
+            </h2>
+
+            <button
+                class="modal-close"
+                data-close-modal="add-service-modal"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="add-service-form">
+
+            <div class="form-group">
+
+                <label for="service-title">
+                    Номи хизматрасонӣ
+                </label>
+
+                <input
+                    class="input"
+                    id="service-title"
+                    name="title"
+                    type="text"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="service-description">
+                    Тавсиф
+                </label>
+
+                <textarea
+                    class="textarea"
+                    id="service-description"
+                    name="description"
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label for="service-category">
+                        Категория
+                    </label>
+
+                    <select
+                        class="select"
+                        id="service-category"
+                        name="category"
+                        required
+                    >
+
+                        <option value="SMM">SMM</option>
+                        <option value="Design">Дизайн</option>
+                        <option value="Marketing">Маркетинг</option>
+                        <option value="Programming">Барномасозӣ</option>
+                        <option value="Video Editing">Видео</option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="service-price">
+                        Нарх
+                    </label>
+
+                    <input
+                        class="input"
+                        id="service-price"
+                        name="price"
+                        type="number"
+                        min="0"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="service-region">
+                    Минтақа
+                </label>
+
+                <select
+                    class="select"
+                    id="service-region"
+                    name="region"
+                >
+
+                    <option value="">
+                        Ҳама
+                    </option>
+
+                    <option value="Душанбе">Душанбе</option>
+                    <option value="Суғд">Суғд</option>
+                    <option value="Хатлон">Хатлон</option>
+                    <option value="ВМКБ">ВМКБ</option>
+                    <option value="НТҶ">НТҶ</option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="service-images">
+                    Тасвирҳо
+                </label>
+
+                <input
+                    class="input"
+                    id="service-images"
+                    name="images"
+                    type="file"
+                    multiple
+                    accept=".jpg,.jpeg,.png,.webp"
+                >
+
+            </div>
+
+
+            <button
+                class="btn btn-primary full-width"
+                type="submit"
+            >
+                Илова кардан
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     ADD PRODUCT MODAL
+===================================================== -->
+
+<div
+    class="modal"
+    id="add-product-modal"
+    hidden
+>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>
+                Иловаи маҳсулот
+            </h2>
+
+            <button
+                class="modal-close"
+                data-close-modal="add-product-modal"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="add-product-form">
+
+            <div class="form-group">
+
+                <label for="product-title">
+                    Номи маҳсулот
+                </label>
+
+                <input
+                    class="input"
+                    id="product-title"
+                    name="title"
+                    type="text"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="product-description">
+                    Тавсиф
+                </label>
+
+                <textarea
+                    class="textarea"
+                    id="product-description"
+                    name="description"
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label for="product-price">
+                        Нарх
+                    </label>
+
+                    <input
+                        class="input"
+                        id="product-price"
+                        name="price"
+                        type="number"
+                        min="0"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="product-category">
+                        Категория
+                    </label>
+
+                    <select
+                        class="select"
+                        id="product-category"
+                        name="category"
+                        required
+                    >
+
+                        <option value="Products">
+                            Маҳсулот
+                        </option>
+
+                        <option value="Services">
+                            Хизмат
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="product-region">
+                    Минтақа
+                </label>
+
+                <select
+                    class="select"
+                    id="product-region"
+                    name="region"
+                >
+
+                    <option value="">
+                        Ҳама
+                    </option>
+
+                    <option value="Душанбе">Душанбе</option>
+                    <option value="Суғд">Суғд</option>
+                    <option value="Хатлон">Хатлон</option>
+                    <option value="ВМКБ">ВМКБ</option>
+                    <option value="НТҶ">НТҶ</option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="product-images">
+                    Тасвирҳо
+                </label>
+
+                <input
+                    class="input"
+                    id="product-images"
+                    name="images"
+                    type="file"
+                    multiple
+                    accept=".jpg,.jpeg,.png,.webp"
+                >
+
+            </div>
+
+
+            <button
+                class="btn btn-primary full-width"
+                type="submit"
+            >
+                Илова кардани маҳсулот
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     ADD REAL ESTATE MODAL
+===================================================== -->
+
+<div
+    class="modal"
+    id="add-real-estate-modal"
+    hidden
+>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>
+                Эълони амвол
+            </h2>
+
+            <button
+                class="modal-close"
+                data-close-modal="add-real-estate-modal"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="add-real-estate-form">
+
+            <div class="form-group">
+
+                <label for="real-title">
+                    Номи эълон
+                </label>
+
+                <input
+                    class="input"
+                    id="real-title"
+                    name="title"
+                    type="text"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="real-description">
+                    Тавсиф
+                </label>
+
+                <textarea
+                    class="textarea"
+                    id="real-description"
+                    name="description"
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label for="real-type">
+                        Амалиёт
+                    </label>
+
+                    <select
+                        class="select"
+                        id="real-type"
+                        name="type"
+                        required
+                    >
+
+                        <option value="SALE">
+                            Фурӯш
+                        </option>
+
+                        <option value="RENT">
+                            Иҷора
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="real-category">
+                        Навъи объект
+                    </label>
+
+                    <select
+                        class="select"
+                        id="real-category"
+                        name="category"
+                        required
+                    >
+
+                        <option value="APARTMENT">
+                            Квартира
+                        </option>
+
+                        <option value="HOUSE">
+                            Хона
+                        </option>
+
+                        <option value="ROOM">
+                            Ҳуҷра
+                        </option>
+
+                        <option value="OFFICE">
+                            Офис
+                        </option>
+
+                        <option value="COMMERCIAL">
+                            Тиҷоратӣ
+                        </option>
+
+                        <option value="LAND">
+                            Замин
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label for="real-price">
+                        Нарх
+                    </label>
+
+                    <input
+                        class="input"
+                        id="real-price"
+                        name="price"
+                        type="number"
+                        min="0"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="real-rooms">
+                        Ҳуҷраҳо
+                    </label>
+
+                    <input
+                        class="input"
+                        id="real-rooms"
+                        name="rooms"
+                        type="number"
+                        min="0"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label for="real-area">
+                        Масоҳат м²
+                    </label>
+
+                    <input
+                        class="input"
+                        id="real-area"
+                        name="area"
+                        type="number"
+                        min="0"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="real-floor">
+                        Ошёна
+                    </label>
+
+                    <input
+                        class="input"
+                        id="real-floor"
+                        name="floor"
+                        type="number"
+                        min="0"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label for="real-region">
+                        Минтақа
+                    </label>
+
+                    <select
+                        class="select"
+                        id="real-region"
+                        name="region"
+                        required
+                    >
+
+                        <option value="Душанбе">Душанбе</option>
+                        <option value="Суғд">Суғд</option>
+                        <option value="Хатлон">Хатлон</option>
+                        <option value="ВМКБ">ВМКБ</option>
+                        <option value="НТҶ">НТҶ</option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="real-city">
+                        Шаҳр
+                    </label>
+
+                    <input
+                        class="input"
+                        id="real-city"
+                        name="city"
+                        type="text"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="real-address">
+                    Суроға
+                </label>
+
+                <input
+                    class="input"
+                    id="real-address"
+                    name="address"
+                    type="text"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="real-phone">
+                    Телефон
+                </label>
+
+                <input
+                    class="input"
+                    id="real-phone"
+                    name="phone"
+                    type="tel"
+                    placeholder="+992..."
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="real-images">
+                    Тасвирҳо
+                </label>
+
+                <input
+                    class="input"
+                    id="real-images"
+                    name="images"
+                    type="file"
+                    multiple
+                    accept=".jpg,.jpeg,.png,.webp"
+                >
+
+            </div>
+
+
+            <button
+                class="btn btn-primary full-width"
+                type="submit"
+            >
+                Эълон гузоштан
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     USER PROFILE MENU
+===================================================== -->
+
+<div
+    class="user-menu"
+    id="user-menu"
+    hidden
+>
+
+    <div id="user-menu-content">
+
+        <button
+            id="menu-profile"
+            type="button"
+        >
+            👤 Профил
+        </button>
+
+        <button
+            id="menu-settings"
+            type="button"
+        >
+            ⚙️ Танзимот
+        </button>
+
+        <button
+            id="menu-logout"
+            type="button"
+        >
+            🚪 Баромадан
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     TOAST
+===================================================== -->
+
+<div
+    id="toast-container"
+    aria-live="polite"
+    aria-atomic="true"
+>
+</div>
+
+
+<!-- =====================================================
      CARD TEMPLATES
-========================================================= -->
+===================================================== -->
+
 
 <template id="specialist-card-template">
 
     <article class="specialist-card">
 
-        <div class="card-cover">
+        <div class="specialist-cover">
 
             <img
-                class="specialist-cover"
+                class="specialist-cover-image"
                 src=""
                 alt=""
                 loading="lazy"
             >
 
-            <span class="verified-badge">
-                ✓ Verified
-            </span>
+            <button
+                class="favorite-button"
+                data-action="favorite"
+                type="button"
+                aria-label="Ба дӯстдоштаҳо"
+            >
+                ♡
+            </button>
 
         </div>
 
 
-        <div class="card-content">
+        <div class="specialist-content">
 
             <div class="specialist-avatar">
 
                 <img
+                    class="specialist-avatar-image"
                     src=""
                     alt=""
                     loading="lazy"
@@ -2661,42 +3623,49 @@
             </div>
 
 
-            <h3 class="specialist-name"></h3>
+            <h3
+                class="specialist-name"
+            >
+            </h3>
 
-            <p class="specialist-bio"></p>
+
+            <div class="specialist-verified">
+                ✓ Verified
+            </div>
+
+
+            <p
+                class="specialist-bio"
+            >
+            </p>
 
 
             <div class="specialist-meta">
 
-                <span class="specialist-location"></span>
+                <span class="specialist-location">
+                    📍 —
+                </span>
 
-                <span class="specialist-experience"></span>
-
-            </div>
-
-
-            <div class="specialist-rating">
-
-                <span>★</span>
-
-                <strong class="rating-value"></strong>
-
-                <small class="review-count"></small>
+                <span class="specialist-rating">
+                    ⭐ 0.0
+                </span>
 
             </div>
 
 
-            <div class="specialist-footer">
+            <div class="specialist-skills">
+            </div>
 
-                <strong class="specialist-price"></strong>
 
-                <a
-                    class="btn btn-small btn-primary specialist-link"
-                    href="#">
+            <div class="card-actions">
 
-                    Профил
-
-                </a>
+                <button
+                    class="btn btn-primary full-width"
+                    data-action="view-specialist"
+                    type="button"
+                >
+                    Дидани профил
+                </button>
 
             </div>
 
@@ -2707,13 +3676,14 @@
 </template>
 
 
-<template id="service-card-template">
+<template id="marketplace-card-template">
 
-    <article class="service-card">
+    <article class="marketplace-card">
 
-        <div class="service-image">
+        <div class="marketplace-image">
 
             <img
+                class="marketplace-card-image"
                 src=""
                 alt=""
                 loading="lazy"
@@ -2722,24 +3692,50 @@
         </div>
 
 
-        <div class="service-content">
+        <div class="marketplace-content">
 
-            <span class="service-category"></span>
+            <div
+                class="marketplace-category"
+            >
+            </div>
 
-            <h3 class="service-title"></h3>
 
-            <p class="service-provider"></p>
+            <h3
+                class="marketplace-title"
+            >
+            </h3>
 
 
-            <div class="service-bottom">
+            <div
+                class="marketplace-author"
+            >
+            </div>
 
-                <strong class="service-price"></strong>
 
-                <span class="service-rating">
-                    ★ <span></span>
+            <div class="marketplace-bottom">
+
+                <strong
+                    class="marketplace-price"
+                >
+                    0 сомонӣ
+                </strong>
+
+                <span
+                    class="marketplace-rating"
+                >
+                    ⭐ 0.0
                 </span>
 
             </div>
+
+
+            <button
+                class="btn btn-primary full-width"
+                data-action="view-marketplace"
+                type="button"
+            >
+                Дидан
+            </button>
 
         </div>
 
@@ -2752,55 +3748,58 @@
 
     <article class="job-card">
 
-        <div class="job-card-main">
+        <div class="job-card-top">
 
-            <div class="job-company-logo">
+            <span
+                class="job-category"
+            >
+            </span>
 
-                <img
-                    src=""
-                    alt=""
-                    loading="lazy"
-                >
-
-            </div>
-
-
-            <div class="job-info">
-
-                <span class="job-type"></span>
-
-                <h3 class="job-title"></h3>
-
-                <p class="job-company"></p>
-
-                <div class="job-meta">
-
-                    <span class="job-location"></span>
-
-                    <span class="job-experience"></span>
-
-                </div>
-
-            </div>
+            <span
+                class="job-type"
+            >
+            </span>
 
         </div>
 
 
-        <div class="job-card-side">
+        <h3
+            class="job-title"
+        >
+        </h3>
 
-            <strong class="job-salary"></strong>
 
-            <span class="job-deadline"></span>
+        <p
+            class="job-description"
+        >
+        </p>
 
-            <a
-                class="btn btn-small btn-primary job-link"
-                href="#">
 
-                Дидан
+        <div class="job-meta">
 
-            </a>
+            <span>
+                💰
+                <strong class="job-salary">
+                    —
+                </strong>
+            </span>
+
+            <span
+                class="job-location"
+            >
+                📍 —
+            </span>
 
         </div>
+
+
+        <button
+            class="btn btn-primary"
+            data-action="view-job"
+            type="button"
+        >
+            Дидани вакансия
+        </button>
 
     </article>
 
@@ -2811,37 +3810,58 @@
 
     <article class="project-card">
 
-        <div class="project-card-content">
-
-            <span class="project-category"></span>
-
-            <h3 class="project-title"></h3>
-
-            <p class="project-description"></p>
+        <span
+            class="project-status"
+        >
+            OPEN
+        </span>
 
 
-            <div class="project-meta">
-
-                <span class="project-budget"></span>
-
-                <span class="project-deadline"></span>
-
-            </div>
+        <h3
+            class="project-title"
+        >
+        </h3>
 
 
-            <div class="project-footer">
+        <p
+            class="project-description"
+        >
+        </p>
 
-                <span class="project-location"></span>
 
-                <a
-                    class="btn btn-small btn-primary project-link"
-                    href="#">
+        <div class="project-meta">
 
-                    Тафсилот
+            <span>
+                💰
+                <strong class="project-budget">
+                    —
+                </strong>
+            </span>
 
-                </a>
+            <span
+                class="project-category"
+            >
+                —
+            </span>
 
-            </div>
+        </div>
+
+
+        <div class="project-footer">
+
+            <span
+                class="project-location"
+            >
+                📍 —
+            </span>
+
+            <button
+                class="btn btn-primary btn-small"
+                data-action="view-project"
+                type="button"
+            >
+                Дидан
+            </button>
 
         </div>
 
@@ -2857,43 +3877,119 @@
         <div class="real-estate-image">
 
             <img
+                class="real-estate-card-image"
                 src=""
                 alt=""
                 loading="lazy"
             >
-
-            <span class="real-estate-type"></span>
 
         </div>
 
 
         <div class="real-estate-content">
 
-            <h3 class="real-estate-title"></h3>
+            <span
+                class="real-estate-type"
+            >
+            </span>
 
-            <p class="real-estate-address"></p>
+
+            <h3
+                class="real-estate-title"
+            >
+            </h3>
 
 
-            <div class="real-estate-features">
+            <p
+                class="real-estate-description"
+            >
+            </p>
 
-                <span class="rooms"></span>
-                <span class="area"></span>
-                <span class="floor"></span>
+
+            <div class="real-estate-meta">
+
+                <span>
+                    💰
+                    <strong class="real-estate-price">
+                        —
+                    </strong>
+                </span>
+
+                <span>
+                    🛏️
+                    <strong class="real-estate-rooms">
+                        —
+                    </strong>
+                </span>
+
+                <span>
+                    📐
+                    <strong class="real-estate-area">
+                        —
+                    </strong>
+                </span>
 
             </div>
 
 
-            <div class="real-estate-footer">
+            <p
+                class="real-estate-location"
+            >
+                📍 —
+            </p>
 
-                <strong class="real-estate-price"></strong>
 
-                <a
-                    class="btn btn-small btn-primary real-estate-link"
-                    href="#">
+            <button
+                class="btn btn-primary full-width"
+                data-action="view-real-estate"
+                type="button"
+            >
+                Дидани эълон
+            </button>
 
-                    Дидан
+        </div>
 
-                </a>
+    </article>
+
+</template>
+
+
+<template id="review-card-template">
+
+    <article class="review-card">
+
+        <div
+            class="review-stars"
+        >
+            ⭐⭐⭐⭐⭐
+        </div>
+
+
+        <p
+            class="review-text"
+        >
+        </p>
+
+
+        <div class="review-author">
+
+            <div
+                class="review-avatar"
+            >
+            </div>
+
+
+            <div>
+
+                <strong
+                    class="review-name"
+                >
+                </strong>
+
+                <span
+                    class="review-role"
+                >
+                </span>
 
             </div>
 
@@ -2904,17 +4000,14 @@
 </template>
 
 
-<!-- =========================================================
-     JAVASCRIPT ENTRY
-========================================================= -->
+</div>
 
-<script type="module" src="/src/main.tsx"></script>
-<link rel="stylesheet" href="./style.css">
+
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
+
 <script src="./script.js"></script>
-    <style>
-    body {
-        background: red !important;
-    }
-</style>
+
 </body>
 </html>
