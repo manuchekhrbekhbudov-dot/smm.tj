@@ -4,9 +4,11 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const supabase = require("./lib/supabase");
+const { PrismaClient } = require("@prisma/client");
 
 const app = express();
+const prisma = new PrismaClient();
+
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
@@ -39,34 +41,50 @@ app.get("/api", (req, res) => {
 });
 
 // ===============================
-// SUPABASE TEST
+// DATABASE TEST
 // ===============================
 
-app.get("/api/test/supabase", async (req, res) => {
+app.get("/api/test/database", async (req, res) => {
     try {
-        const { data, error } = await supabase
-            .from("smm_profiles")
-            .select("id,name")
-            .limit(3);
-
-        if (error) {
-            return res.status(500).json({
-                success: false,
-                message: "Supabase query error",
-                error: error.message
-            });
-        }
+        const result = await prisma.$queryRawUnsafe(
+            "SELECT 1 AS ok"
+        );
 
         res.json({
             success: true,
-            message: "Supabase connected",
-            data: data
+            message: "Database connected",
+            data: result
         });
-
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: "Server error",
+            message: "Database error",
+            error: error.message
+        });
+    }
+});
+
+// ===============================
+// SMM PROFILES
+// ===============================
+
+app.get("/api/profiles", async (req, res) => {
+    try {
+        const profiles = await prisma.smm_profiles.findMany({
+            orderBy: {
+                created_at: "desc"
+            }
+        });
+
+        res.json({
+            success: true,
+            count: profiles.length,
+            data: profiles
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to get profiles",
             error: error.message
         });
     }
@@ -81,10 +99,11 @@ app.listen(PORT, () => {
     console.log("=================================");
     console.log("       SMM.TJ BACKEND");
     console.log("=================================");
-    console.log(`Server: http://localhost:${PORT}`);
-    console.log(`API:    http://localhost:${PORT}/api`);
-    console.log(`Test:   http://localhost:${PORT}/api/test/supabase`);
-    console.log("Status: ONLINE");
+    console.log(`Server:   http://localhost:${PORT}`);
+    console.log(`API:      http://localhost:${PORT}/api`);
+    console.log(`Database: /api/test/database`);
+    console.log(`Profiles: /api/profiles`);
+    console.log("Status:   ONLINE");
     console.log("=================================");
     console.log("");
 });
