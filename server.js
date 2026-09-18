@@ -100,6 +100,88 @@ app.get("/api/profiles", async (req, res) => {
 app.post("/api/auth/register", async (req, res) => {
     try {
         const {
+            name,
+            surname,
+            username,
+            phone,
+            email,
+            password,
+            confirmPassword,
+            city,
+            country,
+            role
+        } = req.body;
+
+        if (!name || !surname || !username || !phone || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Ҳамаи майдонҳои ҳатмиро пур кунед"
+            });
+        }
+
+        if (password !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Паролҳо мувофиқ нестанд"
+            });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "Парол бояд ҳадди ақал 6 символ бошад"
+            });
+        }
+
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    name,
+                    surname,
+                    username,
+                    phone,
+                    city: city || null,
+                    country: country || null,
+                    role: role || "smm_specialist"
+                }
+            }
+        });
+
+        if (error) {
+            return res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+
+        return res.status(201).json({
+            success: true,
+            message: "Ҳисоб бомуваффақият сохта шуд",
+            data: {
+                user: data.user,
+                session: data.session
+            }
+        });
+
+    } catch (error) {
+        console.error("Register error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Registration failed",
+            error: error.message
+        });
+    }
+});
+// ===============================
+// AUTH REGISTER
+// ===============================
+
+app.post("/api/auth/register", async (req, res) => {
+    try {
+        const {
             email,
             password,
             name,
