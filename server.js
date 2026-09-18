@@ -5,16 +5,23 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const { PrismaClient } = require("@prisma/client");
+const supabase = require("./lib/supabase");
 
 const app = express();
 const prisma = new PrismaClient();
 
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({
-    origin: true,
-    credentials: true
-}));
+// ===============================
+// MIDDLEWARE
+// ===============================
+
+app.use(
+    cors({
+        origin: true,
+        credentials: true
+    })
+);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -56,6 +63,8 @@ app.get("/api/test/database", async (req, res) => {
             data: result
         });
     } catch (error) {
+        console.error("Database error:", error);
+
         res.status(500).json({
             success: false,
             message: "Database error",
@@ -65,7 +74,7 @@ app.get("/api/test/database", async (req, res) => {
 });
 
 // ===============================
-// SMM PROFILES
+// GET SMM PROFILES
 // ===============================
 
 app.get("/api/profiles", async (req, res) => {
@@ -82,6 +91,8 @@ app.get("/api/profiles", async (req, res) => {
             data: profiles
         });
     } catch (error) {
+        console.error("Profiles error:", error);
+
         res.status(500).json({
             success: false,
             message: "Failed to get profiles",
@@ -91,8 +102,91 @@ app.get("/api/profiles", async (req, res) => {
 });
 
 // ===============================
-// SERVER
+// GET ONE SMM PROFILE
 // ===============================
+
+app.get("/api/profiles/:id", async (req, res) => {
+    try {
+        const profile = await prisma.smm_profiles.findUnique({
+            where: {
+                id: req.params.id
+            }
+        });
+
+        if (!profile) {
+            return res.status(404).json({
+                success: false,
+                message: "Profile not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            data: profile
+        });
+    } catch (error) {
+        console.error("Profile error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to get profile",
+            error: error.message
+        });
+    }
+});
+
+// ===============================
+// CREATE SMM PROFILE
+// ===============================
+
+app.post("/api/profiles", async (req, res) => {
+    try {
+        const {
+            name,
+            instagram,
+            phone,
+            category,
+            service,
+            experience,
+            price
+        } = req.body;
+
+        if (!name || !phone || !category || !service) {
+            return res.status(400).json({
+                success: false,
+                message: "name, phone, category ва service ҳатмӣ мебошанд"
+            });
+        }
+
+        const profile = await prisma.smm_profiles.create({
+            data: {
+                name,
+                instagram: instagram || null,
+                phone,
+                category,
+                service,
+                experience: experience || null,
+                price: price || null
+            }
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Profile created successfully",
+            data: profile
+        });
+
+    } catch (error) {
+        console.error("Create profile error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to create profile",
+            error: error.message
+        });
+    }
+});
+
 // ===============================
 // AUTH REGISTER
 // ===============================
@@ -112,10 +206,22 @@ app.post("/api/auth/register", async (req, res) => {
             role
         } = req.body;
 
-        if (!name || !surname || !username || !phone || !email || !password) {
+        // -------------------------------
+        // VALIDATION
+        // -------------------------------
+
+        if (
+            !name ||
+            !surname ||
+            !username ||
+            !phone ||
+            !email ||
+            !password ||
+            !confirmPassword
+        ) {
             return res.status(400).json({
                 success: false,
-                message: "Ҳамаи майдонҳои ҳатмиро пур кунед"
+                message: "Лутфан ҳамаи майдонҳои ҳатмиро пур кунед"
             });
         }
 
@@ -129,12 +235,16 @@ app.post("/api/auth/register", async (req, res) => {
         if (password.length < 6) {
             return res.status(400).json({
                 success: false,
-                message: "Парол бояд ҳадди ақал 6 символ бошад"
+                message: "Парол бояд ҳадди ақал 6 символ дошта бошад"
             });
         }
 
+        // -------------------------------
+        // SUPABASE AUTH REGISTER
+        // -------------------------------
+
         const { data, error } = await supabase.auth.signUp({
-            email,
+            email: email.trim().toLowerCase(),
             password,
             options: {
                 data: {
@@ -149,16 +259,28 @@ app.post("/api/auth/register", async (req, res) => {
             }
         });
 
+        // -------------------------------
+        // SUPABASE ERROR
+        // -------------------------------
+
         if (error) {
+            console.error("Supabase register error:", error);
+
             return res.status(400).json({
                 success: false,
                 message: error.message
             });
         }
 
+        // -------------------------------
+        // SUCCESS
+        // -------------------------------
+
         return res.status(201).json({
             success: true,
-            message: "Ҳисоб бомуваффақият сохта шуд",
+            message: data.session
+                ? "Ҳисоб бомуваффақият сохта шуд"
+                : "Ҳисоб сохта шуд. Email-и худро тасдиқ кунед.",
             data: {
                 user: data.user,
                 session: data.session
@@ -175,80 +297,12 @@ app.post("/api/auth/register", async (req, res) => {
         });
     }
 });
+
 // ===============================
-// AUTH REGISTER
+// SERVER
 // ===============================
 
-app.post("/api/auth/register", async (req, res) => {
-    try {
-        const {
-            email,
-            password,
-            name,
-            phone
-        } = req.body;
-
-        if (!email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "Email ва password ҳатмӣ мебошанд"
-            });
-        }
-
-        if (password.length < 6) {
-            return res.status(400).json({
-                success: false,
-                message: "Password бояд ҳадди ақал 6 символ бошад"
-            });
-        }
-
-        const existingUser = await prisma.user.findUnique({
-            where: {
-                email
-            }
-        });
-
-        if (existingUser) {
-            return res.status(409).json({
-                success: false,
-                message: "Ин email аллакай истифода шудааст"
-            });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 12);
-
-        const user = await prisma.user.create({
-            data: {
-                email,
-                encrypted_password: hashedPassword,
-                phone: phone || null,
-                raw_user_meta_data: {
-                    name: name || null
-                }
-            }
-        });
-
-        res.status(201).json({
-            success: true,
-            message: "Registration successful",
-            data: {
-                id: user.id,
-                email: user.email,
-                phone: user.phone
-            }
-        });
-
-    } catch (error) {
-        console.error("Register error:", error);
-
-        res.status(500).json({
-            success: false,
-            message: "Registration failed",
-            error: error.message
-        });
-    }
-});
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log("");
     console.log("=================================");
     console.log("       SMM.TJ BACKEND");
@@ -257,7 +311,31 @@ app.listen(PORT, () => {
     console.log(`API:      http://localhost:${PORT}/api`);
     console.log(`Database: /api/test/database`);
     console.log(`Profiles: /api/profiles`);
+    console.log(`Register: /api/auth/register`);
     console.log("Status:   ONLINE");
     console.log("=================================");
     console.log("");
+});
+
+// ===============================
+// GRACEFUL SHUTDOWN
+// ===============================
+
+process.on("SIGINT", async () => {
+    console.log("\nStopping server...");
+
+    await prisma.$disconnect();
+
+    server.close(() => {
+        console.log("Server stopped.");
+        process.exit(0);
+    });
+});
+
+process.on("SIGTERM", async () => {
+    await prisma.$disconnect();
+
+    server.close(() => {
+        process.exit(0);
+    });
 });
