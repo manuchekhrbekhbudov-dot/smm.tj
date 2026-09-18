@@ -93,7 +93,79 @@ app.get("/api/profiles", async (req, res) => {
 // ===============================
 // SERVER
 // ===============================
+// ===============================
+// AUTH REGISTER
+// ===============================
 
+app.post("/api/auth/register", async (req, res) => {
+    try {
+        const {
+            email,
+            password,
+            name,
+            phone
+        } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Email ва password ҳатмӣ мебошанд"
+            });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "Password бояд ҳадди ақал 6 символ бошад"
+            });
+        }
+
+        const existingUser = await prisma.user.findUnique({
+            where: {
+                email
+            }
+        });
+
+        if (existingUser) {
+            return res.status(409).json({
+                success: false,
+                message: "Ин email аллакай истифода шудааст"
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        const user = await prisma.user.create({
+            data: {
+                email,
+                encrypted_password: hashedPassword,
+                phone: phone || null,
+                raw_user_meta_data: {
+                    name: name || null
+                }
+            }
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Registration successful",
+            data: {
+                id: user.id,
+                email: user.email,
+                phone: user.phone
+            }
+        });
+
+    } catch (error) {
+        console.error("Register error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Registration failed",
+            error: error.message
+        });
+    }
+});
 app.listen(PORT, () => {
     console.log("");
     console.log("=================================");
