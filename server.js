@@ -4,10 +4,15 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const supabase = require("./lib/supabase");
 
 const app = express();
 
 const PORT = process.env.PORT || 5000;
+
+// ===============================
+// MIDDLEWARE
+// ===============================
 
 app.use(
     cors({
@@ -41,6 +46,39 @@ app.get("/api", (req, res) => {
 });
 
 // ===============================
+// SUPABASE TEST
+// ===============================
+
+app.get("/api/test/supabase", async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from("smm_profiles")
+            .select("id,name")
+            .limit(3);
+
+        if (error) {
+            return res.status(500).json({
+                success: false,
+                message: "Supabase query error",
+                error: error.message
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Supabase connected",
+            data
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message
+        });
+    }
+});
+
+// ===============================
 // SERVER
 // ===============================
 
@@ -51,6 +89,7 @@ app.listen(PORT, () => {
     console.log("=================================");
     console.log(`Server: http://localhost:${PORT}`);
     console.log(`API:    http://localhost:${PORT}/api`);
+    console.log(`Test:   http://localhost:${PORT}/api/test/supabase`);
     console.log("Status: ONLINE");
     console.log("=================================");
     console.log("");
