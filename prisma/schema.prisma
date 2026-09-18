@@ -1,12 +1,11 @@
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas = ["public", "auth"]
+  schemas  = ["public", "auth"]
 }
 
 enum Role {
@@ -14,12 +13,16 @@ enum Role {
   SMM_SPECIALIST
   SELLER
   ADMIN
+
+  @@schema("public")
 }
 
 enum UserStatus {
   ACTIVE
   BLOCKED
   PENDING
+
+  @@schema("public")
 }
 
 model User {
@@ -56,4 +59,6 @@ model User {
   @@index([region])
   @@index([city])
   @@index([createdAt])
+
+  @@schema("public")
 }
