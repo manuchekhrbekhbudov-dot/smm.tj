@@ -7,8 +7,9 @@ import { Stars } from "@/components/ui/Stars";
 import { Textarea } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Notice";
+import { notifyTrust } from "@/lib/telegram";
 
-export function ReviewForm({ orderId, onDone, onCancel }: { orderId: string; onDone: () => void; onCancel: () => void }) {
+export function ReviewForm({ orderId, specialistId, onDone, onCancel }: { orderId: string; specialistId?: string; onDone: () => void; onCancel: () => void }) {
   const t = useTranslations();
   const { session } = useAuth();
   const [rating, setRating] = useState(5);
@@ -26,13 +27,16 @@ export function ReviewForm({ orderId, onDone, onCancel }: { orderId: string; onD
     });
     setBusy(false);
     if (error) { setErr(t("cabinet.review.error")); return; }
+    if (specialistId) void notifyTrust(specialistId); // warning / removal and welcome bonus are counted by the database
     onDone();
   };
 
   return (
     <form onSubmit={submit} className="mt-5 space-y-4 rounded-[var(--radius-md)] border border-purple/30 bg-purple/5 p-5" noValidate>
       <p className="font-semibold">{t("cabinet.review.title")}</p>
+      <p className="rounded-2xl bg-success/10 px-4 py-3 text-sm text-ink-1">🎁 {t("trust.prizeHint")}</p>
       <div className="flex items-center gap-3"><span className="text-sm text-ink-2">{t("cabinet.review.rating")}</span><Stars value={rating} onChange={setRating} size={28} label={t("cabinet.review.rating")} /></div>
+      {rating === 1 && <p className="text-xs text-warning">{t("trust.oneStarHint")}</p>}
       <Textarea label={t("cabinet.review.text")} value={text} onChange={(e) => setText(e.target.value)} maxLength={2000} />
       {err && <Notice tone="danger">{err}</Notice>}
       <div className="flex gap-2">

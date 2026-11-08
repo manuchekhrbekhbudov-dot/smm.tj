@@ -18,8 +18,9 @@ import { Notice, Skeleton } from "@/components/ui/Notice";
 import { cn } from "@/lib/cn";
 import { Analytics } from "./Analytics";
 import { Payments } from "./Payments";
+import { Complaints, FeedbackList } from "./TrustAdmin";
 
-type Tab = SpecialistStatus | "reviews" | "payments" | "stats";
+type Tab = SpecialistStatus | "reviews" | "payments" | "complaints" | "feedback" | "stats";
 type ReviewRow = Review & { specialists?: { profiles: { full_name: string } | null } | null };
 
 export function AdminPanel() {
@@ -48,7 +49,7 @@ export function AdminPanel() {
         </div>
       )}
       <div role="tablist" className="-mx-4 mt-8 flex gap-2 overflow-x-auto px-4 pb-2">
-        {(["pending", "approved", "rejected", "payments", "reviews", "stats"] as Tab[]).map((k) => (
+        {(["pending", "approved", "rejected", "payments", "complaints", "reviews", "feedback", "stats"] as Tab[]).map((k) => (
           <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
             className={cn("relative shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors", tab === k ? "text-white" : "glass text-ink-1 hover:text-ink-0")}>
             {tab === k && <motion.span layoutId="adm-tab" className="absolute inset-0 rounded-full bg-gradient-primary" transition={{ type: "spring", stiffness: 500, damping: 35 }} />}
@@ -57,7 +58,7 @@ export function AdminPanel() {
         ))}
       </div>
       <div className="mt-8">
-        {tab === "stats" ? <Analytics /> : tab === "reviews" ? <Reviews /> : tab === "payments" ? <Payments /> : <Specialists status={tab} />}
+        {tab === "stats" ? <Analytics /> : tab === "reviews" ? <Reviews /> : tab === "payments" ? <Payments /> : tab === "complaints" ? <Complaints /> : tab === "feedback" ? <FeedbackList /> : <Specialists status={tab} />}
       </div>
     </div>
   );
@@ -144,6 +145,10 @@ function Reviews() {
   }, [sb]);
   useEffect(() => { void load(); }, [load]);
 
+  const prize = async (r: ReviewRow) => {
+    const { error } = await sb.from("mp_reviews").update({ prize_given_at: r.prize_given_at ? null : new Date().toISOString() }).eq("id", r.id);
+    if (!error) void load();
+  };
   const toggle = async (r: ReviewRow) => {
     const { error } = await sb.from("mp_reviews").update({ hidden: !r.hidden }).eq("id", r.id);
     if (!error) void load();
@@ -164,7 +169,12 @@ function Reviews() {
           <p className="mt-3 whitespace-pre-line text-ink-1">{r.text}</p>
           <div className="mt-3 flex items-center justify-between">
             <span className="text-xs text-ink-2">{df.format(new Date(r.created_at))}</span>
-            <Button size="sm" variant="outline" onClick={() => toggle(r)}>{r.hidden ? t("admin.unhide") : t("admin.hide")}</Button>
+            <span className="flex flex-wrap gap-2">
+              {"prize_given_at" in r && (
+                <Button size="sm" variant={r.prize_given_at ? "ghost" : "outline"} onClick={() => prize(r)}>{r.prize_given_at ? `🎁 ${t("trust.prizeGiven")}` : `🎁 ${t("trust.givePrize")}`}</Button>
+              )}
+              <Button size="sm" variant="outline" onClick={() => toggle(r)}>{r.hidden ? t("admin.unhide") : t("admin.hide")}</Button>
+            </span>
           </div>
         </li>
       ))}

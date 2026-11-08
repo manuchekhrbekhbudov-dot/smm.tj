@@ -1,6 +1,6 @@
 // Telegram webhook: /start → ask to share contact → verify it is the sender's own number → send a login code.
 // GET ?setup=1 registers this function as the bot's webhook (call once after setting TG_BOT_TOKEN).
-import { admin, json, normPhone, sha256, tg, TOKEN, webhookSecret, SITE_URL } from "../_shared/tg.ts";
+import { admin, json, normPhone, sha256, tg, TOKEN, webhookSecret, SITE_URL, isBlocked, BLOCKED_TEXT } from "../_shared/tg.ts";
 
 const CODE_TTL_MIN = 10;
 const MAX_ATTEMPTS = 5;
@@ -52,6 +52,11 @@ Deno.serve(async (req) => {
     }
     const phone = normPhone(msg.contact.phone_number);
     if (!phone) return json({ ok: true });
+    // Removed from the platform: no codes for this number or this Telegram account, even with a new number.
+    if (await isBlocked(admin(), phone, msg.from?.id ?? chatId)) {
+      await tg("sendMessage", { chat_id: chatId, text: BLOCKED_TEXT, parse_mode: "HTML", reply_markup: { remove_keyboard: true } });
+      return json({ ok: true });
+    }
     const { data: prev } = await admin().from("mp_tg_codes").select("attempts, expires_at").eq("phone", phone).maybeSingle();
     if (prev && prev.attempts >= MAX_ATTEMPTS && new Date(prev.expires_at).getTime() > Date.now()) {
       const until = new Date(prev.expires_at).toLocaleString("ru-RU", { timeZone: "Asia/Dushanbe", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });

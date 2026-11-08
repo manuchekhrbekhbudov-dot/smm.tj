@@ -12,6 +12,8 @@ import { Notice, Skeleton } from "@/components/ui/Notice";
 import { buttonClasses } from "@/components/ui/buttonClasses";
 import { ReviewForm } from "./ReviewForm";
 import { notifyOrder } from "@/lib/telegram";
+import { HireDecision, NotHiredReport } from "@/components/trust/HireDecision";
+import { ComplaintForm } from "@/components/trust/ComplaintForm";
 
 type Row = Order & {
   specialists?: { id: string; profiles: { full_name: string } | null } | null;
@@ -32,6 +34,9 @@ export function OrderList({ mode, userId }: { mode: "client" | "specialist"; use
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState(false);
   const [reviewing, setReviewing] = useState<string | null>(null);
+  const [complaining, setComplaining] = useState<string | null>(null);
+  const [deciding, setDeciding] = useState<string | null>(null);
+  const [complained, setComplained] = useState<Set<string>>(new Set());
 
   const load = useCallback(async () => {
     const sb = getSupabase()!;
@@ -40,6 +45,11 @@ export function OrderList({ mode, userId }: { mode: "client" | "specialist"; use
       : "*, profiles:mp_profiles!mp_orders_client_id_fkey(full_name), specialist_services:mp_specialist_services!mp_orders_service_id_fkey(title)";
     const { data } = await sb.from("mp_orders").select(select).eq(mode === "client" ? "client_id" : "specialist_id", userId).order("created_at", { ascending: false });
     setRows((data as unknown as Row[]) ?? []);
+    // Complaints are loaded separately so the list still works before trust.sql is applied.
+    if (mode === "client") {
+      const { data: c } = await sb.from("mp_complaints").select("order_id").eq("client_id", userId);
+      setComplained(new Set((c ?? []).map((x: { order_id: string }) => x.order_id)));
+    }
   }, [mode, userId]);
 
   useEffect(() => { void load(); }, [load]);
@@ -69,6 +79,8 @@ export function OrderList({ mode, userId }: { mode: "client" | "specialist"; use
       {rows.map((o) => {
         const hasReview = Array.isArray(o.reviews) ? o.reviews.length > 0 : !!o.reviews;
         const who = mode === "client" ? o.specialists?.profiles?.full_name : o.profiles?.full_name;
+        const needsDecision = o.status === "accepted" && !o.hire_status && "hire_status" in o;
+        const canComplain = mode === "client" && !complained.has(o.id) && (o.status === "accepted" || o.status === "done" || o.hire_status === "hired");
         return (
           <article key={o.id} className="rounded-[var(--radius-lg)] glass p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -80,13 +92,22 @@ export function OrderList({ mode, userId }: { mode: "client" | "specialist"; use
                 )}
                 <p className="mt-1 text-xs text-ink-2">{df.format(new Date(o.created_at))}{o.specialist_services?.title ? ` · ${o.specialist_services.title}` : ""}</p>
               </div>
-              <Badge tone={tone[o.status]}>{t(`cabinet.statuses.${o.status}`)}</Badge>
+              <span className="flex flex-wrap gap-1.5">
+                {o.hire_status === "hired" && <Badge tone="success">{t("trust.hired")}</Badge>}
+                {o.hire_status === "not_hired" && <Badge tone="neutral">{t("trust.notHired")}</Badge>}
+                <Badge tone={tone[o.status]}>{t(`cabinet.statuses.${o.status}`)}</Badge>
+              </span>
             </div>
             <p className="mt-4 whitespace-pre-line text-ink-1">{o.message}</p>
             <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-ink-2">
               {o.budget_tjs != null && <span>{t("cabinet.budget")}: <b className="text-ink-0">{formatTjs(o.budget_tjs)} TJS</b></span>}
               {mode === "specialist" && <span>{t("cabinet.contact")}: <a href={`tel:${o.contact_phone}`} className="font-semibold text-purple">{o.contact_phone}</a></span>}
             </div>
+            {o.client_reason && <p className="mt-3 text-sm text-ink-2">{t("trust.clientReason")}: «{o.client_reason}»</p>}
+            {mode === "specialist" && o.specialist_note && <p className="mt-3 text-sm text-ink-2">{t("trust.yourNote")}: «{o.specialist_note}»</p>}
+            {mode === "client" && needsDecision && (
+              <HireDecision orderId={o.id} name={who || "—"} note={o.specialist_note} startWithNo={deciding === o.id} onDone={() => { setDeciding(null); void load(); }} />
+            )}
             <div className="mt-5 flex flex-wrap gap-2">
               {mode === "specialist" && o.status === "new" && (<>
                 <Button size="sm" loading={busy === o.id} onClick={() => setStatus(o.id, "accepted")}>{t("cabinet.actions.accept")}</Button>
@@ -95,15 +116,28 @@ export function OrderList({ mode, userId }: { mode: "client" | "specialist"; use
               {mode === "specialist" && o.status === "accepted" && (
                 <Button size="sm" loading={busy === o.id} onClick={() => setStatus(o.id, "done")}>{t("cabinet.actions.done")}</Button>
               )}
-              {mode === "client" && (o.status === "new" || o.status === "accepted") && (
+              {mode === "specialist" && needsDecision && !o.specialist_note && <NotHiredReport orderId={o.id} onDone={load} />}
+              {mode === "client" && o.status === "new" && (
                 <Button size="sm" variant="outline" loading={busy === o.id} onClick={() => setStatus(o.id, "cancelled")}>{t("cabinet.actions.cancel")}</Button>
+              )}
+              {mode === "client" && o.status === "accepted" && !needsDecision && (
+                <Button size="sm" variant="outline" onClick={() => setDeciding(o.id)}>{t("cabinet.actions.cancel")}</Button>
+              )}
+              {canComplain && complaining !== o.id && (
+                <Button size="sm" variant="ghost" onClick={() => setComplaining(o.id)}>{t("trust.complain")}</Button>
               )}
               {mode === "client" && o.status === "done" && !hasReview && reviewing !== o.id && (
                 <Button size="sm" onClick={() => setReviewing(o.id)}>{t("cabinet.actions.review")}</Button>
               )}
             </div>
             {reviewing === o.id && (
-              <ReviewForm orderId={o.id} onDone={() => { setReviewing(null); void load(); }} onCancel={() => setReviewing(null)} />
+              <ReviewForm orderId={o.id} specialistId={o.specialist_id} onDone={() => { setReviewing(null); void load(); }} onCancel={() => setReviewing(null)} />
+            )}
+            {complaining === o.id && (
+              <ComplaintForm orderId={o.id} specialistId={o.specialist_id} onDone={() => { setComplaining(null); void load(); }} onCancel={() => setComplaining(null)} />
+            )}
+            {deciding === o.id && !needsDecision && (
+              <HireDecision orderId={o.id} name={who || "—"} startWithNo onDone={() => { setDeciding(null); void load(); }} />
             )}
           </article>
         );

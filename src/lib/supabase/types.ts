@@ -3,7 +3,7 @@ export type SpecialistStatus = "pending" | "approved" | "rejected";
 export type OrderStatus = "new" | "accepted" | "declined" | "done" | "cancelled";
 export type PriceUnit = "project" | "month" | "item" | "hour";
 
-export type Profile = { id: string; role: Role; full_name: string; city: string | null; avatar_url: string | null; created_at: string };
+export type Profile = { id: string; role: Role; full_name: string; city: string | null; avatar_url: string | null; created_at: string; blocked_at?: string | null };
 
 export type Specialist = {
   id: string;
@@ -25,6 +25,11 @@ export type Specialist = {
   /** Paid plan (top | standard | premium) and its end; loaded via withPlans(). */
   plan?: string | null;
   plan_until?: string | null;
+  /** Trust fields (trust.sql) */
+  strikes?: number;
+  warned_at?: string | null;
+  banned_at?: string | null;
+  bonus_given_at?: string | null;
   profiles?: Pick<Profile, "full_name" | "city" | "avatar_url"> | null;
 };
 
@@ -34,11 +39,12 @@ export type Order = {
   id: string; client_id: string; specialist_id: string; service_id: string | null;
   message: string; contact_phone: string; budget_tjs: number | null; status: OrderStatus;
   created_at: string; updated_at: string;
+  hire_status?: "hired" | "not_hired" | null; client_reason?: string | null; specialist_note?: string | null;
 };
 
 export type Review = {
   id: string; order_id: string; client_id: string; specialist_id: string;
-  rating: number; text: string; hidden: boolean; created_at: string;
+  rating: number; text: string; hidden: boolean; created_at: string; prize_given_at?: string | null;
   profiles?: Pick<Profile, "full_name"> | null;
 };
 

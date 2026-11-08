@@ -1,7 +1,7 @@
 // POST { phone, code } → verifies the Telegram code and returns a one-time token_hash.
 // The browser exchanges it with supabase.auth.verifyOtp({ type: "magiclink", token_hash }) for a session.
 // Works for new accounts (created here) and existing ones (= password recovery).
-import { admin, cors, json, normPhone, sha256, PHONE_EMAIL_DOMAIN } from "../_shared/tg.ts";
+import { admin, cors, json, normPhone, sha256, PHONE_EMAIL_DOMAIN, isBlocked } from "../_shared/tg.ts";
 
 const MAX_ATTEMPTS = 5;
 const LOCK_HOURS = 24;
@@ -16,6 +16,7 @@ Deno.serve(async (req) => {
   const db = admin();
   const { data: row } = await db.from("mp_tg_codes").select("*").eq("phone", phone).maybeSingle();
   const now = Date.now();
+  if (await isBlocked(db, phone, row?.chat_id ?? null)) return json({ error: "account_blocked", blocked_account: true }, 403);
   const lockedUntil = row && row.attempts >= MAX_ATTEMPTS && new Date(row.expires_at).getTime() > now ? row.expires_at : null;
 
   // Status check (no code needed): has the bot sent a code to this number yet? Never reveals the code.

@@ -9,6 +9,7 @@ import { SPECIALIST_SELECT, type Specialist } from "@/lib/supabase/types";
 import { citySlugs, specialtySlugs } from "@/content/site";
 import { SpecialistCard } from "./SpecialistCard";
 import { sortByPlan, withPlans } from "@/lib/plans";
+import { DecisionGate } from "@/components/trust/DecisionGate";
 import { Select } from "@/components/ui/Select";
 import { Input } from "@/components/ui/Field";
 import { Notice, Skeleton } from "@/components/ui/Notice";
@@ -99,6 +100,7 @@ export function Catalog() {
 
       {error && <Notice tone="danger" className="mb-6">{t("common.error")}</Notice>}
 
+      <DecisionGate>
       {list === null ? (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-56" />)}</div>
       ) : shown.length === 0 ? (
@@ -118,6 +120,7 @@ export function Catalog() {
           </div>
         </>
       )}
+      </DecisionGate>
     </div>
   );
 }

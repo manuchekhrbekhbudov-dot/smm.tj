@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { Notice, Spinner } from "@/components/ui/Notice";
 import { Icon } from "@/components/ui/Icon";
+import { BlockedNotice } from "./BlockedNotice";
 
 /**
  * "Open bot → share number → enter code". The code field stays locked until the bot has really
@@ -40,7 +41,7 @@ export function TelegramCodeForm({ onSuccess, onStart, defaultPhone = "+992 ", l
       const s = await getCodeStatus(p);
       if (!alive || !s) return;
       setStatus(s);
-      doneRef.current = s.pending || !!s.blocked;
+      doneRef.current = s.pending || !!s.blocked || !!s.blocked_account;
     };
     void tick();
     const id = setInterval(() => { if (!doneRef.current) void tick(); }, 3000);
@@ -56,6 +57,7 @@ export function TelegramCodeForm({ onSuccess, onStart, defaultPhone = "+992 ", l
     const loc = dateLocale(locale);
     return `${new Intl.DateTimeFormat(loc, { day: "numeric", month: "long" }).format(d)}, ${new Intl.DateTimeFormat(loc, { hour: "2-digit", minute: "2-digit" }).format(d)}`;
   };
+  if (status?.blocked_account) return <BlockedNotice />;
   const blocked = !!status?.blocked;
   const ready = !!status?.pending && !blocked;
 
@@ -69,6 +71,7 @@ export function TelegramCodeForm({ onSuccess, onStart, defaultPhone = "+992 ", l
     const res = await loginWithTelegramCode(p, code, link);
     setBusy(false);
     if (!res.error) { onSuccess?.(); return; }
+    if (res.error === "account_blocked") { setStatus({ pending: false, blocked_account: true }); return; }
     if (res.error === "blocked") { setStatus({ pending: false, blocked: true, until: res.until }); setErr(null); return; }
     if (res.error === "wrong_code" && res.attemptsLeft !== undefined) { setErr(t("attemptsLeft", { n: res.attemptsLeft })); setCode(""); return; }
     if (res.error === "expired" || res.error === "no_code") { setStatus({ pending: false }); doneRef.current = false; }

@@ -24,6 +24,7 @@ export function Footer() {
           <ul className="mt-5 space-y-3">
             <li><Link href={{ pathname: "/login", query: { role: "specialist" } }} className="text-ink-1 hover:text-purple">{t("nav.join")}</Link></li>
             <li><Link href="/cabinet" className="text-ink-1 hover:text-purple">{t("common.cabinet")}</Link></li>
+            <li><Link href="/feedback" className="text-ink-1 hover:text-purple">{t("feedback.title")}</Link></li>
           </ul>
         </nav>
       </div>

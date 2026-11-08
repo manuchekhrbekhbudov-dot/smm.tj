@@ -13,6 +13,7 @@ import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 import { TelegramCodeForm } from "./TelegramCodeForm";
 import { SetPasswordForm } from "./SetPasswordForm";
+import { BlockedNotice } from "./BlockedNotice";
 
 /** Only allow internal paths as post-login redirect targets. */
 const safeNext = (v: string | null) => (v && v.startsWith("/") && !v.startsWith("//") ? v : null);
@@ -21,7 +22,7 @@ export function LoginForm() {
   const t = useTranslations();
   const params = useSearchParams();
   const router = useRouter();
-  const { session, profile, ready } = useAuth();
+  const { session, profile, ready, blocked } = useAuth();
   const sb = getSupabase();
   const paramRole = params.get("role");
   const [role, setRole] = useState<"client" | "specialist" | null>(paramRole === "specialist" ? "specialist" : paramRole === "client" ? "client" : null);
@@ -31,6 +32,7 @@ export function LoginForm() {
   // Sign-up and password recovery: Telegram code first, then the user sets a password.
   const [flow, setFlow] = useState<"none" | "verify" | "password">("none");
   const [reset, setReset] = useState(false);
+  const [codeLogin, setCodeLogin] = useState(false); // sign in with a Telegram code only, no password
   const [phone, setPhone] = useState("+992 ");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -50,6 +52,7 @@ export function LoginForm() {
   }, [ready, session, profile, role, next, router, flow]);
 
   if (!sb) return <Notice tone="warning">{t("common.notConfigured")}</Notice>;
+  if (blocked) return <BlockedNotice />;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +117,12 @@ export function LoginForm() {
 
       {(mode === "register" || reset) && flow === "password" ? (
         <SetPasswordForm onDone={() => setFlow("none")} />
+      ) : codeLogin ? (
+        <div className="space-y-4">
+          <p className="font-semibold">{t("auth.codeLoginTitle")}</p>
+          <TelegramCodeForm />
+          <p className="text-center text-sm"><button type="button" className="font-semibold text-purple" onClick={() => setCodeLogin(false)}>{t("auth.backToLogin")}</button></p>
+        </div>
       ) : reset ? (
         <div className="space-y-4">
           <p className="font-semibold">{t("auth.forgotTitle")}</p>
@@ -146,6 +155,8 @@ export function LoginForm() {
           value={password} onChange={(e) => setPassword(e.target.value)} error={err.password} />
         {err.form && <Notice tone="danger">{err.form}</Notice>}
         <Button type="submit" size="lg" className="w-full" loading={busy}>{t("auth.login")}</Button>
+        <button type="button" onClick={() => { setCodeLogin(true); setErr({}); }}
+          className="flex h-12 w-full items-center justify-center rounded-full border border-[#229ED9]/50 text-sm font-semibold text-[#229ED9]">{t("auth.codeLogin")}</button>
         <p className="text-center text-sm"><button type="button" className="font-semibold text-purple" onClick={() => { setReset(true); setErr({}); }}>{t("auth.forgot2")}</button></p>
         <p className="text-center text-sm text-ink-2">
           {t("auth.noAccount")}{" "}

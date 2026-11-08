@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { Assistant } from "@/components/assistant/Assistant";
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations();
@@ -12,6 +13,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       <Header />
       <main id="main" style={{ paddingTop: "var(--banner-h)" }}>{children}</main>
       <Footer />
+      <Assistant />
     </>
   );
 }

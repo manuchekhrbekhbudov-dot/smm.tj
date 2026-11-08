@@ -35,7 +35,11 @@ export function SpecialistProfile() {
       sb.from("mp_reviews").select("*, profiles:mp_profiles!mp_reviews_client_id_fkey(full_name)").eq("specialist_id", id).eq("hidden", false).order("created_at", { ascending: false }),
     ]).then(async ([a, b, c]) => {
       const one = (a.data as unknown as Specialist) ?? null;
-      const withPlan = one ? (await withPlans(sb, [one]))[0] : null;
+      let withPlan = one ? (await withPlans(sb, [one]))[0] : null;
+      if (withPlan) {
+        const { data: tr } = await sb.from("mp_specialists").select("banned_at").eq("id", id).maybeSingle();
+        if (tr?.banned_at) withPlan = { ...withPlan, banned_at: tr.banned_at as string };
+      }
       if (!alive) return;
       setS(withPlan);
       setServices((b.data as Service[]) ?? []);
@@ -60,6 +64,16 @@ export function SpecialistProfile() {
     s.instagram && instagramUrl(s.instagram) && { icon: "instagram" as const, label: "Instagram", href: instagramUrl(s.instagram)! },
   ].filter(Boolean) as { icon: "telegram" | "whatsapp" | "instagram"; label: string; href: string }[];
   const dateFmt = new Intl.DateTimeFormat(dateLocale(locale), { day: "numeric", month: "long", year: "numeric" });
+
+  if (s.banned_at) {
+    return (
+      <div className="mx-auto max-w-2xl rounded-[var(--radius-lg)] border border-danger/40 bg-danger/10 p-8 text-center">
+        <p className="text-4xl" aria-hidden>⛔</p>
+        <h1 className="mt-3 text-h2 font-bold">{name}</h1>
+        <p className="mt-3 text-lg font-semibold text-danger">{t("trust.bannedPublic")}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[1.6fr_1fr]">

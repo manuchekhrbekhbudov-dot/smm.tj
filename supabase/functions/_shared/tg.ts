@@ -42,3 +42,28 @@ export function normPhone(raw: string): string | null {
 }
 
 export const escapeHtml = (s: string) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]!));
+
+export const DIRECTOR_PHONE = "+992 50 444 01 01";
+export const BLOCKED_TEXT =
+  `⛔ Платформа шуморо блок кардааст. Лутфан ба директор занг занед: <b>${DIRECTOR_PHONE}</b>\n` +
+  `Платформа заблокировала вас. Пожалуйста, свяжитесь с директором: <b>${DIRECTOR_PHONE}</b>`;
+
+/**
+ * Is this phone (or this Telegram chat) tied to an account the platform removed?
+ * Missing tables (trust.sql not applied yet) simply mean "not blocked".
+ */
+export async function isBlocked(db: ReturnType<typeof admin>, phone: string | null, chatId?: number | null): Promise<boolean> {
+  if (phone) {
+    const { data } = await db.from("mp_blocked_phones").select("phone").eq("phone", phone).maybeSingle();
+    if (data) return true;
+  }
+  if (chatId) {
+    const { data: links } = await db.from("mp_tg_links").select("user_id").eq("chat_id", chatId);
+    const ids = (links ?? []).map((l) => l.user_id);
+    if (ids.length) {
+      const { data: p } = await db.from("mp_profiles").select("id").in("id", ids).not("blocked_at", "is", null).limit(1);
+      if (p?.length) return true;
+    }
+  }
+  return false;
+}

@@ -10,23 +10,33 @@ import { Input, Textarea } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Notice";
-import { buttonClasses } from "@/components/ui/buttonClasses";
 import { notifyOrder } from "@/lib/telegram";
+import { TelegramCodeForm } from "@/components/auth/TelegramCodeForm";
+import { BlockedNotice } from "@/components/auth/BlockedNotice";
+import { DecisionGate } from "@/components/trust/DecisionGate";
 
 export function OrderForm({ specialistId, name, services }: { specialistId: string; name: string; services: Service[] }) {
   const t = useTranslations();
-  const { session, profile } = useAuth();
-  const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
-  const [errors, setErrors] = useState<{ message?: string; phone?: string }>({});
+  const { session, profile, blocked, refreshProfile } = useAuth();
+  const [state, setState] = useState<"idle" | "sending" | "done" | "error" | "decision">("idle");
+  const [errors, setErrors] = useState<{ message?: string; phone?: string; name?: string }>({});
 
+  if (blocked) return <BlockedNotice />;
   if (!session) {
+    // Quick start for clients: just the phone + a Telegram code, no password, no separate page.
     return (
       <div>
-        <p className="text-ink-1">{t("order.login")}</p>
-        <Link href={{ pathname: "/login", query: { next: `/specialist?id=${specialistId}` } }} className={buttonClasses("primary", "lg", "mt-5 w-full")}>{t("common.login")}</Link>
+        <h3 className="text-h3 font-bold">{t("order.title", { name })}</h3>
+        <p className="mt-2 text-sm text-ink-1">{t("order.quick")}</p>
+        <div className="mt-5"><TelegramCodeForm submitLabel={t("order.quickContinue")} /></div>
+        <p className="mt-5 text-center text-sm text-ink-2">
+          {t("order.haveAccount")}{" "}
+          <Link href={{ pathname: "/login", query: { next: `/specialist?id=${specialistId}`, role: "client" } }} className="font-semibold text-purple">{t("common.login")}</Link>
+        </p>
       </div>
     );
   }
+  if (profile === undefined) return null;
   if (session.user.id === specialistId) return <Notice>{t("order.own")}</Notice>;
   if (profile && profile.role !== "client") return <Notice>{t("order.onlyClients")}</Notice>;
   if (state === "done") return <Notice tone="success">{t("order.success")} <Link href="/cabinet" className="font-semibold underline">{t("common.cabinet")}</Link></Notice>;
@@ -41,9 +51,15 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
     const errs: typeof errors = {};
     if (message.length < 5) errs.message = t("order.errors.message");
     if (!phone) errs.phone = t("order.errors.phone");
+    const fullName = String(f.get("full_name") ?? "").trim();
+    if (needName && fullName.length < 2) errs.name = t("order.errors.name");
     setErrors(errs);
     if (Object.keys(errs).length) return;
     setState("sending");
+    if (needName) {
+      await getSupabase()!.from("mp_profiles").update({ full_name: fullName.slice(0, 100) }).eq("id", session.user.id);
+      void refreshProfile();
+    }
     const { data: created, error } = await getSupabase()!.from("mp_orders").insert({
       client_id: session.user.id,
       specialist_id: specialistId,
@@ -52,11 +68,13 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
       contact_phone: phone,
       budget_tjs: budget > 0 ? Math.round(budget) : null,
     }).select("id").single();
-    setState(error ? "error" : "done");
+    setState(error ? (error.message.includes("decision_required") ? "decision" : "error") : "done");
     if (created?.id) void notifyOrder(created.id);
   };
 
   const myPhone = userPhone(session.user) ?? "+992 ";
+  const needName = !profile?.full_name;
+  if (state === "decision") return <DecisionGate><Notice>{t("trust.decisionDone")}</Notice></DecisionGate>;
 
   return (
     <form onSubmit={submit} className="space-y-4" noValidate>
@@ -67,6 +85,7 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
           {services.map((s) => <option key={s.id} value={s.id}>{s.title} — {formatTjs(s.price_tjs)} TJS</option>)}
         </Select>
       )}
+      {needName && <Input label={t("order.name")} name="full_name" autoComplete="name" maxLength={100} error={errors.name} />}
       <Textarea label={t("order.message")} name="message" maxLength={3000} error={errors.message} />
       <Input label={t("order.budget")} name="budget" type="number" inputMode="numeric" min={0} />
       <Input label={t("order.phone")} name="phone" type="tel" inputMode="tel" defaultValue={myPhone} error={errors.phone} />

@@ -15,6 +15,7 @@ import { PriceList } from "./PriceList";
 import { SpecialistStats } from "@/components/stats/SpecialistStats";
 import { TelegramConnect } from "./TelegramConnect";
 import { PlanTab } from "./PlanTab";
+import { TrustBanner } from "@/components/trust/TrustBanner";
 import { cn } from "@/lib/cn";
 
 type Tab = "orders" | "incoming" | "profile" | "prices" | "stats" | "plan";
@@ -68,6 +69,8 @@ export function Cabinet() {
           {status.s === "none" && t("cabinet.banner.noProfile")}
         </Notice>
       )}
+
+      {isSpecialist && status && status.s !== "none" && <TrustBanner specialistId={profile!.id} />}
 
       <TelegramConnect />
 
