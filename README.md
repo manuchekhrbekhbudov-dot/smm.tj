@@ -41,3 +41,5 @@ bash scripts/build-pages.sh
 
 Натиҷа дар `pages-out/` — онро ба шохаи `gh-pages` push кунед. Дар Pages формаи тамос паёмро ба WhatsApp мефиристад (сервер нест).
 Нусхаи пурра бо сервер (воридшавӣ, кабинет) дар Vercel кор мекунад.
+
+> Папкаҳои `tg/`, `ru/`, `_next/`, `404/` ва файлҳои `index.html`, `404.html`, `.nojekyll` дар решаи репозиторий — нусхаи тайёри сайт барои GitHub Pages (аз `scripts/build-pages.sh`). Онҳоро дастӣ таҳрир накунед.
