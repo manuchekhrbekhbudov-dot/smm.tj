@@ -97,6 +97,10 @@ export function LoginForm() {
             <Icon name="arrow" className="h-5 w-5 text-ink-2" />
           </button>
         ))}
+        <button type="button" onClick={() => { setRole("client"); setMode("login"); }}
+          className="w-full pt-2 text-center text-sm font-semibold text-purple hover:underline">
+          {t("auth.asAdmin")}
+        </button>
       </div>
     );
   }
