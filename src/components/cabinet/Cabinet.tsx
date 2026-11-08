@@ -13,6 +13,7 @@ import { OrderList } from "./OrderList";
 import { SpecialistEditor } from "./SpecialistEditor";
 import { PriceList } from "./PriceList";
 import { SpecialistStats } from "@/components/stats/SpecialistStats";
+import { TelegramConnect } from "./TelegramConnect";
 import { cn } from "@/lib/cn";
 
 type Tab = "orders" | "incoming" | "profile" | "prices" | "stats";
@@ -64,6 +65,8 @@ export function Cabinet() {
           {status.s === "none" && t("cabinet.banner.noProfile")}
         </Notice>
       )}
+
+      <TelegramConnect />
 
       {tabs.length > 1 && (
         <div role="tablist" className="-mx-4 mt-8 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">

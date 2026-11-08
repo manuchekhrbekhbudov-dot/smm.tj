@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Notice";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
+import { TelegramCodeForm } from "./TelegramCodeForm";
 
 /** Only allow internal paths as post-login redirect targets. */
 const safeNext = (v: string | null) => (v && v.startsWith("/") && !v.startsWith("//") ? v : null);
@@ -26,6 +27,7 @@ export function LoginForm() {
   const next = safeNext(params.get("next"));
 
   const [mode, setMode] = useState<"login" | "register">(paramRole === "specialist" ? "register" : "login");
+  const [method, setMethod] = useState<"telegram" | "password">("telegram");
   const [phone, setPhone] = useState("+992 ");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -114,6 +116,16 @@ export function LoginForm() {
         )}
       </div>
 
+      <div role="tablist" className="mb-5 grid grid-cols-2 gap-1 rounded-[var(--radius-sm)] bg-ink-3 p-1">
+        {(["telegram", "password"] as const).map((m) => (
+          <button key={m} type="button" role="tab" aria-selected={method === m} onClick={() => { setMethod(m); setErr({}); }}
+            className={cn("flex h-11 items-center justify-center gap-2 rounded-[12px] text-sm font-semibold transition-colors", method === m ? "bg-bg-2 text-ink-0 shadow" : "text-ink-2 hover:text-ink-0")}>
+            {m === "telegram" ? <><Icon name="telegram" className="h-4 w-4 text-[#229ED9]" />{t("auth.tgTab")}</> : <>🔑 {t("auth.pwTab")}</>}
+          </button>
+        ))}
+      </div>
+
+      {method === "telegram" ? <TelegramCodeForm /> : (<>
       <div role="tablist" className="mb-5 grid grid-cols-2 gap-1 rounded-full glass p-1">
         {(["login", "register"] as const).map((m) => (
           <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setErr({}); }}
@@ -129,6 +141,9 @@ export function LoginForm() {
           value={password} onChange={(e) => setPassword(e.target.value)} error={err.password} />
         {err.form && <Notice tone="danger">{err.form}</Notice>}
         <Button type="submit" size="lg" className="w-full" loading={busy}>{t(mode === "login" ? "auth.login" : "auth.register")}</Button>
+        {mode === "login" && (
+          <p className="text-center text-sm"><button type="button" className="font-semibold text-purple" onClick={() => setMethod("telegram")}>{t("auth.forgot")}</button></p>
+        )}
         <p className="text-center text-sm text-ink-2">
           {t(mode === "login" ? "auth.noAccount" : "auth.haveAccount")}{" "}
           <button type="button" className="font-semibold text-purple" onClick={() => { setMode(mode === "login" ? "register" : "login"); setErr({}); }}>
@@ -136,6 +151,7 @@ export function LoginForm() {
           </button>
         </p>
       </form>
+      </>)}
     </div>
   );
 }

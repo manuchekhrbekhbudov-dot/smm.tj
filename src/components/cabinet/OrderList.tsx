@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Notice, Skeleton } from "@/components/ui/Notice";
 import { buttonClasses } from "@/components/ui/buttonClasses";
 import { ReviewForm } from "./ReviewForm";
+import { notifyOrder } from "@/lib/telegram";
 
 type Row = Order & {
   specialists?: { id: string; profiles: { full_name: string } | null } | null;
@@ -47,7 +48,7 @@ export function OrderList({ mode, userId }: { mode: "client" | "specialist"; use
     setBusy(id); setErr(false);
     const { error } = await getSupabase()!.from("mp_orders").update({ status }).eq("id", id);
     setBusy(null);
-    if (error) setErr(true); else void load();
+    if (error) setErr(true); else { void load(); void notifyOrder(id); }
   };
 
   if (rows === null) return <div className="space-y-4">{[0, 1].map((i) => <Skeleton key={i} className="h-32" />)}</div>;

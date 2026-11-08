@@ -11,6 +11,7 @@ import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Notice";
 import { buttonClasses } from "@/components/ui/buttonClasses";
+import { notifyOrder } from "@/lib/telegram";
 
 export function OrderForm({ specialistId, name, services }: { specialistId: string; name: string; services: Service[] }) {
   const t = useTranslations();
@@ -42,15 +43,16 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
     setErrors(errs);
     if (Object.keys(errs).length) return;
     setState("sending");
-    const { error } = await getSupabase()!.from("mp_orders").insert({
+    const { data: created, error } = await getSupabase()!.from("mp_orders").insert({
       client_id: session.user.id,
       specialist_id: specialistId,
       service_id: serviceId,
       message: message.slice(0, 3000),
       contact_phone: phone,
       budget_tjs: budget > 0 ? Math.round(budget) : null,
-    });
+    }).select("id").single();
     setState(error ? "error" : "done");
+    if (created?.id) void notifyOrder(created.id);
   };
 
   const myPhone = userPhone(session.user) ?? "+992 ";
