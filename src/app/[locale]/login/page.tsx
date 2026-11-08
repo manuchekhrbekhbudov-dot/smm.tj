@@ -1,5 +1,5 @@
-import { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { ClientOnly } from "@/components/ui/ClientOnly";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { Card } from "@/components/ui/Card";
@@ -20,9 +20,9 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
       <section className="container-x flex min-h-[90dvh] items-center justify-center pb-16 pt-32">
         <Card glowBorder className="w-full max-w-md">
           <LogoMark className="h-12 w-12" />
-          <h1 className="mt-6 text-h2 font-black">{t("title")}</h1>
+          <h1 className="mt-6 text-h2 font-bold">{t("title")}</h1>
           <p className="mb-8 mt-2 text-ink-1">{t("subtitle")}</p>
-          <Suspense fallback={null}><LoginForm /></Suspense>
+          <ClientOnly><LoginForm /></ClientOnly>
         </Card>
       </section>
     </SiteShell>

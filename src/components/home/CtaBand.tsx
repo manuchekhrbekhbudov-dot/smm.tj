@@ -9,16 +9,16 @@ import { Icon } from "@/components/ui/Icon";
 export function CtaBand() {
   const t = useTranslations("home.cta");
   return (
-    <section className="container-x py-24 md:py-32">
+    <section className="container-x py-20 md:py-28">
       <Reveal dir="scale">
-        <div className="relative overflow-hidden rounded-[40px] bg-gradient-primary px-6 py-20 text-center text-white md:px-16 md:py-28">
-          <div aria-hidden className="absolute -left-20 -top-20 h-80 w-80 animate-blob rounded-full bg-white/20 blur-3xl" />
-          <div aria-hidden className="absolute -bottom-24 -right-10 h-96 w-96 animate-blob rounded-full bg-[#05010A]/40 blur-3xl [animation-delay:-8s]" />
-          <div aria-hidden className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,.15)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.15)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:radial-gradient(ellipse_at_center,#000,transparent_70%)]" />
-          <TextReveal as="h2" text={t("title")} className="relative mx-auto max-w-4xl text-display font-black" />
-          <p className="relative mx-auto mt-6 max-w-xl text-lg text-white/85">{t("text")}</p>
-          <Magnetic className="relative mt-10 inline-block">
-            <Link href={{ pathname: "/login", query: { role: "specialist" } }} data-cursor className="inline-flex h-16 items-center gap-3 rounded-full bg-[#05010A] px-10 text-lg font-semibold text-white shadow-2xl transition-transform duration-300 hover:scale-105">
+        <div className="relative overflow-hidden rounded-[var(--radius-xl)] glass glass-edge px-6 py-16 text-center md:px-16 md:py-24">
+          <div aria-hidden className="absolute -right-24 -top-24 h-72 w-72 animate-float rounded-full orb opacity-90 blur-[2px]" />
+          <div aria-hidden className="absolute -bottom-28 -left-20 h-64 w-64 animate-float rounded-full orb opacity-70 [animation-delay:-3s]" />
+          <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgb(139_92_246/0.18),transparent_70%)]" />
+          <TextReveal as="h2" text={t("title")} highlightFrom={-1} className="relative mx-auto max-w-3xl text-display font-bold" />
+          <p className="relative mx-auto mt-5 max-w-xl text-lg text-ink-1">{t("text")}</p>
+          <Magnetic className="relative mt-9 inline-block">
+            <Link href={{ pathname: "/login", query: { role: "specialist" } }} data-cursor className={buttonClasses("primary", "lg")}>
               {t("button")} <Icon name="arrow" className="h-5 w-5" />
             </Link>
           </Magnetic>

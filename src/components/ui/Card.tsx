@@ -6,7 +6,7 @@ export function Card({ className, glowBorder = false, ...rest }: HTMLAttributes<
   return (
     <div
       className={cn(
-        "relative rounded-[var(--radius-lg)] glass p-6 md:p-8",
+        "relative rounded-[var(--radius-lg)] glass glass-edge p-6 md:p-8",
         glowBorder && "gradient-border",
         className
       )}
@@ -19,7 +19,7 @@ export function Badge({ className, tone = "purple", ...rest }: HTMLAttributes<HT
   tone?: "purple" | "success" | "warning" | "danger" | "neutral";
 }) {
   const tones = {
-    purple: "bg-purple/15 text-purple border-purple/30",
+    purple: "bg-purple/15 text-[#c4b5fd] border-purple/30 [:root[data-theme=light]_&]:text-violet",
     success: "bg-success/15 text-success border-success/30",
     warning: "bg-warning/15 text-warning border-warning/30",
     danger: "bg-danger/15 text-danger border-danger/30",
@@ -36,8 +36,8 @@ export function Badge({ className, tone = "purple", ...rest }: HTMLAttributes<HT
 /** Small uppercase label with a glowing dot, used above section headings. */
 export function Eyebrow({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] text-purple", className)}>
-      <span className="h-1.5 w-1.5 rounded-full bg-magenta shadow-[0_0_10px_#c026d3]" />
+    <span className={cn("inline-flex items-center gap-2 rounded-full glass px-3.5 py-1.5 text-xs font-semibold text-ink-1", className)}>
+      <span className="h-2 w-2 rounded-full orb" />
       {children}
     </span>
   );

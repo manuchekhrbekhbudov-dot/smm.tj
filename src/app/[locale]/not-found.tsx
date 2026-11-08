@@ -8,7 +8,7 @@ export default function NotFound() {
   return (
     <SiteShell>
       <section className="container-x flex min-h-[80dvh] flex-col items-start justify-center pt-32">
-        <p className="font-display text-hero font-black text-gradient">404</p>
+        <p className="font-display text-hero font-bold text-gradient">404</p>
         <h1 className="mt-4 text-h1 font-bold">{t("notFound.title")}</h1>
         <p className="mt-4 text-ink-1">{t("notFound.text")}</p>
         <Link href="/" className={buttonClasses("primary", "md", "mt-10")}>{t("soon.back")}</Link>

@@ -4,7 +4,7 @@ export function Avatar({ name, url, size = 56, className }: { name: string; url?
   const initials = (name || "?").trim().split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase();
   return (
     <span
-      className={cn("relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-primary font-display font-bold text-white", className)}
+      className={cn("relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full orb font-display font-bold text-white", className)}
       style={{ width: size, height: size, fontSize: size * 0.36 }}
     >
       {url ? (

@@ -9,7 +9,7 @@ export function SectionHeader({ eyebrow, title, text, align = "left", className,
   return (
     <div className={cn("max-w-3xl", align === "center" && "mx-auto text-center", className)}>
       <Reveal><Eyebrow>{eyebrow}</Eyebrow></Reveal>
-      <TextReveal as={as} text={title} highlightFrom={-1} stagger={0.018} className={cn("mt-5 font-black", as === "h1" ? "text-display" : "text-h1")} />
+      <TextReveal as={as} text={title} highlightFrom={-1} stagger={0.05} className={cn("mt-5 font-bold", as === "h1" ? "text-display" : "text-h1")} />
       {text && <Reveal delay={0.15}><p className="mt-5 text-lg text-ink-1">{text}</p></Reveal>}
     </div>
   );

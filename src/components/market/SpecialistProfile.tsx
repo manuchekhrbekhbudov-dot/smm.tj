@@ -60,7 +60,7 @@ export function SpecialistProfile() {
             <Avatar name={name} url={s.profiles?.avatar_url} size={112} className="glow-md" />
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-h2 font-black">{name}</h1>
+                <h1 className="text-h2 font-bold">{name}</h1>
                 {s.status === "approved" && <Badge tone="success"><Icon name="check" className="h-3.5 w-3.5" />{t("specialist.verified")}</Badge>}
               </div>
               <p className="mt-2 text-lg text-ink-1">{s.headline}</p>
@@ -143,7 +143,7 @@ export function SpecialistProfile() {
       <aside className="space-y-6 lg:sticky lg:top-28">
         <Card glowBorder>
           {s.min_price != null && (
-            <p className="mb-6 text-ink-2">{t("common.from")} <span className="tabular font-display text-3xl font-black text-ink-0">{formatTjs(s.min_price)}</span> TJS</p>
+            <p className="mb-6 text-ink-2">{t("common.from")} <span className="tabular font-display text-3xl font-bold text-ink-0">{formatTjs(s.min_price)}</span> TJS</p>
           )}
           <OrderForm specialistId={s.id} name={name} services={services} />
         </Card>

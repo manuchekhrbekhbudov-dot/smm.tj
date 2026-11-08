@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
-import { Unbounded, Manrope } from "next/font/google";
+import { Onest } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -12,16 +12,9 @@ import { themeScript } from "@/components/ui/ThemeToggle";
 import { AuthProvider } from "@/lib/auth";
 import "../globals.css";
 
-const unbounded = Unbounded({
+const onest = Onest({
   subsets: ["latin", "cyrillic", "cyrillic-ext"],
-  weight: ["500", "700", "800", "900"],
-  variable: "--font-unbounded",
-  display: "swap",
-});
-const manrope = Manrope({
-  subsets: ["latin", "cyrillic", "cyrillic-ext"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-manrope",
+  variable: "--font-onest",
   display: "swap",
 });
 
@@ -51,7 +44,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   setRequestLocale(locale);
 
   return (
-    <html lang={locale === "tg" ? "tg" : "ru"} className={`${unbounded.variable} ${manrope.variable}`} suppressHydrationWarning>
+    <html lang={locale === "tg" ? "tg" : "ru"} className={onest.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

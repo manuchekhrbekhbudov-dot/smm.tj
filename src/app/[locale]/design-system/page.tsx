@@ -49,7 +49,7 @@ export default function DesignSystemPage({ params }: { params: Promise<{ locale:
     <SiteShell>
       <div className="container-x pb-24 pt-36">
         <Eyebrow>SMM.TJ · v0.1</Eyebrow>
-        <TextReveal trigger="mount" delay={0.3} text={t("title")} className="mt-4 text-display font-black" />
+        <TextReveal trigger="mount" delay={0.3} text={t("title")} className="mt-4 text-display font-bold" />
         <p className="mt-6 max-w-2xl text-lg text-ink-1">{t("subtitle")}</p>
 
         <Section title={t("colors")}>
@@ -67,7 +67,7 @@ export default function DesignSystemPage({ params }: { params: Promise<{ locale:
 
         <Section title={t("typography")}>
           <div className="space-y-6">
-            <p className="text-hero font-black text-gradient">Aa Ғғ Ҷҷ</p>
+            <p className="text-hero font-bold text-gradient">Aa Ғғ Ҷҷ</p>
             <p className="text-h1 font-bold">Unbounded — Ҳ ҳ Қ қ Ӣ ӣ Ӯ ӯ</p>
             <p className="text-h3 font-semibold">Manrope 600 — Шабакаҳои иҷтимоӣ · Социальные сети</p>
             <p className="max-w-2xl text-ink-1">
@@ -127,7 +127,7 @@ export default function DesignSystemPage({ params }: { params: Promise<{ locale:
               { to: 120, suffix: "", label: t("clients") },
             ].map((c) => (
               <Card key={c.label}>
-                <Counter to={c.to} suffix={c.suffix} locale={numLocale} className="font-display text-h1 font-black text-gradient" />
+                <Counter to={c.to} suffix={c.suffix} locale={numLocale} className="font-display text-h1 font-bold text-gradient" />
                 <p className="mt-2 text-ink-1">{c.label}</p>
               </Card>
             ))}
@@ -150,7 +150,7 @@ export default function DesignSystemPage({ params }: { params: Promise<{ locale:
         </Section>
 
         <Section title={t("textReveal")}>
-          <TextReveal as="p" text={t("revealDemo")} className="text-display font-black text-gradient" />
+          <TextReveal as="p" text={t("revealDemo")} className="text-display font-bold text-gradient" />
         </Section>
       </div>
     </SiteShell>

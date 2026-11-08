@@ -5,7 +5,7 @@ import { useFinePointer, usePrefersReducedMotion } from "@/lib/hooks";
 import { cn } from "@/lib/cn";
 
 /** 3D tilt + moving glare + glow. */
-export function TiltCard({ children, className, max = 12 }: { children: ReactNode; className?: string; max?: number }) {
+export function TiltCard({ children, className, max = 7 }: { children: ReactNode; className?: string; max?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const fine = useFinePointer();
   const reduced = usePrefersReducedMotion();
@@ -24,7 +24,7 @@ export function TiltCard({ children, className, max = 12 }: { children: ReactNod
     <div style={{ perspective: 1000 }} className="h-full">
       <motion.div
         ref={ref}
-        className={cn("group relative h-full rounded-[var(--radius-lg)] glass transition-shadow duration-500 hover:glow-md", className)}
+        className={cn("group relative h-full rounded-[var(--radius-lg)] glass glass-edge transition-[box-shadow,transform] duration-500 hover:-translate-y-1 hover:glow-md", className)}
         style={active ? { rotateX, rotateY, transformStyle: "preserve-3d" } : undefined}
         onPointerMove={(e) => {
           if (!active || !ref.current) return;

@@ -28,10 +28,10 @@ export function LiveStats() {
   ];
   return (
     <section className="container-x py-12">
-      <div className="grid gap-px overflow-hidden rounded-[var(--radius-lg)] border border-ink-3 bg-ink-3 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-3">
         {items.map((it) => (
-          <div key={it.l} className="bg-bg-0 p-8">
-            <Counter to={it.v} className="block font-display text-5xl font-black text-gradient" />
+          <div key={it.l} className="rounded-[var(--radius-lg)] glass glass-edge p-7 transition-transform duration-500 hover:-translate-y-1">
+            <Counter to={it.v} className="block font-display text-5xl font-bold text-gradient" />
             <p className="mt-2 text-ink-1">{it.l}</p>
           </div>
         ))}

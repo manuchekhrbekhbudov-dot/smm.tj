@@ -28,7 +28,7 @@ export function Footer() {
         </nav>
       </div>
       <div aria-hidden className="container-x select-none overflow-hidden">
-        <p className="translate-y-[18%] text-center font-display text-[clamp(4rem,19vw,18rem)] font-black leading-none text-ink-3">SMM.TJ</p>
+        <p className="translate-y-[18%] text-center font-display text-[clamp(4rem,19vw,18rem)] font-bold leading-none text-ink-3">SMM.TJ</p>
       </div>
       <div className="border-t border-ink-3">
         <div className="container-x flex flex-col justify-between gap-3 py-6 text-sm text-ink-2 md:flex-row">

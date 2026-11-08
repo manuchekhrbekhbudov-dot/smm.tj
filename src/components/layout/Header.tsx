@@ -62,7 +62,7 @@ export function Header() {
         <nav
           className={cn(
             "flex h-16 items-center justify-between rounded-full px-3 pl-5 transition-all duration-500",
-            scrolled ? "border border-[var(--glass-border)] bg-bg-1/75 backdrop-blur-xl shadow-[0_10px_40px_rgb(0_0_0/0.25)]" : "border border-transparent"
+            scrolled ? "glass-solid shadow-[0_14px_40px_-12px_rgb(0_0_0/0.45)]" : "glass"
           )}
         >
           <Link href="/" aria-label="SMM.TJ" data-cursor><Logo /></Link>

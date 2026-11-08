@@ -36,7 +36,7 @@ export function AdminPanel() {
 
   return (
     <div>
-      <h1 className="text-h1 font-black">{t("admin.title")}</h1>
+      <h1 className="text-h1 font-bold">{t("admin.title")}</h1>
       {stats && (
         <div className="mt-6 flex flex-wrap gap-3 text-sm">
           <Badge>{t("home.stats.specialists")}: {stats.specialists}</Badge>

@@ -1,5 +1,5 @@
-import { Suspense } from "react";
 import { setRequestLocale } from "next-intl/server";
+import { ClientOnly } from "@/components/ui/ClientOnly";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { SpecialistProfile } from "@/components/market/SpecialistProfile";
 
@@ -9,7 +9,7 @@ export default async function SpecialistPage({ params }: { params: Promise<{ loc
   return (
     <SiteShell>
       <section className="container-x pb-24 pt-32 md:pt-40">
-        <Suspense fallback={null}><SpecialistProfile /></Suspense>
+        <ClientOnly><SpecialistProfile /></ClientOnly>
       </section>
     </SiteShell>
   );

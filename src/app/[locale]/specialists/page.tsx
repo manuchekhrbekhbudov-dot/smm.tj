@@ -1,5 +1,5 @@
-import { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { ClientOnly } from "@/components/ui/ClientOnly";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { PageHero } from "@/components/layout/PageHero";
 import { Catalog } from "@/components/market/Catalog";
@@ -18,7 +18,7 @@ export default async function SpecialistsPage({ params }: { params: Promise<{ lo
     <SiteShell>
       <PageHero eyebrow="SMM.TJ" title={t("title")} subtitle={t("subtitle")} />
       <section className="container-x pb-24">
-        <Suspense fallback={null}><Catalog /></Suspense>
+        <ClientOnly><Catalog /></ClientOnly>
       </section>
     </SiteShell>
   );

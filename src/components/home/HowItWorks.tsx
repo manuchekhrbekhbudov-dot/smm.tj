@@ -15,7 +15,7 @@ export function HowItWorks() {
             <ol className="mt-8 space-y-7">
               {(t.raw(`${side}.steps`) as Step[]).map((s, i) => (
                 <li key={s.title} className="flex gap-5">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-primary font-display font-bold text-white">{i + 1}</span>
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full orb font-display font-bold text-white">{i + 1}</span>
                   <div>
                     <p className="text-lg font-semibold">{s.title}</p>
                     <p className="mt-1 text-ink-1">{s.text}</p>

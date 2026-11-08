@@ -1,5 +1,5 @@
-import { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { ClientOnly } from "@/components/ui/ClientOnly";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { Onboarding } from "@/components/auth/Onboarding";
@@ -15,9 +15,9 @@ export default async function OnboardingPage({ params }: { params: Promise<{ loc
     <SiteShell>
       <section className="container-x flex min-h-[90dvh] items-center justify-center pb-16 pt-32">
         <Card glowBorder className="w-full max-w-xl">
-          <h1 className="text-h2 font-black">{t("title")}</h1>
+          <h1 className="text-h2 font-bold">{t("title")}</h1>
           <p className="mb-8 mt-2 text-ink-1">{t("subtitle")}</p>
-          <RequireAuth allowIncomplete><Suspense fallback={null}><Onboarding /></Suspense></RequireAuth>
+          <RequireAuth allowIncomplete><ClientOnly><Onboarding /></ClientOnly></RequireAuth>
         </Card>
       </section>
     </SiteShell>

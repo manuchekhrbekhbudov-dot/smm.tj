@@ -16,13 +16,15 @@ export function Categories() {
       {specialtySlugs.map((slug, i) => (
         <Reveal key={slug} delay={(i % 4) * 0.06}>
           <Link href={{ pathname: "/specialists", query: { s: slug } }} className="block h-full">
-            <TiltCard className="flex h-full flex-col p-6" max={8}>
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-primary text-white glow-sm transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110">
+            <TiltCard className="p-6" max={8}>
+              <div className="flex h-full flex-col">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl orb text-white transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110">
                 <Icon name={icons[slug]} className="h-6 w-6" />
               </span>
               <h3 className="mt-6 font-display text-lg font-bold">{t(`${slug}.title`)}</h3>
               <p className="mt-2 text-sm text-ink-1">{t(`${slug}.short`)}</p>
               <span className="mt-auto self-end pt-4 text-ink-2 transition-colors group-hover:text-purple"><Icon name="arrowUpRight" className="h-5 w-5" /></span>
+              </div>
             </TiltCard>
           </Link>
         </Reveal>

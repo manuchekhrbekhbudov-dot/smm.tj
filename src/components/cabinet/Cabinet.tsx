@@ -46,7 +46,7 @@ export function Cabinet() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm text-ink-2">{t("cabinet.title")}</p>
-          <h1 className="mt-1 text-h1 font-black">{t("cabinet.hello", { name: profile!.full_name })}</h1>
+          <h1 className="mt-1 text-h1 font-bold">{t("cabinet.hello", { name: profile!.full_name })}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
           {profile!.role === "admin" && <Link href="/admin" className="rounded-full glass px-5 py-2.5 text-sm font-semibold">{t("common.admin")}</Link>}

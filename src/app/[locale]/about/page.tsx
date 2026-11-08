@@ -23,11 +23,11 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       <PageHero eyebrow="SMM.TJ" title={t("about.title")} subtitle={t("about.subtitle")} />
       <section className="container-x pb-20"><HowItWorks /></section>
       <section className="container-x pb-20">
-        <h2 className="mb-10 text-h1 font-black">{t("about.rulesTitle")}</h2>
+        <h2 className="mb-10 text-h1 font-bold">{t("about.rulesTitle")}</h2>
         <Trust items={t.raw("about.rules") as Rule[]} />
       </section>
       <section className="container-x grid gap-12 pb-20 lg:grid-cols-[1fr_1.6fr]">
-        <h2 className="text-h1 font-black">{t("home.faq.title")}</h2>
+        <h2 className="text-h1 font-bold">{t("home.faq.title")}</h2>
         <Faq />
       </section>
       <CtaBand />
