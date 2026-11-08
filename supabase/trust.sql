@@ -43,7 +43,9 @@ create trigger mp_guard_block before update on public.mp_profiles
 create or replace function public.mp_guard_trust() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
-  if coalesce(current_setting('app.internal', true), '') = '1' or public.mp_is_admin() then return new; end if;
+  -- internal recount, the director, or the server (Edge Functions with the service role)
+  if coalesce(current_setting('app.internal', true), '') = '1' or public.mp_is_admin()
+     or coalesce(auth.role(), '') = 'service_role' then return new; end if;
   if tg_op = 'INSERT' then
     new.strikes := 0; new.strikes_forgiven := 0; new.warned_at := null; new.banned_at := null;
     new.bonus_given_at := null; new.tg_strike_notified := null;

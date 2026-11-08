@@ -38,13 +38,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadProfile = useCallback(async (s: Session | null) => {
     const sb = getSupabase();
-    if (!sb || !s) { setProfile(null); setBlocked(await checkDevice()); return; }
+    if (!sb || !s) {
+      setProfile(null);
+      const b = await checkDevice();
+      setBlocked((prev) => prev || b); // stays blocked after the forced sign-out below
+      return;
+    }
     const { data, error } = await sb.from("mp_profiles").select("*").eq("id", s.user.id).maybeSingle();
     const p = error ? null : ((data as Profile) ?? null);
-    if (p?.blocked_at || (await checkDevice())) {
+    // Always ask while still signed in: for a removed account this also marks this device.
+    const deviceBlocked = await checkDevice();
+    if (p?.blocked_at || deviceBlocked) {
       setBlocked(true);
       setLocalBlocked(true);
-      await sb.auth.signOut();
+      await sb.auth.signOut({ scope: "local" });
+      try { Object.keys(localStorage).filter((k) => k.startsWith("sb-") && k.endsWith("-auth-token")).forEach((k) => localStorage.removeItem(k)); } catch { /* ignore */ }
       setProfile(null); setSession(null);
       return;
     }
