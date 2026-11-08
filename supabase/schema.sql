@@ -208,6 +208,10 @@ language plpgsql security definer set search_path = public as $$
 declare me uuid := auth.uid();
 begin
   if tg_op = 'INSERT' then
+    -- Only clients place orders (specialists and the director receive / manage them).
+    if not exists (select 1 from public.mp_profiles where id = new.client_id and role = 'client') then
+      raise exception 'only_clients_can_order';
+    end if;
     if not exists (select 1 from public.mp_specialists where id = new.specialist_id and status = 'approved') then
       raise exception 'specialist_not_available';
     end if;

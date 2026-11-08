@@ -15,7 +15,7 @@ import { notifyOrder } from "@/lib/telegram";
 
 export function OrderForm({ specialistId, name, services }: { specialistId: string; name: string; services: Service[] }) {
   const t = useTranslations();
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [errors, setErrors] = useState<{ message?: string; phone?: string }>({});
 
@@ -28,6 +28,7 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
     );
   }
   if (session.user.id === specialistId) return <Notice>{t("order.own")}</Notice>;
+  if (profile && profile.role !== "client") return <Notice>{t("order.onlyClients")}</Notice>;
   if (state === "done") return <Notice tone="success">{t("order.success")} <Link href="/cabinet" className="font-semibold underline">{t("common.cabinet")}</Link></Notice>;
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {

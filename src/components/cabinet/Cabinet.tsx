@@ -24,7 +24,7 @@ export function Cabinet() {
   const router = useRouter();
   const params = useSearchParams();
   const isSpecialist = profile!.role === "specialist";
-  const tabs = useMemo<Tab[]>(() => (isSpecialist ? ["incoming", "stats", "profile", "prices", "orders"] : ["orders"]), [isSpecialist]);
+  const tabs = useMemo<Tab[]>(() => (isSpecialist ? ["incoming", "stats", "profile", "prices"] : ["orders"]), [isSpecialist]);
   const initial = params.get("tab") as Tab | null;
   const [tab, setTab] = useState<Tab>(initial && tabs.includes(initial) ? initial : tabs[0]);
   useEffect(() => { if (!tabs.includes(tab)) setTab(tabs[0] === "incoming" ? "profile" : tabs[0]); }, [tabs, tab]);
