@@ -1,0 +1,26 @@
+# Keeps the free Supabase project from pausing after 7 days without activity:
+# once a day it calls the public stats function (a real database query) and the Telegram bot function.
+# The publishable key is public by design (it is already in the website code).
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: "17 3 * * *"   # every day 03:17 UTC (08:17 Dushanbe)
+  workflow_dispatch: {}      # allows a manual run from the Actions tab
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: https://lcldaingzicxbottlznq.supabase.co
+      SUPABASE_KEY: sb_publishable_9iejRbnX7_oQ1BR5T3ZoUQ_zYez8cIt
+    steps:
+      - name: Query the database
+        run: |
+          curl -fsS -X POST "$SUPABASE_URL/rest/v1/rpc/mp_public_stats" \
+            -H "apikey: $SUPABASE_KEY" -H "Content-Type: application/json" -d '{}'
+      - name: Wake the Telegram bot function
+        run: curl -fsS "$SUPABASE_URL/functions/v1/tg-bot"
