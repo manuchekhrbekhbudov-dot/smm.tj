@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
+import { dateLocale } from "@/lib/date";
 import { useTranslations, useLocale } from "next-intl";
 import { motion } from "framer-motion";
 import { Link } from "@/i18n/navigation";
@@ -15,8 +16,9 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
 import { Notice, Skeleton } from "@/components/ui/Notice";
 import { cn } from "@/lib/cn";
+import { Analytics } from "./Analytics";
 
-type Tab = SpecialistStatus | "reviews";
+type Tab = SpecialistStatus | "reviews" | "stats";
 type ReviewRow = Review & { specialists?: { profiles: { full_name: string } | null } | null };
 
 export function AdminPanel() {
@@ -45,7 +47,7 @@ export function AdminPanel() {
         </div>
       )}
       <div role="tablist" className="-mx-4 mt-8 flex gap-2 overflow-x-auto px-4 pb-2">
-        {(["pending", "approved", "rejected", "reviews"] as Tab[]).map((k) => (
+        {(["pending", "approved", "rejected", "reviews", "stats"] as Tab[]).map((k) => (
           <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
             className={cn("relative shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors", tab === k ? "text-white" : "glass text-ink-1 hover:text-ink-0")}>
             {tab === k && <motion.span layoutId="adm-tab" className="absolute inset-0 rounded-full bg-gradient-primary" transition={{ type: "spring", stiffness: 500, damping: 35 }} />}
@@ -54,7 +56,7 @@ export function AdminPanel() {
         ))}
       </div>
       <div className="mt-8">
-        {tab === "reviews" ? <Reviews /> : <Specialists status={tab} />}
+        {tab === "stats" ? <Analytics /> : tab === "reviews" ? <Reviews /> : <Specialists status={tab} />}
       </div>
     </div>
   );
@@ -148,7 +150,7 @@ function Reviews() {
 
   if (rows === null) return <Skeleton className="h-40" />;
   if (rows.length === 0) return <p className="text-ink-2">{t("admin.empty")}</p>;
-  const df = new Intl.DateTimeFormat(locale === "ru" ? "ru-RU" : "tg-TJ", { day: "numeric", month: "short", year: "numeric" });
+  const df = new Intl.DateTimeFormat(dateLocale(locale), { day: "numeric", month: "short", year: "numeric" });
 
   return (
     <ul className="space-y-4">

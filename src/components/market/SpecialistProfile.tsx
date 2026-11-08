@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { dateLocale } from "@/lib/date";
 import { useTranslations, useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { getSupabase } from "@/lib/supabase/client";
@@ -54,7 +55,7 @@ export function SpecialistProfile() {
     s.whatsapp && whatsappUrl(s.whatsapp) && { icon: "whatsapp" as const, label: "WhatsApp", href: whatsappUrl(s.whatsapp)! },
     s.instagram && instagramUrl(s.instagram) && { icon: "instagram" as const, label: "Instagram", href: instagramUrl(s.instagram)! },
   ].filter(Boolean) as { icon: "telegram" | "whatsapp" | "instagram"; label: string; href: string }[];
-  const dateFmt = new Intl.DateTimeFormat(locale === "ru" ? "ru-RU" : "tg-TJ", { day: "numeric", month: "long", year: "numeric" });
+  const dateFmt = new Intl.DateTimeFormat(dateLocale(locale), { day: "numeric", month: "long", year: "numeric" });
 
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[1.6fr_1fr]">

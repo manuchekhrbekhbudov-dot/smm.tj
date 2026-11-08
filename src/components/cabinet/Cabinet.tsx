@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { OrderList } from "./OrderList";
 import { SpecialistEditor } from "./SpecialistEditor";
 import { PriceList } from "./PriceList";
+import { MyStats } from "./MyStats";
 import { cn } from "@/lib/cn";
 
 type Tab = "orders" | "incoming" | "profile" | "prices";
@@ -63,6 +64,8 @@ export function Cabinet() {
           {status.s === "none" && t("cabinet.banner.noProfile")}
         </Notice>
       )}
+
+      {isSpecialist && <MyStats userId={profile!.id} />}
 
       {tabs.length > 1 && (
         <div role="tablist" className="-mx-4 mt-8 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">

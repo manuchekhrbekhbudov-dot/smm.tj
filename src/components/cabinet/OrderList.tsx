@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
+import { dateLocale } from "@/lib/date";
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { getSupabase } from "@/lib/supabase/client";
@@ -59,7 +60,7 @@ export function OrderList({ mode, userId }: { mode: "client" | "specialist"; use
     );
   }
 
-  const df = new Intl.DateTimeFormat(locale === "ru" ? "ru-RU" : "tg-TJ", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  const df = new Intl.DateTimeFormat(dateLocale(locale), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
   return (
     <div className="space-y-4">
