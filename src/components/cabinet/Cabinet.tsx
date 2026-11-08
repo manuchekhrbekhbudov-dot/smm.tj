@@ -12,10 +12,10 @@ import { Button } from "@/components/ui/Button";
 import { OrderList } from "./OrderList";
 import { SpecialistEditor } from "./SpecialistEditor";
 import { PriceList } from "./PriceList";
-import { MyStats } from "./MyStats";
+import { SpecialistStats } from "@/components/stats/SpecialistStats";
 import { cn } from "@/lib/cn";
 
-type Tab = "orders" | "incoming" | "profile" | "prices";
+type Tab = "orders" | "incoming" | "profile" | "prices" | "stats";
 
 export function Cabinet() {
   const t = useTranslations();
@@ -23,7 +23,7 @@ export function Cabinet() {
   const router = useRouter();
   const params = useSearchParams();
   const isSpecialist = profile!.role === "specialist";
-  const tabs = useMemo<Tab[]>(() => (isSpecialist ? ["incoming", "profile", "prices", "orders"] : ["orders"]), [isSpecialist]);
+  const tabs = useMemo<Tab[]>(() => (isSpecialist ? ["incoming", "stats", "profile", "prices", "orders"] : ["orders"]), [isSpecialist]);
   const initial = params.get("tab") as Tab | null;
   const [tab, setTab] = useState<Tab>(initial && tabs.includes(initial) ? initial : tabs[0]);
   useEffect(() => { if (!tabs.includes(tab)) setTab(tabs[0] === "incoming" ? "profile" : tabs[0]); }, [tabs, tab]);
@@ -65,8 +65,6 @@ export function Cabinet() {
         </Notice>
       )}
 
-      {isSpecialist && <MyStats userId={profile!.id} />}
-
       {tabs.length > 1 && (
         <div role="tablist" className="-mx-4 mt-8 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">
           {tabs.map((k) => (
@@ -84,6 +82,7 @@ export function Cabinet() {
         {tab === "incoming" && <OrderList mode="specialist" userId={profile!.id} />}
         {tab === "profile" && <SpecialistEditor onSaved={loadStatus} />}
         {tab === "prices" && <PriceList userId={profile!.id} />}
+        {tab === "stats" && <SpecialistStats specialistId={profile!.id} showTitle={false} />}
       </div>
     </div>
   );

@@ -8,6 +8,8 @@ import { formatTjs, specialtySlugs } from "@/content/site";
 import { Skeleton } from "@/components/ui/Notice";
 import { Stars } from "@/components/ui/Stars";
 import { cn } from "@/lib/cn";
+import { SpecialistStats } from "@/components/stats/SpecialistStats";
+import { Badge } from "@/components/ui/Card";
 
 type P = { id: string; role: string; city: string | null; created_at: string };
 type S = { id: string; status: string; specialties: string[]; rating_avg: number; reviews_count: number; created_at: string; profiles: { full_name: string } | null };
@@ -18,7 +20,7 @@ const DAYS = 30;
 const dayKey = (d: Date) => d.toISOString().slice(0, 10);
 
 /** Counts per day for the last N days (oldest → newest). */
-function perDay(dates: string[]) {
+export function perDay(dates: string[]) {
   const today = new Date();
   const keys = Array.from({ length: DAYS }, (_, i) => dayKey(new Date(today.getTime() - (DAYS - 1 - i) * 86400000)));
   const map = new Map(keys.map((k) => [k, 0]));
@@ -26,7 +28,7 @@ function perDay(dates: string[]) {
   return keys.map((k) => ({ key: k, value: map.get(k)! }));
 }
 
-function Tile({ label, value, sub }: { label: string; value: string; sub?: string }) {
+export function Tile({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="rounded-[var(--radius-md)] glass glass-edge p-5">
       <p className="text-sm text-ink-2">{label}</p>
@@ -37,7 +39,7 @@ function Tile({ label, value, sub }: { label: string; value: string; sub?: strin
 }
 
 /** Single-series column chart (one hue, rounded tops, 2px gaps, per-bar tooltip). */
-function DailyColumns({ title, data, locale, unit }: { title: string; data: { key: string; value: number }[]; locale: string; unit: string }) {
+export function DailyColumns({ title, data, locale, unit }: { title: string; data: { key: string; value: number }[]; locale: string; unit: string }) {
   const max = Math.max(1, ...data.map((d) => d.value));
   const total = data.reduce((a, d) => a + d.value, 0);
   const df = new Intl.DateTimeFormat(dateLocale(locale), { day: "numeric", month: "short" });
@@ -71,7 +73,7 @@ function DailyColumns({ title, data, locale, unit }: { title: string; data: { ke
 }
 
 /** Horizontal bars with direct value labels (text in ink, mark carries the color). */
-function Bars({ title, rows, empty, colorFor }: { title: string; rows: { label: string; value: number; key: string }[]; empty: string; colorFor?: (key: string) => string }) {
+export function Bars({ title, rows, empty, colorFor }: { title: string; rows: { label: string; value: number; key: string }[]; empty: string; colorFor?: (key: string) => string }) {
   const max = Math.max(1, ...rows.map((r) => r.value));
   return (
     <figure className="rounded-[var(--radius-lg)] glass glass-edge p-5 md:p-6">
@@ -93,7 +95,7 @@ function Bars({ title, rows, empty, colorFor }: { title: string; rows: { label: 
   );
 }
 
-const statusColor: Record<string, string> = {
+export const statusColor: Record<string, string> = {
   new: "bg-violet", accepted: "bg-warning", done: "bg-success", declined: "bg-danger", cancelled: "bg-ink-2",
 };
 
@@ -101,6 +103,7 @@ export function Analytics() {
   const t = useTranslations();
   const locale = useLocale();
   const [data, setData] = useState<{ p: P[]; s: S[]; o: O[]; r: R[] } | null>(null);
+  const [selected, setSelected] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     const sb = getSupabase()!;
@@ -120,8 +123,6 @@ export function Analytics() {
     const approved = s.filter((x) => x.status === "approved");
     const visible = r.filter((x) => !x.hidden);
     const done = o.filter((x) => x.status === "done");
-    const doneBy = new Map<string, number>();
-    done.forEach((x) => doneBy.set(x.specialist_id, (doneBy.get(x.specialist_id) ?? 0) + 1));
     const cityCount = new Map<string, number>();
     p.forEach((x) => { const k = x.city ?? "_none"; cityCount.set(k, (cityCount.get(k) ?? 0) + 1); });
     return {
@@ -142,8 +143,17 @@ export function Analytics() {
         .filter((x) => x.value > 0).sort((a, b) => b.value - a.value),
       byCity: [...cityCount.entries()].map(([k, v]) => ({ key: k, label: k === "_none" ? t("stats.noCity") : t(`cities.${k}`), value: v }))
         .sort((a, b) => b.value - a.value).slice(0, 8),
-      top: approved.map((x) => ({ ...x, done: doneBy.get(x.id) ?? 0 }))
-        .sort((a, b) => b.done - a.done || Number(b.rating_avg) - Number(a.rating_avg)).slice(0, 10),
+      top: s.map((x) => {
+        const mine = o.filter((y) => y.specialist_id === x.id);
+        const doneN = mine.filter((y) => y.status === "done");
+        return {
+          ...x,
+          total: mine.length,
+          done: doneN.length,
+          completion: mine.length ? Math.round((doneN.length / mine.length) * 100) : 0,
+          revenue: doneN.reduce((a, y) => a + (y.budget_tjs ?? 0), 0),
+        };
+      }).sort((a, b) => b.done - a.done || b.total - a.total || Number(b.rating_avg) - Number(a.rating_avg)),
     };
   }, [data, t]);
 
@@ -170,26 +180,52 @@ export function Analytics() {
         <Bars title={t("stats.byCity")} rows={m.byCity} empty={t("stats.empty")} />
       </div>
 
+      {selected && (
+        <section id="sp-detail" className="rounded-[var(--radius-lg)] glass glass-edge p-5 md:p-6">
+          <div className="mb-4 flex justify-end">
+            <button type="button" onClick={() => setSelected(null)} className="rounded-full glass px-4 py-2 text-sm font-semibold">{t("stats.sp.close")} ✕</button>
+          </div>
+          <SpecialistStats specialistId={selected.id} name={selected.name} />
+        </section>
+      )}
+
       <section className="rounded-[var(--radius-lg)] glass glass-edge p-5 md:p-6">
-        <h3 className="font-semibold">{t("stats.top")}</h3>
+        <h3 className="font-semibold">{t("stats.sp.allTitle")}</h3>
         {m.top.length === 0 ? <p className="mt-4 text-sm text-ink-2">{t("stats.empty")}</p> : (
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[480px] text-left text-sm">
+            <table className="w-full min-w-[720px] text-left text-sm">
               <thead><tr className="border-b border-ink-3 text-ink-2">
                 <th scope="col" className="py-2 pr-3 font-medium">{t("stats.colName")}</th>
+                <th scope="col" className="py-2 pr-3 text-right font-medium">{t("stats.sp.colOrders")}</th>
                 <th scope="col" className="py-2 pr-3 text-right font-medium">{t("stats.colDone")}</th>
+                <th scope="col" className="py-2 pr-3 text-right font-medium">{t("stats.sp.colCompletion")}</th>
+                <th scope="col" className="py-2 pr-3 text-right font-medium">{t("stats.sp.colRevenue")}</th>
                 <th scope="col" className="py-2 pr-3 font-medium">{t("stats.colRating")}</th>
-                <th scope="col" className="py-2 text-right font-medium">{t("stats.colReviews")}</th>
+                <th scope="col" className="py-2 font-medium"><span className="sr-only">{t("stats.sp.open")}</span></th>
               </tr></thead>
               <tbody>
-                {m.top.map((x) => (
-                  <tr key={x.id} className="border-b border-ink-3 last:border-0">
-                    <td className="py-2.5 pr-3 font-medium">{x.profiles?.full_name || "—"}</td>
-                    <td className="tabular py-2.5 pr-3 text-right">{x.done}</td>
-                    <td className="py-2.5 pr-3">{x.reviews_count ? <span className="inline-flex items-center gap-2"><Stars value={Number(x.rating_avg)} size={13} /><span className="tabular">{Number(x.rating_avg).toFixed(1)}</span></span> : "—"}</td>
-                    <td className="tabular py-2.5 text-right">{x.reviews_count}</td>
-                  </tr>
-                ))}
+                {m.top.map((x) => {
+                  const nm = x.profiles?.full_name || "—";
+                  return (
+                    <tr key={x.id} className={cn("border-b border-ink-3 last:border-0", selected?.id === x.id && "bg-purple/10")}>
+                      <td className="py-2.5 pr-3 font-medium">
+                        {nm}{" "}
+                        {x.status !== "approved" && <Badge tone={x.status === "pending" ? "warning" : "danger"} className="ml-1">{t(`admin.tabs.${x.status}`)}</Badge>}
+                      </td>
+                      <td className="tabular py-2.5 pr-3 text-right">{x.total}</td>
+                      <td className="tabular py-2.5 pr-3 text-right">{x.done}</td>
+                      <td className="tabular py-2.5 pr-3 text-right">{x.completion}%</td>
+                      <td className="tabular py-2.5 pr-3 text-right">{formatTjs(x.revenue)}</td>
+                      <td className="py-2.5 pr-3">{x.reviews_count ? <span className="inline-flex items-center gap-2"><Stars value={Number(x.rating_avg)} size={13} /><span className="tabular">{Number(x.rating_avg).toFixed(1)}</span></span> : "—"}</td>
+                      <td className="py-2.5 text-right">
+                        <button type="button" className="rounded-full bg-gradient-primary px-4 py-1.5 text-xs font-semibold text-white"
+                          onClick={() => { setSelected({ id: x.id, name: nm }); setTimeout(() => document.getElementById("sp-detail")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); }}>
+                          {t("stats.sp.open")}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
