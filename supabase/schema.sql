@@ -132,6 +132,16 @@ create trigger mp_on_auth_user_created after insert on auth.users
 create or replace function public.mp_guard_profile() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
+  -- The director's account (by phone or phone-login e-mail) is always admin, whatever is sent.
+  if exists (
+    select 1 from auth.users u
+     where u.id = new.id
+       and (u.phone = (select value from public.mp_app_config where key = 'admin_phone')
+            or lower(u.email) = (select value from public.mp_app_config where key = 'admin_phone') || '@phone.smm.tj')
+  ) then
+    new.role := 'admin';
+    return new;
+  end if;
   if public.mp_is_admin() then return new; end if;
   if new.role is distinct from old.role then
     if not (old.role = 'client' and new.role = 'specialist') then

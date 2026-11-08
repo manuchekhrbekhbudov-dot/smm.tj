@@ -36,11 +36,12 @@ export function Onboarding() {
     setBusy(true); setErr(null); setFail(false);
     const update: Record<string, unknown> = { full_name: name.trim().slice(0, 100), city: city || null };
     if (!isAdmin && role === "specialist") update.role = "specialist";
-    const { error } = await getSupabase()!.from("mp_profiles").update(update).eq("id", profile!.id);
+    const { data, error } = await getSupabase()!.from("mp_profiles").update(update).eq("id", profile!.id).select("role").single();
     setBusy(false);
     if (error) { setFail(true); return; }
     await refreshProfile();
-    if (isAdmin) router.replace("/admin");
+    // The database decides the final role (the director always stays admin).
+    if (isAdmin || data?.role === "admin") router.replace("/admin");
     else if (role === "specialist") router.replace({ pathname: "/cabinet", query: { tab: "profile" } });
     else router.replace(safeNext(params.get("next")) ?? "/specialists");
   };
