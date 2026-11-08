@@ -83,7 +83,7 @@ void main(){
   gl_FragColor = vec4(col, alpha);
 }`;
 
-function Blob({ light }: { light: boolean }) {
+function Blob({ light, detail }: { light: boolean; detail: number }) {
   const mesh = useRef<THREE.Mesh>(null);
   const mat = useRef<THREE.ShaderMaterial>(null);
   const uniforms = useMemo(() => ({ uTime: { value: 0 }, uAmp: { value: 0.2 }, uLight: { value: 0 } }), []);
@@ -105,7 +105,7 @@ function Blob({ light }: { light: boolean }) {
 
   return (
     <mesh ref={mesh}>
-      <icosahedronGeometry args={[1.55, 64]} />
+      <icosahedronGeometry args={[1.55, detail]} />
       <shaderMaterial ref={mat} vertexShader={vertex} fragmentShader={fragment} uniforms={uniforms} transparent />
     </mesh>
   );
@@ -170,13 +170,13 @@ export default function HeroScene() {
     <div ref={wrap} className="absolute inset-0">
       <Canvas
         frameloop={visible ? "always" : "never"}
-        dpr={[1, mobile ? 1.5 : 2]}
+        dpr={[1, mobile ? 1.25 : 1.75]}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         camera={{ position: [0, 0, 6.2], fov: 45 }}
         eventSource={typeof document !== "undefined" ? document.body : undefined}
         eventPrefix="client"
       >
-        <Blob light={light} />
+        <Blob light={light} detail={mobile ? 24 : 40} />
         {!mobile && <Satellites />}
       </Canvas>
     </div>

@@ -16,7 +16,7 @@ export function LatestSpecialists() {
   useEffect(() => {
     const sb = getSupabase();
     if (!sb) { setList([]); return; }
-    sb.from("specialists").select(SPECIALIST_SELECT).eq("status", "approved").order("created_at", { ascending: false }).limit(6)
+    sb.from("mp_specialists").select(SPECIALIST_SELECT).eq("status", "approved").order("created_at", { ascending: false }).limit(6)
       .then(({ data }) => setList((data as unknown as Specialist[]) ?? []));
   }, []);
 

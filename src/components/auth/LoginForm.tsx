@@ -7,6 +7,7 @@ import { useRouter } from "@/i18n/navigation";
 import { getSupabase } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { normalizeTjPhone } from "@/content/site";
+import { Icon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Notice";
@@ -22,7 +23,8 @@ export function LoginForm() {
   const router = useRouter();
   const { session, profile, ready } = useAuth();
   const sb = getSupabase();
-  const role = params.get("role") === "specialist" ? "specialist" : null;
+  const paramRole = params.get("role");
+  const [role, setRole] = useState<"client" | "specialist" | null>(paramRole === "specialist" ? "specialist" : paramRole === "client" ? "client" : null);
   const next = safeNext(params.get("next"));
 
   const [step, setStep] = useState<"phone" | "code">("phone");
@@ -38,6 +40,8 @@ export function LoginForm() {
     if (!ready || !session || !profile) return;
     if (!profile.full_name || (role === "specialist" && profile.role === "client")) {
       router.replace({ pathname: "/onboarding", query: { ...(role ? { role } : {}), ...(next ? { next } : {}) } });
+    } else if (!next && profile.role === "client") {
+      router.replace("/specialists");
     } else {
       router.replace(next ?? "/cabinet");
     }
@@ -73,7 +77,38 @@ export function LoginForm() {
     // success → the auth listener loads the profile and the effect above redirects
   };
 
+  if (!role) {
+    return (
+      <div className="space-y-3">
+        <p className="font-display text-lg font-bold">{t("auth.chooseTitle")}</p>
+        <p className="text-sm text-ink-1">{t("auth.chooseSubtitle")}</p>
+        {(["client", "specialist"] as const).map((r) => (
+          <button key={r} type="button" onClick={() => setRole(r)}
+            className="flex w-full items-center gap-4 rounded-[var(--radius-md)] glass glass-edge p-4 text-left transition-transform hover:-translate-y-0.5 active:scale-[0.99]">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl orb text-white"><Icon name={r === "client" ? "smm" : "star"} className="h-6 w-6" /></span>
+            <span className="flex-1">
+              <span className="block font-semibold">{t(r === "client" ? "auth.asClient" : "auth.asSpecialist")}</span>
+              <span className="block text-sm text-ink-1">{t(r === "client" ? "auth.asClientText" : "auth.asSpecialistText")}</span>
+            </span>
+            <Icon name="arrow" className="h-5 w-5 text-ink-2" />
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  const roleBar = (
+    <div className="mb-5 flex items-center justify-between gap-3 rounded-full bg-ink-3 py-1.5 pl-4 pr-1.5 text-sm">
+      <span className="font-semibold">{t(role === "client" ? "auth.forClient" : "auth.forSpecialist")}</span>
+      {!paramRole && (
+        <button type="button" className="rounded-full px-3 py-1 text-purple hover:bg-ink-3" onClick={() => { setRole(null); setStep("phone"); setErr(null); }}>{t("auth.change")}</button>
+      )}
+    </div>
+  );
+
   return (
+    <>
+    {roleBar}
     <AnimatePresence mode="wait">
       {step === "phone" ? (
         <motion.form key="phone" onSubmit={send} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-5" noValidate>
@@ -98,5 +133,6 @@ export function LoginForm() {
         </motion.form>
       )}
     </AnimatePresence>
+    </>
   );
 }

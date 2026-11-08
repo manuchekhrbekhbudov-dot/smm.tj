@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
+import { pageAlternates } from "@/lib/site-url";
 import { use } from "react";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -11,6 +12,11 @@ import { LatestSpecialists } from "@/components/home/LatestSpecialists";
 import { Trust } from "@/components/home/Trust";
 import { Faq } from "@/components/home/Faq";
 import { CtaBand } from "@/components/home/CtaBand";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return { alternates: pageAlternates(locale) };
+}
 
 export default function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = use(params);

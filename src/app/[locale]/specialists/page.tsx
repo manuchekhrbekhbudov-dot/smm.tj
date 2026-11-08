@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { pageAlternates } from "@/lib/site-url";
 import { ClientOnly } from "@/components/ui/ClientOnly";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { PageHero } from "@/components/layout/PageHero";
@@ -7,7 +8,7 @@ import { Catalog } from "@/components/market/Catalog";
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "catalog" });
-  return { title: t("title"), description: t("subtitle") };
+  return { title: t("title"), description: t("subtitle"), alternates: pageAlternates(locale, "/specialists") };
 }
 
 export default async function SpecialistsPage({ params }: { params: Promise<{ locale: string }> }) {

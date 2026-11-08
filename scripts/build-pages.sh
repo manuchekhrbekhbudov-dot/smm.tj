@@ -25,7 +25,21 @@ cat > out/index.html <<HTML
 <link rel="canonical" href="${BASE}/tg/"></head>
 <body style="background:#05010A"><script>location.replace("${BASE}/tg/"+location.search)</script></body></html>
 HTML
-cp out/tg/404/index.html out/404.html 2>/dev/null || cp out/index.html out/404.html
+# Bilingual 404 for GitHub Pages (served for any unknown URL)
+cat > out/404.html <<HTML
+<!doctype html><html lang="tg"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>404 · SMM.TJ</title><meta name="robots" content="noindex"><link rel="icon" href="${BASE}/icon.svg">
+<style>
+:root{color-scheme:dark}body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 50% 30%,#3b1a7a 0%,#05010A 60%);color:#fff;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;text-align:center;padding:24px}
+.orb{width:140px;height:140px;margin:0 auto 28px;border-radius:50%;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.55) 0,rgba(255,255,255,0) 32%),linear-gradient(145deg,#8b5cf6,#7c3aed 45%,#c026d3);box-shadow:0 30px 80px -10px rgba(168,85,247,.6)}
+h1{font-size:64px;margin:0;letter-spacing:-2px}p{color:rgba(255,255,255,.75);margin:8px 0}
+.row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+a{display:inline-block;padding:14px 26px;border-radius:999px;color:#fff;text-decoration:none;font-weight:600;background:linear-gradient(135deg,#8b5cf6,#a855f7 50%,#c026d3)}
+a.o{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14)}
+</style></head><body><main><div class="orb"></div><h1>404</h1>
+<p>Саҳифа ёфт нашуд.</p><p>Страница не найдена.</p>
+<div class="row"><a href="${BASE}/tg/">Ба саҳифаи асосӣ</a><a class="o" href="${BASE}/ru/">На главную</a></div></main></body></html>
+HTML
 touch out/.nojekyll
 
 rm -rf "$ROOT/pages-out"

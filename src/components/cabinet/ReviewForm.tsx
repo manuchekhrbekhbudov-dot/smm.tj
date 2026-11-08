@@ -21,7 +21,7 @@ export function ReviewForm({ orderId, onDone, onCancel }: { orderId: string; onD
     if (text.trim().length < 10) { setErr(t("cabinet.review.text")); return; }
     setBusy(true); setErr(null);
     // client_id / specialist_id are overwritten by the database from the order itself
-    const { error } = await getSupabase()!.from("reviews").insert({
+    const { error } = await getSupabase()!.from("mp_reviews").insert({
       order_id: orderId, client_id: session!.user.id, specialist_id: session!.user.id, rating, text: text.trim().slice(0, 2000),
     });
     setBusy(false);

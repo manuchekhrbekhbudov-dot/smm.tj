@@ -5,11 +5,9 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { Background } from "@/components/fx/Background";
-import { SmoothScroll } from "@/components/fx/SmoothScroll";
-import { Cursor } from "@/components/fx/Cursor";
-import { Preloader } from "@/components/fx/Preloader";
 import { themeScript } from "@/components/ui/ThemeToggle";
 import { AuthProvider } from "@/lib/auth";
+import { SITE_URL } from "@/lib/site-url";
 import "../globals.css";
 
 const onest = Onest({
@@ -26,9 +24,20 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "meta" });
   return {
+    metadataBase: new URL(`${SITE_URL}/`),
     title: { default: t("title"), template: "%s · SMM.TJ" },
     description: t("description"),
-    alternates: { languages: { tg: "/tg", ru: "/ru" } },
+    openGraph: {
+      type: "website",
+      siteName: "SMM.TJ",
+      title: t("title"),
+      description: t("description"),
+      locale: locale === "ru" ? "ru_RU" : "tg_TJ",
+      url: `${SITE_URL}/${locale}/`,
+      images: [{ url: `${SITE_URL}/og.png`, width: 1200, height: 630, alt: "SMM.TJ" }],
+    },
+    twitter: { card: "summary_large_image", title: t("title"), description: t("description"), images: [`${SITE_URL}/og.png`] },
+    applicationName: "SMM.TJ",
   };
 }
 
@@ -50,10 +59,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
       </head>
       <body>
         <NextIntlClientProvider>
-          <Preloader />
           <Background />
-          <SmoothScroll />
-          <Cursor />
           <AuthProvider>{children}</AuthProvider>
         </NextIntlClientProvider>
       </body>

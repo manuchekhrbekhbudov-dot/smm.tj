@@ -36,7 +36,7 @@ export function Onboarding() {
     setBusy(true); setErr(null); setFail(false);
     const update: Record<string, unknown> = { full_name: name.trim().slice(0, 100), city: city || null };
     if (!isAdmin && role === "specialist") update.role = "specialist";
-    const { error } = await getSupabase()!.from("profiles").update(update).eq("id", profile!.id);
+    const { error } = await getSupabase()!.from("mp_profiles").update(update).eq("id", profile!.id);
     setBusy(false);
     if (error) { setFail(true); return; }
     await refreshProfile();

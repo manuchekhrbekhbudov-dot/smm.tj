@@ -20,6 +20,7 @@ export function RequireAuth({ children, allowIncomplete = false }: { children: R
   }, [ready, session, profile, allowIncomplete, router, pathname]);
 
   if (!supabaseConfigured) return <Notice tone="warning">{t("notConfigured")}</Notice>;
+  if (ready && session && profile === null) return <Notice tone="danger">{t("error")}</Notice>;
   if (!ready || !session || !profile || (!allowIncomplete && !profile.full_name)) {
     return <div className="flex min-h-[40vh] items-center justify-center"><Spinner className="h-10 w-10" /></div>;
   }

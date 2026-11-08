@@ -1,9 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { AnimatePresence, motion } from "framer-motion";
 import { Link, usePathname } from "@/i18n/navigation";
-import { Logo } from "@/components/ui/Logo";
+import { LogoMark } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { AuthButton } from "./AuthButton";
 import { cn } from "@/lib/cn";
@@ -27,14 +26,11 @@ function LocaleSwitch() {
           locale={l}
           aria-current={locale === l ? "true" : undefined}
           className={cn(
-            "relative flex h-8 w-10 items-center justify-center rounded-full uppercase transition-colors",
-            locale === l ? "text-white" : "text-ink-2 hover:text-ink-0"
+            "flex h-8 w-9 items-center justify-center rounded-full uppercase transition-colors",
+            locale === l ? "bg-gradient-primary text-white" : "text-ink-2 hover:text-ink-0"
           )}
         >
-          {locale === l && (
-            <motion.span layoutId="locale-pill" className="absolute inset-0 rounded-full bg-gradient-primary" transition={{ type: "spring", stiffness: 500, damping: 35 }} />
-          )}
-          <span className="relative">{l === "tg" ? "ТҶ" : "РУ"}</span>
+          {l === "tg" ? "ТҶ" : "РУ"}
         </Link>
       ))}
     </div>
@@ -48,47 +44,42 @@ export function Header() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onScroll = () => setScrolled(window.scrollY > 16);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
   useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
-      <div className={cn("container-x transition-all duration-500", scrolled ? "pt-3" : "pt-5")}>
-        <nav
-          className={cn(
-            "flex h-16 items-center justify-between rounded-full px-3 pl-5 transition-all duration-500",
-            scrolled ? "glass-solid shadow-[0_14px_40px_-12px_rgb(0_0_0/0.45)]" : "glass"
-          )}
-        >
-          <Link href="/" aria-label="SMM.TJ" data-cursor><Logo /></Link>
+      <div className={cn("container-x transition-[padding] duration-300", scrolled ? "pt-2" : "pt-3 md:pt-4")}>
+        <nav className={cn("flex h-14 items-center justify-between gap-2 rounded-full px-2 pl-3 md:h-16 md:pl-5", scrolled ? "glass-solid shadow-[0_14px_40px_-12px_rgb(0_0_0/0.45)]" : "glass")}>
+          <Link href="/" aria-label="SMM.TJ" className="flex shrink-0 items-center gap-2">
+            <LogoMark className="h-8 w-8 md:h-9 md:w-9" />
+            <span className="hidden font-display text-lg font-bold tracking-tight min-[400px]:inline">SMM<span className="text-gradient">.TJ</span></span>
+          </Link>
 
           <ul className="hidden items-center gap-1 lg:flex">
             {links.map((l) => {
               const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
               return (
                 <li key={l.href}>
-                  <Link
-                    href={l.href}
-                    className={cn("relative rounded-full px-4 py-2 text-sm font-medium transition-colors", active ? "text-ink-0" : "text-ink-2 hover:text-ink-0")}
-                  >
-                    {active && <motion.span layoutId="nav-pill" className="absolute inset-0 rounded-full bg-ink-3" transition={{ type: "spring", stiffness: 400, damping: 32 }} />}
-                    <span className="relative">{t(`nav.${l.key}`)}</span>
+                  <Link href={l.href} className={cn("rounded-full px-4 py-2 text-sm font-medium transition-colors", active ? "bg-ink-3 text-ink-0" : "text-ink-2 hover:text-ink-0")}>
+                    {t(`nav.${l.key}`)}
                   </Link>
                 </li>
               );
             })}
           </ul>
 
-          <div className="flex items-center gap-2">
-            <div className="hidden items-center gap-2 sm:flex">
-              <LocaleSwitch />
-              <ThemeToggle />
-            </div>
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <LocaleSwitch />
+            <ThemeToggle />
             <AuthButton className="hidden md:flex" />
             <button
               type="button"
@@ -98,40 +89,29 @@ export function Header() {
               aria-label={open ? t("common.close") : t("common.menu")}
               onClick={() => setOpen((v) => !v)}
             >
-              <span className="relative block h-3 w-4">
-                <span className={cn("absolute left-0 h-0.5 w-4 rounded bg-ink-0 transition-all duration-300", open ? "top-1.5 rotate-45" : "top-0")} />
-                <span className={cn("absolute left-0 h-0.5 w-4 rounded bg-ink-0 transition-all duration-300", open ? "top-1.5 -rotate-45" : "top-2.5")} />
+              <span className="relative block h-3 w-4" aria-hidden>
+                <span className={cn("absolute left-0 h-0.5 w-4 rounded bg-ink-0 transition-all duration-200", open ? "top-1.5 rotate-45" : "top-0")} />
+                <span className={cn("absolute left-0 h-0.5 w-4 rounded bg-ink-0 transition-all duration-200", open ? "top-1.5 -rotate-45" : "top-2.5")} />
               </span>
             </button>
           </div>
         </nav>
       </div>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            id="mobile-menu"
-            initial={{ clipPath: "circle(0% at calc(100% - 40px) 40px)" }}
-            animate={{ clipPath: "circle(150% at calc(100% - 40px) 40px)" }}
-            exit={{ clipPath: "circle(0% at calc(100% - 40px) 40px)" }}
-            transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 -z-10 flex flex-col justify-between bg-bg-1 px-6 pb-10 pt-28 lg:hidden"
-          >
-            <ul className="flex flex-col gap-2">
-              {links.map((l, i) => (
-                <motion.li key={l.href} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.06 }}>
-                  <Link href={l.href} className="font-display text-4xl font-bold text-ink-0 hover:text-gradient">{t(`nav.${l.key}`)}</Link>
-                </motion.li>
-              ))}
-            </ul>
-            <div className="flex flex-wrap items-center gap-3">
-              <LocaleSwitch />
-              <ThemeToggle />
-              <AuthButton className="ml-auto" />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {open && (
+        <div id="mobile-menu" className="fixed inset-0 -z-10 flex flex-col bg-bg-0/95 px-5 pb-8 pt-24 lg:hidden">
+          <ul className="flex flex-col gap-1">
+            {links.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className="block rounded-2xl px-4 py-4 text-2xl font-bold text-ink-0 active:bg-ink-3">{t(`nav.${l.key}`)}</Link>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-auto">
+            <AuthButton block />
+          </div>
+        </div>
+      )}
     </header>
   );
 }

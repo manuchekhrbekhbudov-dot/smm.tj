@@ -42,7 +42,7 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
     setErrors(errs);
     if (Object.keys(errs).length) return;
     setState("sending");
-    const { error } = await getSupabase()!.from("orders").insert({
+    const { error } = await getSupabase()!.from("mp_orders").insert({
       client_id: session.user.id,
       specialist_id: specialistId,
       service_id: serviceId,

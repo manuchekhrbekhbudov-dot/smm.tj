@@ -18,7 +18,7 @@ export function PriceList({ userId }: { userId: string }) {
   const [fail, setFail] = useState(false);
 
   const load = useCallback(async () => {
-    const { data } = await sb.from("specialist_services").select("*").eq("specialist_id", userId).order("price_tjs");
+    const { data } = await sb.from("mp_specialist_services").select("*").eq("specialist_id", userId).order("price_tjs");
     setItems((data as Service[]) ?? []);
   }, [sb, userId]);
   useEffect(() => { void load(); }, [load]);
@@ -35,7 +35,7 @@ export function PriceList({ userId }: { userId: string }) {
     setErrors(errs);
     if (Object.keys(errs).length) return;
     setBusy(true); setFail(false);
-    const { error } = await sb.from("specialist_services").insert({
+    const { error } = await sb.from("mp_specialist_services").insert({
       specialist_id: userId, title: title.slice(0, 120), description: String(fd.get("description") ?? "").trim().slice(0, 1000),
       price_tjs: price, unit: String(fd.get("unit")) as PriceUnit,
     });
@@ -46,7 +46,7 @@ export function PriceList({ userId }: { userId: string }) {
   };
 
   const remove = async (id: string) => {
-    const { error } = await sb.from("specialist_services").delete().eq("id", id);
+    const { error } = await sb.from("mp_specialist_services").delete().eq("id", id);
     if (error) setFail(true); else void load();
   };
 

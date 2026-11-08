@@ -41,4 +41,4 @@ export type Review = {
 
 /** Public specialist row with joined profile, used by catalog and profile pages. */
 export const SPECIALIST_SELECT =
-  "id, headline, bio, experience_years, specialties, portfolio_links, telegram, whatsapp, instagram, status, reject_reason, rating_avg, reviews_count, min_price, created_at, updated_at, profiles!specialists_id_fkey(full_name, city, avatar_url)";
+  "id, headline, bio, experience_years, specialties, portfolio_links, telegram, whatsapp, instagram, status, reject_reason, rating_avg, reviews_count, min_price, created_at, updated_at, profiles:mp_profiles!mp_specialists_id_fkey(full_name, city, avatar_url)";

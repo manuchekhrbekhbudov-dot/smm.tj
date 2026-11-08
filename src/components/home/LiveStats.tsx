@@ -14,7 +14,7 @@ export function LiveStats() {
   useEffect(() => {
     const sb = getSupabase();
     if (!sb) return;
-    sb.rpc("public_stats").then(({ data }) => {
+    sb.rpc("mp_public_stats").then(({ data }) => {
       const row = Array.isArray(data) ? data[0] : data;
       if (row) setS({ specialists: Number(row.specialists), completed_orders: Number(row.completed_orders), reviews: Number(row.reviews) });
     });

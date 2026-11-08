@@ -42,7 +42,7 @@ export function Catalog() {
     let alive = true;
     setList(null);
     setError(false);
-    let q = sb.from("specialists").select(SPECIALIST_SELECT).eq("status", "approved");
+    let q = sb.from("mp_specialists").select(SPECIALIST_SELECT).eq("status", "approved");
     if (specialty) q = q.contains("specialties", [specialty]);
     const max = Number(maxPrice);
     if (maxPrice && Number.isFinite(max) && max > 0) q = q.lte("min_price", max);

@@ -27,8 +27,11 @@ export function Footer() {
           </ul>
         </nav>
       </div>
+      {/* Decorative wordmark drawn as SVG so it isn't treated as page text */}
       <div aria-hidden className="container-x select-none overflow-hidden">
-        <p className="translate-y-[18%] text-center font-display text-[clamp(4rem,19vw,18rem)] font-bold leading-none text-ink-3">SMM.TJ</p>
+        <svg viewBox="0 0 1000 170" className="block w-full translate-y-[14%]" role="presentation">
+          <text x="500" y="150" textAnchor="middle" fontSize="190" fontWeight="700" letterSpacing="-8" fill="currentColor" className="text-ink-3" style={{ fontFamily: "var(--font-onest)" }}>SMM.TJ</text>
+        </svg>
       </div>
       <div className="border-t border-ink-3">
         <div className="container-x flex flex-col justify-between gap-3 py-6 text-sm text-ink-2 md:flex-row">

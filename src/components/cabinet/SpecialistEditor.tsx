@@ -29,7 +29,7 @@ export function SpecialistEditor({ onSaved }: { onSaved: () => void }) {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    sb.from("specialists").select("*").eq("id", profile!.id).maybeSingle().then(({ data }) => {
+    sb.from("mp_specialists").select("*").eq("id", profile!.id).maybeSingle().then(({ data }) => {
       const s = data as Specialist | null;
       setF({
         full_name: profile!.full_name, city: profile!.city ?? "",
@@ -50,10 +50,10 @@ export function SpecialistEditor({ onSaved }: { onSaved: () => void }) {
     setUploading(true);
     const ext = file.type.split("/")[1];
     const path = `${profile!.id}/avatar-${Date.now()}.${ext}`;
-    const { error } = await sb.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+    const { error } = await sb.storage.from("mp-avatars").upload(path, file, { upsert: true, contentType: file.type });
     if (!error) {
-      const url = sb.storage.from("avatars").getPublicUrl(path).data.publicUrl;
-      await sb.from("profiles").update({ avatar_url: url }).eq("id", profile!.id);
+      const url = sb.storage.from("mp-avatars").getPublicUrl(path).data.publicUrl;
+      await sb.from("mp_profiles").update({ avatar_url: url }).eq("id", profile!.id);
       await refreshProfile();
       setErrors((e) => ({ ...e, avatar: "" }));
     } else {
@@ -73,8 +73,8 @@ export function SpecialistEditor({ onSaved }: { onSaved: () => void }) {
     if (Object.keys(errs).length) return;
     setState("saving");
     const links = f.portfolio_links.map((l) => safeHttpUrl(l)).filter((x): x is string => !!x).slice(0, 10);
-    const r1 = await sb.from("profiles").update({ full_name: f.full_name.trim().slice(0, 100), city: f.city || null }).eq("id", profile!.id);
-    const r2 = await sb.from("specialists").upsert({
+    const r1 = await sb.from("mp_profiles").update({ full_name: f.full_name.trim().slice(0, 100), city: f.city || null }).eq("id", profile!.id);
+    const r2 = await sb.from("mp_specialists").upsert({
       id: profile!.id,
       headline: f.headline.trim().slice(0, 120), bio: f.bio.trim().slice(0, 3000),
       experience_years: Math.max(0, Math.min(50, Math.round(f.experience_years || 0))),

@@ -27,9 +27,9 @@ export function SpecialistProfile() {
     if (!sb || !/^[0-9a-f-]{36}$/i.test(id)) { setS(null); return; }
     let alive = true;
     Promise.all([
-      sb.from("specialists").select(SPECIALIST_SELECT).eq("id", id).maybeSingle(),
-      sb.from("specialist_services").select("*").eq("specialist_id", id).order("price_tjs"),
-      sb.from("reviews").select("*, profiles!reviews_client_id_fkey(full_name)").eq("specialist_id", id).eq("hidden", false).order("created_at", { ascending: false }),
+      sb.from("mp_specialists").select(SPECIALIST_SELECT).eq("id", id).maybeSingle(),
+      sb.from("mp_specialist_services").select("*").eq("specialist_id", id).order("price_tjs"),
+      sb.from("mp_reviews").select("*, profiles:mp_profiles!mp_reviews_client_id_fkey(full_name)").eq("specialist_id", id).eq("hidden", false).order("created_at", { ascending: false }),
     ]).then(([a, b, c]) => {
       if (!alive) return;
       setS((a.data as unknown as Specialist) ?? null);
@@ -38,6 +38,10 @@ export function SpecialistProfile() {
     });
     return () => { alive = false; };
   }, [sb, id]);
+
+  useEffect(() => {
+    if (s?.profiles?.full_name) document.title = `${s.profiles.full_name} · SMM.TJ`;
+  }, [s]);
 
   if (!sb) return <Notice tone="warning">{t("common.notConfigured")}</Notice>;
   if (s === undefined) return <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]"><Skeleton className="h-96" /><Skeleton className="h-96" /></div>;

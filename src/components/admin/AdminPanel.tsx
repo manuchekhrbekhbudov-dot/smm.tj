@@ -26,7 +26,7 @@ export function AdminPanel() {
   const [stats, setStats] = useState<{ specialists: number; completed_orders: number; reviews: number } | null>(null);
 
   useEffect(() => {
-    getSupabase()!.rpc("public_stats").then(({ data }) => {
+    getSupabase()!.rpc("mp_public_stats").then(({ data }) => {
       const r = Array.isArray(data) ? data[0] : data;
       if (r) setStats({ specialists: Number(r.specialists), completed_orders: Number(r.completed_orders), reviews: Number(r.reviews) });
     });
@@ -70,7 +70,7 @@ function Specialists({ status }: { status: SpecialistStatus }) {
 
   const load = useCallback(async () => {
     setRows(null);
-    const { data } = await sb.from("specialists").select(`${SPECIALIST_SELECT}, specialist_services(title, price_tjs)`).eq("status", status).order("updated_at", { ascending: false });
+    const { data } = await sb.from("mp_specialists").select(`${SPECIALIST_SELECT}, specialist_services:mp_specialist_services!mp_specialist_services_specialist_id_fkey(title, price_tjs)`).eq("status", status).order("updated_at", { ascending: false });
     setRows((data as never) ?? []);
   }, [sb, status]);
   useEffect(() => { void load(); }, [load]);
@@ -79,7 +79,7 @@ function Specialists({ status }: { status: SpecialistStatus }) {
     const r = (reason[id] ?? "").trim();
     if (next === "rejected" && r.length < 3) { setReason((x) => ({ ...x, [id]: x[id] ?? "" })); setErr(true); return; }
     setBusy(id); setErr(false);
-    const { error } = await sb.from("specialists").update({ status: next, reject_reason: next === "rejected" ? r.slice(0, 500) : null }).eq("id", id);
+    const { error } = await sb.from("mp_specialists").update({ status: next, reject_reason: next === "rejected" ? r.slice(0, 500) : null }).eq("id", id);
     setBusy(null);
     if (error) setErr(true); else void load();
   };
@@ -136,13 +136,13 @@ function Reviews() {
   const [rows, setRows] = useState<ReviewRow[] | null>(null);
 
   const load = useCallback(async () => {
-    const { data } = await sb.from("reviews").select("*, profiles!reviews_client_id_fkey(full_name), specialists(profiles!specialists_id_fkey(full_name))").order("created_at", { ascending: false }).limit(200);
+    const { data } = await sb.from("mp_reviews").select("*, profiles:mp_profiles!mp_reviews_client_id_fkey(full_name), specialists:mp_specialists!mp_reviews_specialist_id_fkey(profiles:mp_profiles!mp_specialists_id_fkey(full_name))").order("created_at", { ascending: false }).limit(200);
     setRows((data as unknown as ReviewRow[]) ?? []);
   }, [sb]);
   useEffect(() => { void load(); }, [load]);
 
   const toggle = async (r: ReviewRow) => {
-    const { error } = await sb.from("reviews").update({ hidden: !r.hidden }).eq("id", r.id);
+    const { error } = await sb.from("mp_reviews").update({ hidden: !r.hidden }).eq("id", r.id);
     if (!error) void load();
   };
 

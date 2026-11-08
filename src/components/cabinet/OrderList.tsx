@@ -34,9 +34,9 @@ export function OrderList({ mode, userId }: { mode: "client" | "specialist"; use
   const load = useCallback(async () => {
     const sb = getSupabase()!;
     const select = mode === "client"
-      ? "*, specialists(id, profiles!specialists_id_fkey(full_name)), specialist_services(title), reviews(id)"
-      : "*, profiles!orders_client_id_fkey(full_name), specialist_services(title)";
-    const { data } = await sb.from("orders").select(select).eq(mode === "client" ? "client_id" : "specialist_id", userId).order("created_at", { ascending: false });
+      ? "*, specialists:mp_specialists!mp_orders_specialist_id_fkey(id, profiles:mp_profiles!mp_specialists_id_fkey(full_name)), specialist_services:mp_specialist_services!mp_orders_service_id_fkey(title), reviews:mp_reviews!mp_reviews_order_id_fkey(id)"
+      : "*, profiles:mp_profiles!mp_orders_client_id_fkey(full_name), specialist_services:mp_specialist_services!mp_orders_service_id_fkey(title)";
+    const { data } = await sb.from("mp_orders").select(select).eq(mode === "client" ? "client_id" : "specialist_id", userId).order("created_at", { ascending: false });
     setRows((data as unknown as Row[]) ?? []);
   }, [mode, userId]);
 
@@ -44,7 +44,7 @@ export function OrderList({ mode, userId }: { mode: "client" | "specialist"; use
 
   const setStatus = async (id: string, status: OrderStatus) => {
     setBusy(id); setErr(false);
-    const { error } = await getSupabase()!.from("orders").update({ status }).eq("id", id);
+    const { error } = await getSupabase()!.from("mp_orders").update({ status }).eq("id", id);
     setBusy(null);
     if (error) setErr(true); else void load();
   };

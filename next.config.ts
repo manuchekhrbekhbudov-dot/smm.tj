@@ -12,7 +12,7 @@ const basePath = process.env.PAGES_BASE_PATH ?? "";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  experimental: { optimizePackageImports: ["framer-motion", "gsap"] },
+  experimental: { optimizePackageImports: ["framer-motion"] },
   ...(isStatic && {
     output: "export" as const,
     basePath,

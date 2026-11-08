@@ -6,7 +6,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations();
   return (
     <>
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[10001] focus:rounded-full focus:bg-purple focus:px-4 focus:py-2 focus:text-white">
+      <a href="#main" className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4 focus-visible:z-[10001] focus-visible:rounded-full focus-visible:bg-purple focus-visible:px-4 focus-visible:py-2 focus-visible:text-white">
         {t("common.skip")}
       </a>
       <Header />

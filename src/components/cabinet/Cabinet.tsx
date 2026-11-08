@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -22,22 +22,22 @@ export function Cabinet() {
   const router = useRouter();
   const params = useSearchParams();
   const isSpecialist = profile!.role === "specialist";
-  const tabs: Tab[] = isSpecialist ? ["incoming", "profile", "prices", "orders"] : ["orders"];
+  const tabs = useMemo<Tab[]>(() => (isSpecialist ? ["incoming", "profile", "prices", "orders"] : ["orders"]), [isSpecialist]);
   const initial = params.get("tab") as Tab | null;
   const [tab, setTab] = useState<Tab>(initial && tabs.includes(initial) ? initial : tabs[0]);
   useEffect(() => { if (!tabs.includes(tab)) setTab(tabs[0] === "incoming" ? "profile" : tabs[0]); }, [tabs, tab]);
   const [status, setStatus] = useState<{ s: SpecialistStatus | "none"; reason: string | null } | null>(null);
 
-  const loadStatus = () => {
+  const profileId = profile!.id;
+  const loadStatus = useCallback(() => {
     if (!isSpecialist) return;
-    getSupabase()!.from("specialists").select("status, reject_reason").eq("id", profile!.id).maybeSingle()
+    getSupabase()!.from("mp_specialists").select("status, reject_reason").eq("id", profileId).maybeSingle()
       .then(({ data }) => setStatus(data ? { s: data.status as SpecialistStatus, reason: data.reject_reason } : { s: "none", reason: null }));
-  };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(loadStatus, [isSpecialist, profile]);
+  }, [isSpecialist, profileId]);
+  useEffect(() => { loadStatus(); }, [loadStatus]);
 
   const becomeSpecialist = async () => {
-    const { error } = await getSupabase()!.from("profiles").update({ role: "specialist" }).eq("id", profile!.id);
+    const { error } = await getSupabase()!.from("mp_profiles").update({ role: "specialist" }).eq("id", profile!.id);
     if (!error) { await refreshProfile(); setTab("profile"); }
   };
 

@@ -1,0 +1,12 @@
+User-Agent: *
+Allow: /
+Disallow: /tg/cabinet
+Disallow: /ru/cabinet
+Disallow: /tg/admin
+Disallow: /ru/admin
+Disallow: /tg/login
+Disallow: /ru/login
+Disallow: /tg/onboarding
+Disallow: /ru/onboarding
+
+Sitemap: https://manuchekhrbekhbudov-dot.github.io/smm.tj/sitemap.xml
