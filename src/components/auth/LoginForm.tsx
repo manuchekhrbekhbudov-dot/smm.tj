@@ -12,6 +12,7 @@ import { Notice } from "@/components/ui/Notice";
 import { Icon } from "@/components/ui/Icon";
 import { cn } from "@/lib/cn";
 import { TelegramCodeForm } from "./TelegramCodeForm";
+import { SetPasswordForm } from "./SetPasswordForm";
 
 /** Only allow internal paths as post-login redirect targets. */
 const safeNext = (v: string | null) => (v && v.startsWith("/") && !v.startsWith("//") ? v : null);
@@ -27,7 +28,9 @@ export function LoginForm() {
   const next = safeNext(params.get("next"));
 
   const [mode, setMode] = useState<"login" | "register">(paramRole === "specialist" ? "register" : "login");
-  const [method, setMethod] = useState<"telegram" | "password">("telegram");
+  // Sign-up and password recovery: Telegram code first, then the user sets a password.
+  const [flow, setFlow] = useState<"none" | "verify" | "password">("none");
+  const [reset, setReset] = useState(false);
   const [phone, setPhone] = useState("+992 ");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -36,6 +39,7 @@ export function LoginForm() {
   // Signed in → continue to the right place
   useEffect(() => {
     if (!ready || !session || !profile) return;
+    if (flow !== "none") return; // still choosing a password
     if (!profile.full_name || (role === "specialist" && profile.role === "client")) {
       router.replace({ pathname: "/onboarding", query: { ...(role ? { role } : {}), ...(next ? { next } : {}) } });
     } else if (next) {
@@ -43,12 +47,13 @@ export function LoginForm() {
     } else {
       router.replace(profile.role === "admin" ? "/admin" : profile.role === "specialist" ? "/cabinet" : "/specialists");
     }
-  }, [ready, session, profile, role, next, router]);
+  }, [ready, session, profile, role, next, router, flow]);
 
   if (!sb) return <Notice tone="warning">{t("common.notConfigured")}</Notice>;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFlow("none"); // a failed Telegram attempt must not block redirect after a password login
     const p = normalizeTjPhone(phone);
     const errs: typeof err = {};
     if (!p) errs.phone = t("auth.errors.phone");
@@ -57,9 +62,7 @@ export function LoginForm() {
     if (Object.keys(errs).length) return;
     setBusy(true);
     const email = phoneToEmail(p!);
-    const res = mode === "login"
-      ? await sb.auth.signInWithPassword({ email, password })
-      : await sb.auth.signUp({ email, password });
+    const res = await sb.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (res.error) {
       const code = (res.error as { code?: string }).code ?? "";
@@ -72,13 +75,6 @@ export function LoginForm() {
       if (key === "exists") setMode("login");
       setErr({ form: t(`auth.errors.${key}`) });
       return;
-    }
-    // If "Confirm email" is ON, sign-up returns no session; the database auto-confirms phone accounts, so sign in right away.
-    if (mode === "register" && !res.data.session) {
-      setBusy(true);
-      const again = await sb.auth.signInWithPassword({ email, password });
-      setBusy(false);
-      if (again.error) setErr({ form: t("auth.errors.confirm") });
     }
     // success → auth listener loads the profile, the effect above redirects
   };
@@ -116,16 +112,15 @@ export function LoginForm() {
         )}
       </div>
 
-      <div role="tablist" className="mb-5 grid grid-cols-2 gap-1 rounded-[var(--radius-sm)] bg-ink-3 p-1">
-        {(["telegram", "password"] as const).map((m) => (
-          <button key={m} type="button" role="tab" aria-selected={method === m} onClick={() => { setMethod(m); setErr({}); }}
-            className={cn("flex h-11 items-center justify-center gap-2 rounded-[12px] text-sm font-semibold transition-colors", method === m ? "bg-bg-2 text-ink-0 shadow" : "text-ink-2 hover:text-ink-0")}>
-            {m === "telegram" ? <><Icon name="telegram" className="h-4 w-4 text-[#229ED9]" />{t("auth.tgTab")}</> : <>🔑 {t("auth.pwTab")}</>}
-          </button>
-        ))}
-      </div>
-
-      {method === "telegram" ? <TelegramCodeForm /> : (<>
+      {(mode === "register" || reset) && flow === "password" ? (
+        <SetPasswordForm onDone={() => setFlow("none")} />
+      ) : reset ? (
+        <div className="space-y-4">
+          <p className="font-semibold">{t("auth.forgotTitle")}</p>
+          <TelegramCodeForm submitLabel={t("auth.verify")} onStart={() => setFlow("verify")} onSuccess={() => setFlow("password")} />
+          <p className="text-center text-sm"><button type="button" className="font-semibold text-purple" onClick={() => { setReset(false); setFlow("none"); }}>{t("auth.backToLogin")}</button></p>
+        </div>
+      ) : (<>
       <div role="tablist" className="mb-5 grid grid-cols-2 gap-1 rounded-full glass p-1">
         {(["login", "register"] as const).map((m) => (
           <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setErr({}); }}
@@ -135,22 +130,29 @@ export function LoginForm() {
         ))}
       </div>
 
+      {mode === "register" ? (
+        <div className="space-y-4">
+          <p className="font-semibold">{t("auth.regStep1")}</p>
+          <TelegramCodeForm submitLabel={t("auth.verify")} onStart={() => setFlow("verify")} onSuccess={() => setFlow("password")} />
+          <p className="text-center text-sm text-ink-2">
+            {t("auth.haveAccount")}{" "}
+            <button type="button" className="font-semibold text-purple" onClick={() => setMode("login")}>{t("auth.toLogin")}</button>
+          </p>
+        </div>
+      ) : (
       <form onSubmit={submit} className="space-y-4" noValidate>
         <Input label={t("auth.phone")} type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} error={err.phone} />
-        <Input label={t("auth.password")} type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={6} maxLength={72}
+        <Input label={t("auth.password")} type="password" autoComplete="current-password" minLength={6} maxLength={72}
           value={password} onChange={(e) => setPassword(e.target.value)} error={err.password} />
         {err.form && <Notice tone="danger">{err.form}</Notice>}
-        <Button type="submit" size="lg" className="w-full" loading={busy}>{t(mode === "login" ? "auth.login" : "auth.register")}</Button>
-        {mode === "login" && (
-          <p className="text-center text-sm"><button type="button" className="font-semibold text-purple" onClick={() => setMethod("telegram")}>{t("auth.forgot")}</button></p>
-        )}
+        <Button type="submit" size="lg" className="w-full" loading={busy}>{t("auth.login")}</Button>
+        <p className="text-center text-sm"><button type="button" className="font-semibold text-purple" onClick={() => { setReset(true); setErr({}); }}>{t("auth.forgot2")}</button></p>
         <p className="text-center text-sm text-ink-2">
-          {t(mode === "login" ? "auth.noAccount" : "auth.haveAccount")}{" "}
-          <button type="button" className="font-semibold text-purple" onClick={() => { setMode(mode === "login" ? "register" : "login"); setErr({}); }}>
-            {t(mode === "login" ? "auth.toRegister" : "auth.toLogin")}
-          </button>
+          {t("auth.noAccount")}{" "}
+          <button type="button" className="font-semibold text-purple" onClick={() => setMode("register")}>{t("auth.toRegister")}</button>
         </p>
       </form>
+      )}
       </>)}
     </div>
   );

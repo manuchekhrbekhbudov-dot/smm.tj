@@ -9,7 +9,7 @@ import { Notice, Spinner } from "@/components/ui/Notice";
 import { Icon } from "@/components/ui/Icon";
 
 /** "Open bot → share number → enter code" sign-in. onSuccess runs after the session is created. */
-export function TelegramCodeForm({ onSuccess, defaultPhone = "+992 ", link = false, submitLabel }: { onSuccess?: () => void; defaultPhone?: string; link?: boolean; submitLabel?: string }) {
+export function TelegramCodeForm({ onSuccess, onStart, defaultPhone = "+992 ", link = false, submitLabel }: { onSuccess?: () => void; onStart?: () => void; defaultPhone?: string; link?: boolean; submitLabel?: string }) {
   const t = useTranslations("auth");
   const [bot, setBot] = useState<string | null | undefined>(undefined);
   const [phone, setPhone] = useState(defaultPhone);
@@ -28,6 +28,7 @@ export function TelegramCodeForm({ onSuccess, defaultPhone = "+992 ", link = fal
     if (!p) { setErr(t("errors.phone")); return; }
     if (!/^\d{6}$/.test(code)) { setErr(t("tgErrors.wrong_code")); return; }
     setBusy(true); setErr(null);
+    onStart?.();
     const res = await loginWithTelegramCode(p, code, link);
     setBusy(false);
     if (res) { setErr(t(`tgErrors.${["wrong_code", "expired", "no_code", "too_many_attempts"].includes(res) ? res : "generic"}`)); return; }
