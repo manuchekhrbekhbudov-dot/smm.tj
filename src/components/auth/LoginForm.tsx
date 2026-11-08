@@ -71,8 +71,13 @@ export function LoginForm() {
       setErr({ form: t(`auth.errors.${key}`) });
       return;
     }
-    // Sign-up with "Confirm email" still ON returns no session
-    if (mode === "register" && !res.data.session) setErr({ form: t("auth.errors.confirm") });
+    // If "Confirm email" is ON, sign-up returns no session; the database auto-confirms phone accounts, so sign in right away.
+    if (mode === "register" && !res.data.session) {
+      setBusy(true);
+      const again = await sb.auth.signInWithPassword({ email, password });
+      setBusy(false);
+      if (again.error) setErr({ form: t("auth.errors.confirm") });
+    }
     // success → auth listener loads the profile, the effect above redirects
   };
 

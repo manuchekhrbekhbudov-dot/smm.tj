@@ -284,6 +284,39 @@ language sql stable security definer set search_path = public as $$
 $$;
 grant execute on function public.mp_public_stats() to anon, authenticated;
 
+
+-- ---------- phone + password logins (no SMS) ----------
+-- Those users sign up with the internal address <digits>@phone.smm.tj, which can never receive mail,
+-- so they are confirmed automatically (works even if "Confirm email" is ON in the dashboard).
+create or replace function public.mp_autoconfirm_phone_users() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if lower(new.email) like '%@phone.smm.tj' and new.email_confirmed_at is null then
+    new.email_confirmed_at := now();
+  end if;
+  return new;
+end $$;
+drop trigger if exists mp_autoconfirm_phone_users on auth.users;
+create trigger mp_autoconfirm_phone_users before insert or update on auth.users
+  for each row execute function public.mp_autoconfirm_phone_users();
+
+-- Fix accounts created before this trigger existed: confirm them and make sure every user has a profile.
+update auth.users set email_confirmed_at = now()
+ where lower(email) like '%@phone.smm.tj' and email_confirmed_at is null;
+insert into public.mp_profiles (id, role)
+select u.id,
+       case when u.phone = (select value from public.mp_app_config where key = 'admin_phone')
+              or lower(u.email) = (select value from public.mp_app_config where key = 'admin_phone') || '@phone.smm.tj'
+            then 'admin'::public.mp_user_role else 'client'::public.mp_user_role end
+  from auth.users u
+ where lower(u.email) like '%@phone.smm.tj' or u.phone is not null
+on conflict (id) do nothing;
+-- The director's account is always admin.
+update public.mp_profiles set role = 'admin'
+ where id in (select id from auth.users
+               where phone = (select value from public.mp_app_config where key = 'admin_phone')
+                  or lower(email) = (select value from public.mp_app_config where key = 'admin_phone') || '@phone.smm.tj');
+
 -- ---------- row level security ----------
 alter table public.mp_profiles enable row level security;
 alter table public.mp_specialists enable row level security;
