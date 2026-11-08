@@ -1,21 +1,31 @@
 {
-  "name": "smm-tj-backend",
-  "version": "1.0.0",
-  "description": "SMM.TJ Backend API",
-  "main": "server.js",
+  "name": "smm-tj",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@prisma/client": "^6.16.2",
-    "bcryptjs": "^3.0.2",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.2",
-    "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2"
+    "@gsap/react": "^2.1.2",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.43.0",
+    "gsap": "^3.15.1",
+    "lenis": "^1.3.27",
+    "next": "^15.5.29",
+    "next-intl": "^4.14.9",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "prisma": "^6.16.2"
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^5.9.3"
   }
 }

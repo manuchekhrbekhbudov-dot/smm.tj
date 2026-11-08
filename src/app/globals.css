@@ -1,0 +1,236 @@
+@import "tailwindcss";
+
+/* ================================================================
+   SMM.TJ design tokens
+   ================================================================ */
+/* Theme-dependent tokens resolve at runtime from :root / [data-theme] */
+@theme inline {
+  --color-bg-0: var(--bg-0);
+  --color-bg-1: var(--bg-1);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-ink-0: var(--ink-0);
+  --color-ink-1: var(--ink-1);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --font-display: var(--font-unbounded), "Unbounded", system-ui, sans-serif;
+  --font-sans: var(--font-manrope), "Manrope", system-ui, sans-serif;
+}
+
+@theme {
+  /* Accent (same in both themes) */
+  --color-violet: #8b5cf6;
+  --color-purple: #a855f7;
+  --color-magenta: #c026d3;
+
+  /* Status */
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger: #f43f5e;
+
+
+  /* Radius */
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 32px;
+
+  /* Easing */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+
+  /* Fluid display sizes */
+  --text-hero: clamp(3rem, 11vw, 10rem);
+  --text-hero--line-height: 0.92;
+  --text-display: clamp(2.5rem, 7vw, 6rem);
+  --text-display--line-height: 0.98;
+  --text-h1: clamp(2rem, 4.5vw, 4rem);
+  --text-h1--line-height: 1.05;
+  --text-h2: clamp(1.6rem, 3vw, 2.75rem);
+  --text-h2--line-height: 1.1;
+  --text-h3: clamp(1.25rem, 2vw, 1.75rem);
+  --text-h3--line-height: 1.2;
+
+  --animate-blob: blob 22s ease-in-out infinite alternate;
+  --animate-spin-slow: spin 8s linear infinite;
+  --animate-marquee: marquee var(--marquee-duration, 30s) linear infinite;
+  --animate-shimmer: shimmer 3.5s linear infinite;
+
+  @keyframes blob {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    50% { transform: translate3d(8vw, -6vh, 0) scale(1.15); }
+    100% { transform: translate3d(-6vw, 8vh, 0) scale(0.9); }
+  }
+  @keyframes marquee {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(-50%, 0, 0); }
+  }
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+}
+
+:root {
+  /* Dark (default) */
+  --bg-0: #05010a;
+  --bg-1: #0b0614;
+  --bg-2: #130a22;
+  --bg-3: #1c1030;
+  --ink-0: #ffffff;
+  --ink-1: rgb(255 255 255 / 0.72);
+  --ink-2: rgb(255 255 255 / 0.5);
+  --ink-3: rgb(255 255 255 / 0.12);
+  --blob-opacity: 1;
+  --grad-primary: linear-gradient(135deg, #8b5cf6 0%, #a855f7 45%, #c026d3 100%);
+  --glow-sm: 0 0 20px rgb(168 85 247 / 0.35);
+  --glow-md: 0 0 40px rgb(168 85 247 / 0.4);
+  --glow-lg: 0 0 80px rgb(192 38 211 / 0.35);
+  --glass-bg: rgb(255 255 255 / 0.04);
+  --glass-border: rgb(168 85 247 / 0.18);
+  color-scheme: dark;
+}
+
+/* Light ("white") theme */
+:root[data-theme="light"] {
+  --bg-0: #faf8ff;
+  --bg-1: #f3effc;
+  --bg-2: #ffffff;
+  --bg-3: #e7e0f7;
+  --ink-0: #0b0614;
+  --ink-1: rgb(11 6 20 / 0.74);
+  --ink-2: rgb(11 6 20 / 0.52);
+  --ink-3: rgb(11 6 20 / 0.1);
+  --glass-bg: rgb(255 255 255 / 0.6);
+  --glass-border: rgb(139 92 246 / 0.22);
+  --glow-sm: 0 0 20px rgb(168 85 247 / 0.22);
+  --glow-md: 0 0 40px rgb(168 85 247 / 0.25);
+  --glow-lg: 0 0 80px rgb(192 38 211 / 0.2);
+  --blob-opacity: 0.45;
+  color-scheme: light;
+}
+
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ================================================================
+   Base
+   ================================================================ */
+@layer base {
+  html {
+    background: var(--bg-0);
+    color: var(--ink-0);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background-color 0.4s, color 0.4s;
+  }
+  body {
+    /* No background here: html paints it, so the fixed ambient layer (-z-10) stays visible. */
+    font-family: var(--font-sans);
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+  ::selection {
+    background: var(--color-magenta);
+    color: #fff;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-purple);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+  /* Lenis */
+  html.lenis, html.lenis body { height: auto; }
+  .lenis.lenis-smooth { scroll-behavior: auto !important; }
+  .lenis.lenis-stopped { overflow: hidden; }
+
+  /* Hide native cursor only when custom cursor is active */
+  html.has-cursor, html.has-cursor * { cursor: none !important; }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg-0); }
+  ::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-violet); }
+}
+
+/* ================================================================
+   Utilities
+   ================================================================ */
+@utility text-gradient {
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-gradient-primary {
+  background: var(--grad-primary);
+}
+
+@utility glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+@utility glow-sm { box-shadow: var(--glow-sm); }
+@utility glow-md { box-shadow: var(--glow-md); }
+@utility glow-lg { box-shadow: var(--glow-lg); }
+
+/* Rotating conic gradient border. Element needs position: relative. */
+@utility gradient-border {
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--angle),
+      transparent 0deg,
+      #8b5cf6 60deg,
+      #c026d3 120deg,
+      transparent 180deg,
+      transparent 360deg
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: border-spin 6s linear infinite;
+    pointer-events: none;
+  }
+}
+
+@keyframes border-spin {
+  to { --angle: 360deg; }
+}
+
+@utility container-x {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 1440px;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ================================================================
+   Reduced motion: kill decorative animation globally
+   ================================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
