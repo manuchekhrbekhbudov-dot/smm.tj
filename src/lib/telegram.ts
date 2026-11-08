@@ -62,3 +62,17 @@ export async function notifyOrder(orderId: string) {
   if (!token) return;
   fetch(fn("tg-notify"), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ order_id: orderId }) }).catch(() => {});
 }
+
+/** Asks the receipt-check Edge Function to verify an uploaded plan payment. */
+export async function checkReceipt(paymentId: string): Promise<{ status: string; reason: string | null } | null> {
+  const sb = getSupabase();
+  const token = (await sb?.auth.getSession())?.data.session?.access_token;
+  if (!token) return null;
+  try {
+    const r = await fetch(fn("receipt-check"), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ payment_id: paymentId }) });
+    const d = await r.json().catch(() => null);
+    return d && d.status ? { status: d.status, reason: d.reason ?? null } : null;
+  } catch {
+    return null;
+  }
+}

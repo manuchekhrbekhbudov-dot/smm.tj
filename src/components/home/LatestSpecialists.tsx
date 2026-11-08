@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { getSupabase } from "@/lib/supabase/client";
 import { SPECIALIST_SELECT, type Specialist } from "@/lib/supabase/types";
 import { SpecialistCard } from "@/components/market/SpecialistCard";
+import { sortByPlan, withPlans } from "@/lib/plans";
 import { Card } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Notice";
 import { buttonClasses } from "@/components/ui/buttonClasses";
@@ -16,8 +17,9 @@ export function LatestSpecialists() {
   useEffect(() => {
     const sb = getSupabase();
     if (!sb) { setList([]); return; }
-    sb.from("mp_specialists").select(SPECIALIST_SELECT).eq("status", "approved").order("created_at", { ascending: false }).limit(6)
-      .then(({ data }) => setList((data as unknown as Specialist[]) ?? []));
+    // Premium / paid specialists are featured first, then the newest.
+    sb.from("mp_specialists").select(SPECIALIST_SELECT).eq("status", "approved").order("created_at", { ascending: false }).limit(60)
+      .then(async ({ data }) => setList(sortByPlan(await withPlans(sb, (data as unknown as Specialist[]) ?? [])).slice(0, 6)));
   }, []);
 
   if (list === null) {

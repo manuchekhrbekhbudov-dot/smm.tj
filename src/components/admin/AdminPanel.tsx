@@ -17,8 +17,9 @@ import { Input } from "@/components/ui/Field";
 import { Notice, Skeleton } from "@/components/ui/Notice";
 import { cn } from "@/lib/cn";
 import { Analytics } from "./Analytics";
+import { Payments } from "./Payments";
 
-type Tab = SpecialistStatus | "reviews" | "stats";
+type Tab = SpecialistStatus | "reviews" | "payments" | "stats";
 type ReviewRow = Review & { specialists?: { profiles: { full_name: string } | null } | null };
 
 export function AdminPanel() {
@@ -47,7 +48,7 @@ export function AdminPanel() {
         </div>
       )}
       <div role="tablist" className="-mx-4 mt-8 flex gap-2 overflow-x-auto px-4 pb-2">
-        {(["pending", "approved", "rejected", "reviews", "stats"] as Tab[]).map((k) => (
+        {(["pending", "approved", "rejected", "payments", "reviews", "stats"] as Tab[]).map((k) => (
           <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
             className={cn("relative shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors", tab === k ? "text-white" : "glass text-ink-1 hover:text-ink-0")}>
             {tab === k && <motion.span layoutId="adm-tab" className="absolute inset-0 rounded-full bg-gradient-primary" transition={{ type: "spring", stiffness: 500, damping: 35 }} />}
@@ -56,7 +57,7 @@ export function AdminPanel() {
         ))}
       </div>
       <div className="mt-8">
-        {tab === "stats" ? <Analytics /> : tab === "reviews" ? <Reviews /> : <Specialists status={tab} />}
+        {tab === "stats" ? <Analytics /> : tab === "reviews" ? <Reviews /> : tab === "payments" ? <Payments /> : <Specialists status={tab} />}
       </div>
     </div>
   );

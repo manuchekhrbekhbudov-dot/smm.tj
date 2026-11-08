@@ -22,6 +22,9 @@ export type Specialist = {
   min_price: number | null;
   created_at: string;
   updated_at: string;
+  /** Paid plan (top | standard | premium) and its end; loaded via withPlans(). */
+  plan?: string | null;
+  plan_until?: string | null;
   profiles?: Pick<Profile, "full_name" | "city" | "avatar_url"> | null;
 };
 
@@ -42,3 +45,11 @@ export type Review = {
 /** Public specialist row with joined profile, used by catalog and profile pages. */
 export const SPECIALIST_SELECT =
   "id, headline, bio, experience_years, specialties, portfolio_links, telegram, whatsapp, instagram, status, reject_reason, rating_avg, reviews_count, min_price, created_at, updated_at, profiles:mp_profiles!mp_specialists_id_fkey(full_name, city, avatar_url)";
+
+export type PaymentStatus = "checking" | "review" | "approved" | "rejected";
+export type Payment = {
+  id: string; specialist_id: string; plan: string; amount_tjs: number; receipt_path: string;
+  status: PaymentStatus; reason: string | null; transaction_id: string | null;
+  ai_result: { amount?: number; currency?: string; recipient_phone_digits?: string; recipient_name?: string; date?: string; transaction_id?: string; notes?: string; signs_of_editing?: boolean } | null;
+  created_at: string; decided_at: string | null;
+};

@@ -8,6 +8,7 @@ import { getSupabase } from "@/lib/supabase/client";
 import { SPECIALIST_SELECT, type Specialist } from "@/lib/supabase/types";
 import { citySlugs, specialtySlugs } from "@/content/site";
 import { SpecialistCard } from "./SpecialistCard";
+import { sortByPlan, withPlans } from "@/lib/plans";
 import { Select } from "@/components/ui/Select";
 import { Input } from "@/components/ui/Field";
 import { Notice, Skeleton } from "@/components/ui/Notice";
@@ -49,10 +50,11 @@ export function Catalog() {
     if (sort === "rating") q = q.order("rating_avg", { ascending: false }).order("reviews_count", { ascending: false });
     if (sort === "price") q = q.order("min_price", { ascending: true, nullsFirst: false });
     if (sort === "new") q = q.order("created_at", { ascending: false });
-    q.limit(200).then(({ data, error: e }) => {
-      if (!alive) return;
-      if (e) { setError(true); setList([]); return; }
-      setList((data as unknown as Specialist[]) ?? []);
+    q.limit(200).then(async ({ data, error: e }) => {
+      if (e) { if (alive) { setError(true); setList([]); } return; }
+      // Paid plans first (Premium → Standard → Top), then the chosen sort.
+      const list = sortByPlan(await withPlans(sb, (data as unknown as Specialist[]) ?? []));
+      if (alive) setList(list);
     });
     return () => { alive = false; };
   }, [sb, specialty, maxPrice, sort]);

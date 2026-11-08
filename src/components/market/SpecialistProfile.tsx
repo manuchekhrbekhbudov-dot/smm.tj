@@ -4,6 +4,8 @@ import { dateLocale } from "@/lib/date";
 import { useTranslations, useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { getSupabase } from "@/lib/supabase/client";
+import { withPlans } from "@/lib/plans";
+import { PlanBadge } from "@/components/ui/PlanBadge";
 import { SPECIALIST_SELECT, type Review, type Service, type Specialist } from "@/lib/supabase/types";
 import { formatTjs } from "@/content/site";
 import { safeHttpUrl, telegramUrl, whatsappUrl, instagramUrl, linkLabel } from "@/lib/links";
@@ -31,9 +33,11 @@ export function SpecialistProfile() {
       sb.from("mp_specialists").select(SPECIALIST_SELECT).eq("id", id).maybeSingle(),
       sb.from("mp_specialist_services").select("*").eq("specialist_id", id).order("price_tjs"),
       sb.from("mp_reviews").select("*, profiles:mp_profiles!mp_reviews_client_id_fkey(full_name)").eq("specialist_id", id).eq("hidden", false).order("created_at", { ascending: false }),
-    ]).then(([a, b, c]) => {
+    ]).then(async ([a, b, c]) => {
+      const one = (a.data as unknown as Specialist) ?? null;
+      const withPlan = one ? (await withPlans(sb, [one]))[0] : null;
       if (!alive) return;
-      setS((a.data as unknown as Specialist) ?? null);
+      setS(withPlan);
       setServices((b.data as Service[]) ?? []);
       setReviews((c.data as unknown as Review[]) ?? []);
     });
@@ -66,6 +70,7 @@ export function SpecialistProfile() {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-h2 font-bold">{name}</h1>
+                <PlanBadge s={s} />
                 {s.status === "approved" && <Badge tone="success"><Icon name="check" className="h-3.5 w-3.5" />{t("specialist.verified")}</Badge>}
               </div>
               <p className="mt-2 text-lg text-ink-1">{s.headline}</p>

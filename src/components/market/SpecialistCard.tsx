@@ -8,17 +8,21 @@ import { Badge } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { formatTjs } from "@/content/site";
 import type { Specialist } from "@/lib/supabase/types";
+import { activePlan } from "@/lib/plans";
+import { PlanBadge } from "@/components/ui/PlanBadge";
 
 export function SpecialistCard({ s }: { s: Specialist }) {
   const t = useTranslations();
   const name = s.profiles?.full_name || "—";
+  const premium = activePlan(s) === "premium";
   return (
     <Link href={{ pathname: "/specialist", query: { id: s.id } }} data-cursor={t("common.view")} className="block h-full">
-      <TiltCard className="flex h-full flex-col p-6" max={6}>
+      <TiltCard className={premium ? "flex h-full flex-col p-6 gradient-border glow-sm" : "flex h-full flex-col p-6"} max={6}>
         <div className="flex items-start gap-4">
           <Avatar name={name} url={s.profiles?.avatar_url} size={60} />
           <div className="min-w-0 flex-1">
             <h3 className="truncate font-display text-lg font-bold">{name}</h3>
+            <PlanBadge s={s} className="mt-1" />
             <p className="mt-0.5 line-clamp-2 text-sm text-ink-1">{s.headline}</p>
             {s.profiles?.city && <p className="mt-1 text-xs text-ink-2">{t(`cities.${s.profiles.city}`)}</p>}
           </div>
