@@ -1,7 +1,7 @@
 "use client";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { askAssistant, type ChatMsg } from "@/lib/assistant";
+import { askAssistant, assistantEnabled, type ChatMsg } from "@/lib/assistant";
 import { useAuth } from "@/lib/auth";
 import { Spinner } from "@/components/ui/Notice";
 import { cn } from "@/lib/cn";
@@ -29,6 +29,7 @@ export function Assistant() {
   const t = useTranslations("assistant");
   const locale = useLocale();
   const { profile, blocked } = useAuth();
+  const [enabled, setEnabled] = useState(false);
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
@@ -36,6 +37,7 @@ export function Assistant() {
   const [err, setErr] = useState<string | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => { void assistantEnabled().then(setEnabled); }, []);
   useEffect(() => { try { const s = sessionStorage.getItem(STORE); if (s) setMsgs(JSON.parse(s)); } catch { /* ignore */ } }, []);
   useEffect(() => {
     try { sessionStorage.setItem(STORE, JSON.stringify(msgs.slice(-20))); } catch { /* ignore */ }
@@ -43,7 +45,7 @@ export function Assistant() {
     if (box) box.scrollTop = box.scrollHeight;
   }, [msgs, open, busy]);
 
-  if (blocked) return null;
+  if (blocked || !enabled) return null;
   const isSpec = profile?.role === "specialist";
   const suggestions = isSpec ? [t("s.spec1"), t("s.spec2"), t("s.spec3")] : [t("s.client1"), t("s.client2"), t("s.client3")];
 

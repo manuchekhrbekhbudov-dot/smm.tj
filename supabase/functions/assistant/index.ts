@@ -38,6 +38,8 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+  // GET: is the assistant switched on? (the site hides the chat button until a key is added)
+  if (req.method === "GET") return json({ configured: !!Deno.env.get("ANTHROPIC_API_KEY") });
   if (req.method !== "POST") return json({ error: "method" }, 405);
   const key = Deno.env.get("ANTHROPIC_API_KEY");
   if (!key) return json({ error: "not_configured" }, 503);
