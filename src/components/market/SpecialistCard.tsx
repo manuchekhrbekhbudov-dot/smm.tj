@@ -15,9 +15,21 @@ export function SpecialistCard({ s }: { s: Specialist }) {
   const t = useTranslations();
   const name = s.profiles?.full_name || "—";
   const premium = activePlan(s) === "premium";
+  const banned = !!s.banned_at;
   return (
-    <Link href={{ pathname: "/specialist", query: { id: s.id } }} data-cursor={t("common.view")} className="block h-full">
-      <TiltCard className={premium ? "flex h-full flex-col p-6 gradient-border glow-sm" : "flex h-full flex-col p-6"} max={6}>
+    <Link href={{ pathname: "/specialist", query: { id: s.id } }} data-cursor={t("common.view")} className="relative block h-full" aria-label={banned ? `${name} — ${t("trust.bannedCard")}` : undefined}>
+      {banned && (
+        // Removed by the platform: the card stays visible, crossed out in red, with the reason.
+        <span aria-hidden className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-[var(--radius-lg)]">
+          <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+            <line x1="2" y1="4" x2="98" y2="96" stroke="#ef4444" strokeWidth="1.6" strokeLinecap="round" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 6 }} />
+          </svg>
+          <span className="absolute left-1/2 top-1/2 w-[86%] -translate-x-1/2 -translate-y-1/2 -rotate-6 rounded-2xl border-2 border-danger bg-bg-0/90 px-4 py-3 text-center text-sm font-extrabold uppercase leading-snug tracking-wide text-danger shadow-lg">
+            ⛔ {t("trust.bannedCard")}
+          </span>
+        </span>
+      )}
+      <TiltCard className={banned ? "flex h-full flex-col p-6 opacity-60 grayscale" : premium ? "flex h-full flex-col p-6 gradient-border glow-sm" : "flex h-full flex-col p-6"} max={6}>
         <div className="flex items-start gap-4">
           <Avatar name={name} url={s.profiles?.avatar_url} size={60} />
           <div className="min-w-0 flex-1">

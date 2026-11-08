@@ -55,7 +55,11 @@ export function Catalog() {
       if (e) { if (alive) { setError(true); setList([]); } return; }
       // Paid plans first (Premium → Standard → Top), then the chosen sort.
       const list = sortByPlan(await withPlans(sb, (data as unknown as Specialist[]) ?? []));
-      if (alive) setList(list);
+      // Specialists removed by the platform stay visible at the end, crossed out (never orderable).
+      let bq = sb.from("mp_specialists").select(`${SPECIALIST_SELECT}, banned_at`).not("banned_at", "is", null);
+      if (specialty) bq = bq.contains("specialties", [specialty]);
+      const { data: bannedRows } = await bq.order("banned_at", { ascending: false }).limit(50);
+      if (alive) setList([...list, ...((bannedRows as unknown as Specialist[]) ?? [])]);
     });
     return () => { alive = false; };
   }, [sb, specialty, maxPrice, sort]);
@@ -110,7 +114,7 @@ export function Catalog() {
         </div>
       ) : (
         <>
-          <p className="mb-5 text-sm text-ink-2" aria-live="polite">{t("catalog.found", { count: shown.length })}</p>
+          <p className="mb-5 text-sm text-ink-2" aria-live="polite">{t("catalog.found", { count: shown.filter((s) => !s.banned_at).length })}</p>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {shown.map((s, i) => (
               <motion.div key={s.id} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 8) * 0.04 }}>
