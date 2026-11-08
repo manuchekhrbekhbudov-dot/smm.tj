@@ -14,7 +14,8 @@ create table if not exists public.mp_app_config (
   key text primary key,
   value text not null
 );
--- Director / admin phone in E.164 without "+", as Supabase Auth stores it.
+-- Director / admin phone in E.164 without "+". Matches SMS logins (auth.users.phone) and
+-- phone+password logins, which use the e-mail <digits>@phone.smm.tj internally.
 insert into public.mp_app_config(key, value) values ('admin_phone', '992504440101')
 on conflict (key) do update set value = excluded.value;
 alter table public.mp_app_config enable row level security; -- no policies: not readable by clients
@@ -117,6 +118,7 @@ begin
   values (
     new.id,
     case when new.phone = (select value from public.mp_app_config where key = 'admin_phone')
+           or lower(new.email) = (select value from public.mp_app_config where key = 'admin_phone') || '@phone.smm.tj'
          then 'admin'::public.mp_user_role else 'client'::public.mp_user_role end
   )
   on conflict (id) do nothing;

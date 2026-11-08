@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase/client";
 import type { Service } from "@/lib/supabase/types";
-import { normalizeTjPhone, formatTjs } from "@/content/site";
+import { normalizeTjPhone, formatTjs, userPhone } from "@/content/site";
 import { Input, Textarea } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
@@ -53,7 +53,7 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
     setState(error ? "error" : "done");
   };
 
-  const myPhone = session.user.phone ? `+${session.user.phone}` : "+992 ";
+  const myPhone = userPhone(session.user) ?? "+992 ";
 
   return (
     <form onSubmit={submit} className="space-y-4" noValidate>
