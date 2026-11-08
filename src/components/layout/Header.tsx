@@ -5,17 +5,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Logo } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { buttonClasses } from "@/components/ui/buttonClasses";
-import { Magnetic } from "@/components/fx/Magnetic";
+import { AuthButton } from "./AuthButton";
 import { cn } from "@/lib/cn";
 
 const links = [
   { href: "/", key: "home" },
-  { href: "/services", key: "services" },
-  { href: "/portfolio", key: "portfolio" },
-  { href: "/pricing", key: "pricing" },
-  { href: "/about", key: "about" },
-  { href: "/contact", key: "contact" },
+  { href: "/specialists", key: "specialists" },
+  { href: "/about", key: "how" },
 ] as const;
 
 function LocaleSwitch() {
@@ -93,9 +89,7 @@ export function Header() {
               <LocaleSwitch />
               <ThemeToggle />
             </div>
-            <Magnetic className="hidden md:inline-block">
-              <Link href="/login" className={buttonClasses("primary", "sm", "h-10 px-5")}>{t("common.login")}</Link>
-            </Magnetic>
+            <AuthButton className="hidden md:flex" />
             <button
               type="button"
               className="flex h-10 w-10 items-center justify-center rounded-full glass lg:hidden"
@@ -133,7 +127,7 @@ export function Header() {
             <div className="flex flex-wrap items-center gap-3">
               <LocaleSwitch />
               <ThemeToggle />
-              <Link href="/login" className={buttonClasses("primary", "md", "ml-auto")}>{t("common.login")}</Link>
+              <AuthButton className="ml-auto" />
             </div>
           </motion.div>
         )}

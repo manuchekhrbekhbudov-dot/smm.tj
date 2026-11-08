@@ -31,21 +31,9 @@ export function Hero() {
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_30%_40%,var(--bg-0)_0%,transparent_60%)] opacity-70" />
 
       <motion.div style={reduced ? undefined : { y, opacity }} className="container-x relative pb-24 pt-36">
-        <motion.span
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
-          className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-xs font-semibold text-ink-1"
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
-          </span>
-          {t("badge")}
-        </motion.span>
 
-        <p className="mt-6 text-xs font-bold uppercase tracking-[0.25em] text-purple">{t("eyebrow")}</p>
-        <TextReveal trigger="mount" delay={0.35} stagger={0.025} text={t("title")} highlightFrom={-2} className="mt-4 max-w-[14ch] text-hero font-black" />
+        <p className="text-xs font-bold uppercase tracking-[0.25em] text-purple">{t("eyebrow")}</p>
+        <TextReveal trigger="mount" delay={0.35} stagger={0.025} text={t("title")} highlightFrom={-1} className="mt-4 max-w-[14ch] text-hero font-black" />
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -63,12 +51,12 @@ export function Hero() {
           className="mt-10 flex flex-wrap gap-4"
         >
           <Magnetic>
-            <Link href="/contact" data-cursor className={buttonClasses("primary", "lg")}>
-              {t("cta")} <Icon name="arrow" className="h-5 w-5" />
+            <Link href="/specialists" data-cursor className={buttonClasses("primary", "lg")}>
+              {t("ctaFind")} <Icon name="arrow" className="h-5 w-5" />
             </Link>
           </Magnetic>
           <Magnetic>
-            <Link href="/portfolio" data-cursor className={buttonClasses("outline", "lg")}>{t("ctaSecondary")}</Link>
+            <Link href={{ pathname: "/login", query: { role: "specialist" } }} data-cursor className={buttonClasses("outline", "lg")}>{t("ctaJoin")}</Link>
           </Magnetic>
         </motion.div>
       </motion.div>
@@ -80,7 +68,7 @@ export function Hero() {
         transition={{ delay: 2 }}
         className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-ink-2 md:flex"
       >
-        {t("scroll")}
+        
         <span className="relative h-12 w-px overflow-hidden bg-ink-3">
           <motion.span
             className="absolute left-0 top-0 h-1/2 w-full bg-gradient-primary"

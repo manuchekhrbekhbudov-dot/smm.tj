@@ -1,45 +1,40 @@
-# SMM.TJ — платформаи агентии SMM
+# SMM.TJ — бозори мутахассисони SMM дар Тоҷикистон
 
-Next.js 15 (App Router) · TypeScript · Tailwind CSS 4 · Framer Motion · GSAP ScrollTrigger · Lenis · next-intl (тоҷикӣ / русӣ) · Supabase + Prisma (аз қадами воридшавӣ).
+Мутахассисони SMM бо рақами телефон (SMS) сабти ном мекунанд, профил ва **нархҳои худро** мегузоранд.
+Мизоҷон онҳоро бо филтр меёбанд, фармоиш медиҳанд ва пас аз анҷоми кор **шарҳи воқеӣ** менависанд.
+Директор (+992 50 444 01 01) профилҳоро тасдиқ мекунад ва шарҳҳоро назорат мекунад.
+
+**Ягон маълумоти сохта нест** — ҳама рақамҳо ва профилҳо аз пойгоҳи додаҳо меоянд.
+
+## Технологияҳо
+Next.js 15 · TypeScript · Tailwind CSS 4 · Framer Motion · GSAP · Three.js · next-intl (тоҷикӣ/русӣ) · **Supabase** (Auth бо SMS, Postgres + RLS, Storage).
+
+## Supabase
+1. Дар supabase.com лоиҳа созед.
+2. **SQL Editor** → мундариҷаи `supabase/schema.sql`-ро гузоред → **Run**.
+3. **Authentication → Providers → Phone** → фаъол кунед ва SMS-провайдер (Twilio) гузоред.
+4. `Project URL` ва `anon key`-ро ба `.env.local` гузоред:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=...
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+   ```
+
+Қоидаҳои бовар дар худи база (RLS + trigger) иҷро мешаванд: мутахассис худро тасдиқ карда наметавонад,
+шарҳ танҳо пас аз фармоиши анҷомёфта, як фармоиш — як шарҳ, рейтингро база ҳисоб мекунад.
 
 ## Оғоз
-
 ```bash
 npm install
 npm run dev
 ```
 
-Кушоед: http://localhost:3000 → ба `/tg` мегузарад. Русӣ: `/ru`.
+## Саҳифаҳо
+`/tg` асосӣ · `/tg/specialists` каталог · `/tg/specialist?id=` профил · `/tg/login` воридшавӣ (SMS) ·
+`/tg/onboarding` · `/tg/cabinet` кабинет (мизоҷ/мутахассис) · `/tg/admin` панели директор · `/tg/about`.
 
-- `/tg` — асосӣ: hero бо заррачаҳои 3D, хизматҳо, натиҷаҳо, портфолио бо скроли уфуқӣ, раванди кор, шарҳҳо, нархҳо, FAQ
-- `/tg/services`, `/tg/services/reels` — хизматҳо
-- `/tg/portfolio`, `/tg/portfolio/nur-beauty` — кейсҳо бо слайдери «пеш/баъд»
-- `/tg/pricing`, `/tg/about`, `/tg/contact` — нархҳо, даста, форма ва харита
-- `/tg/design-system` — ҳамаи рангҳо, ҳуруф, тугмаҳо, кортҳо, формаҳо ва аниматсияҳо.
-- Тугмаи моҳ/офтоб дар header — реҷаи торик / равшан (интихоб дар браузер нигоҳ дошта мешавад).
-
-## Сохтор
-
-```
-messages/          tg.json, ru.json — ҳамаи матнҳо
-src/app/[locale]/  саҳифаҳо (template.tsx — гузариши саҳифа)
-src/components/fx  Preloader, Cursor, SmoothScroll, TextReveal, Magnetic, TiltCard, Counter, Marquee, Reveal, Background
-src/components/home  бахшҳои саҳифаи асосӣ (Hero, PortfolioScroll, Process, PricingCards, Faq...)
-src/content/site.ts  нархҳо, кейсҳо, тамосҳо (маълумоти тамос ҳоло намунавӣ аст)
-src/components/ui  Button, Card/Badge/Eyebrow, Input/Textarea/Toggle, Logo, ThemeToggle
-src/app/globals.css  токенҳои дизайн (@theme), реҷаи равшан: [data-theme="light"]
-legacy/            сайти кӯҳна (барои маълумот)
-```
-
-Ҳамаи аниматсияҳо `prefers-reduced-motion`-ро риоя мекунанд; дар телефон курсор ва эффектҳои вазнин хомӯшанд.
-
-## GitHub Pages (нусхаи статикӣ)
-
+## GitHub Pages
 ```bash
-bash scripts/build-pages.sh
+NEXT_PUBLIC_SUPABASE_URL=... NEXT_PUBLIC_SUPABASE_ANON_KEY=... bash scripts/build-pages.sh
+cp -r pages-out/. .
 ```
-
-Натиҷа дар `pages-out/` — онро ба шохаи `gh-pages` push кунед. Дар Pages формаи тамос паёмро ба WhatsApp мефиристад (сервер нест).
-Нусхаи пурра бо сервер (воридшавӣ, кабинет) дар Vercel кор мекунад.
-
-> Папкаҳои `tg/`, `ru/`, `_next/`, `404/` ва файлҳои `index.html`, `404.html`, `.nojekyll` дар решаи репозиторий — нусхаи тайёри сайт барои GitHub Pages (аз `scripts/build-pages.sh`). Онҳоро дастӣ таҳрир накунед.
+Папкаҳои `tg/`, `ru/`, `_next/`, `404/` ва `index.html`, `404.html`, `.nojekyll` дар решаи репозиторий — нусхаи тайёри сайт барои Pages. Онҳоро дастӣ таҳрир накунед.

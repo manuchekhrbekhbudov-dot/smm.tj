@@ -4,13 +4,11 @@ import { use } from "react";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Hero } from "@/components/home/Hero";
-import { ClientsMarquee } from "@/components/home/ClientsMarquee";
-import { ServicesGrid } from "@/components/home/ServicesGrid";
-import { Stats } from "@/components/home/Stats";
-import { PortfolioScroll } from "@/components/home/PortfolioScroll";
-import { Process } from "@/components/home/Process";
-import { Testimonials } from "@/components/home/Testimonials";
-import { PricingCards } from "@/components/home/PricingCards";
+import { LiveStats } from "@/components/home/LiveStats";
+import { Categories } from "@/components/home/Categories";
+import { HowItWorks } from "@/components/home/HowItWorks";
+import { LatestSpecialists } from "@/components/home/LatestSpecialists";
+import { Trust } from "@/components/home/Trust";
 import { Faq } from "@/components/home/Faq";
 import { CtaBand } from "@/components/home/CtaBand";
 
@@ -22,20 +20,24 @@ export default function HomePage({ params }: { params: Promise<{ locale: string 
   return (
     <SiteShell>
       <Hero />
-      <ClientsMarquee />
-      <section className="container-x py-20 md:py-36">
-        <SectionHeader eyebrow={t("services.eyebrow")} title={t("services.title")} text={t("services.text")} className="mb-14" />
-        <ServicesGrid />
+      <LiveStats />
+      <section className="container-x py-20 md:py-28">
+        <SectionHeader eyebrow={t("categories.eyebrow")} title={t("categories.title")} text={t("categories.text")} className="mb-12" />
+        <Categories />
       </section>
-      <Stats />
-      <PortfolioScroll />
-      <Process />
-      <Testimonials />
-      <section className="container-x py-20 md:py-36">
-        <SectionHeader eyebrow={t("pricing.eyebrow")} title={t("pricing.title")} text={t("pricing.text")} align="center" className="mb-12" />
-        <PricingCards />
+      <section className="container-x py-20 md:py-28">
+        <SectionHeader eyebrow={t("latest.eyebrow")} title={t("latest.title")} className="mb-12" />
+        <LatestSpecialists />
       </section>
-      <section className="container-x grid gap-12 py-20 md:py-36 lg:grid-cols-[1fr_1.6fr]">
+      <section className="container-x py-20 md:py-28">
+        <SectionHeader eyebrow={t("how.eyebrow")} title={t("how.title")} className="mb-12" />
+        <HowItWorks />
+      </section>
+      <section className="container-x py-20 md:py-28">
+        <SectionHeader eyebrow={t("trust.eyebrow")} title={t("trust.title")} className="mb-12" />
+        <Trust />
+      </section>
+      <section className="container-x grid gap-12 py-20 md:py-28 lg:grid-cols-[1fr_1.6fr]">
         <SectionHeader eyebrow={t("faq.eyebrow")} title={t("faq.title")} />
         <Faq />
       </section>

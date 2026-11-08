@@ -11,10 +11,10 @@ trap 'rm -rf "$WORK"' EXIT
 tar -C "$ROOT" --exclude=./.git --exclude=./.next --exclude=./pages-out --exclude=./legacy --exclude=./node_modules -cf - . | tar -C "$WORK" -xf -
 ln -s "$ROOT/node_modules" "$WORK/node_modules"
 cd "$WORK"
-# Features that need a server are swapped out for the static build
+# Middleware (locale redirect) needs a server; the static build links to /tg/ directly.
+# Supabase settings come from NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY in the environment.
 rm -f src/middleware.ts
 rm -rf "src/app/[locale]/[...rest]"
-cp src/lib/actions/contact.static.ts src/lib/actions/contact.ts
 
 STATIC_EXPORT=1 PAGES_BASE_PATH="$BASE" NEXT_TELEMETRY_DISABLED=1 npx next build
 

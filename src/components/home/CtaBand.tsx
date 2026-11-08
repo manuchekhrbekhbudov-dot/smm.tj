@@ -18,7 +18,7 @@ export function CtaBand() {
           <TextReveal as="h2" text={t("title")} className="relative mx-auto max-w-4xl text-display font-black" />
           <p className="relative mx-auto mt-6 max-w-xl text-lg text-white/85">{t("text")}</p>
           <Magnetic className="relative mt-10 inline-block">
-            <Link href="/contact" data-cursor className="inline-flex h-16 items-center gap-3 rounded-full bg-[#05010A] px-10 text-lg font-semibold text-white shadow-2xl transition-transform duration-300 hover:scale-105">
+            <Link href={{ pathname: "/login", query: { role: "specialist" } }} data-cursor className="inline-flex h-16 items-center gap-3 rounded-full bg-[#05010A] px-10 text-lg font-semibold text-white shadow-2xl transition-transform duration-300 hover:scale-105">
               {t("button")} <Icon name="arrow" className="h-5 w-5" />
             </Link>
           </Magnetic>

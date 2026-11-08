@@ -9,6 +9,7 @@ import { SmoothScroll } from "@/components/fx/SmoothScroll";
 import { Cursor } from "@/components/fx/Cursor";
 import { Preloader } from "@/components/fx/Preloader";
 import { themeScript } from "@/components/ui/ThemeToggle";
+import { AuthProvider } from "@/lib/auth";
 import "../globals.css";
 
 const unbounded = Unbounded({
@@ -60,7 +61,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
           <Background />
           <SmoothScroll />
           <Cursor />
-          {children}
+          <AuthProvider>{children}</AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>
