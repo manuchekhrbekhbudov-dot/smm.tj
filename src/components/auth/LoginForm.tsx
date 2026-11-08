@@ -62,7 +62,12 @@ export function LoginForm() {
     setBusy(true); setErr(null);
     const { error } = await sb.auth.signInWithOtp({ phone: p });
     setBusy(false);
-    if (error) { setErr(t("auth.errors.generic")); return; }
+    if (error) {
+      const code = (error as { code?: string }).code ?? "";
+      setErr(t(code === "phone_provider_disabled" || code === "sms_send_failed" ? "auth.errors.providerOff"
+        : code.includes("rate_limit") ? "auth.errors.rateLimit" : "auth.errors.generic"));
+      return;
+    }
     setPhone(p); setStep("code"); setLeft(RESEND); setCode("");
     setTimeout(() => codeRef.current?.focus(), 50);
   };
