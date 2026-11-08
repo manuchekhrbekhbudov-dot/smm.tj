@@ -30,7 +30,7 @@ export function Complaints() {
       sb.from("mp_complaints").select("*, client:mp_profiles!mp_complaints_client_id_fkey(full_name), specialists:mp_specialists!mp_complaints_specialist_id_fkey(profiles:mp_profiles!mp_specialists_id_fkey(full_name))").order("created_at", { ascending: false }).limit(200),
       sb.from("mp_specialists").select("id, strikes, warned_at, banned_at, profiles:mp_profiles!mp_specialists_id_fkey(full_name)").or("warned_at.not.is.null,banned_at.not.is.null").order("strikes", { ascending: false }),
     ]);
-    if (c.error) { setErr(t("plans.notReady")); setRows([]); return; }
+    if (c.error) { setErr(t("admin.needSql")); setRows([]); return; }
     setRows((c.data as unknown as Complaint[]) ?? []);
     setFlagged((f.data as unknown as Flagged[]) ?? []);
   }, [sb, t]);
@@ -109,7 +109,7 @@ export function FeedbackList() {
   }, [sb]);
   useEffect(() => { void load(); }, [load]);
   if (rows === null) return <Skeleton className="h-40" />;
-  if (err) return <Notice tone="warning">{t("plans.notReady")}</Notice>;
+  if (err) return <Notice tone="warning">{t("admin.needSql")}</Notice>;
   if (!rows.length) return <p className="text-ink-2">{t("admin.empty")}</p>;
   const df = new Intl.DateTimeFormat(dateLocale(locale), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   return (

@@ -504,7 +504,8 @@
       "tx": "Операция",
       "receipt": "Чек",
       "recheck": "Проверка AI"
-    }
+    },
+    "needSql": "Этот раздел ещё не включён: выполните файл trust.sql в Supabase → SQL Editor."
   },
   "about": {
     "title": "Как это работает",

@@ -504,7 +504,8 @@
       "tx": "Амалиёт",
       "receipt": "Чек",
       "recheck": "Санҷиши AI"
-    }
+    },
+    "needSql": "Ин қисм ҳанӯз фаъол нест: файли trust.sql-ро дар Supabase → SQL Editor иҷро кунед."
   },
   "about": {
     "title": "Чӣ тавр кор мекунад",
