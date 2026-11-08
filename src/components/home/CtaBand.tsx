@@ -1,4 +1,6 @@
+"use client";
 import { useTranslations } from "next-intl";
+import { useAuth } from "@/lib/auth";
 import { Link } from "@/i18n/navigation";
 import { Magnetic } from "@/components/fx/Magnetic";
 import { Reveal } from "@/components/fx/Reveal";
@@ -8,6 +10,8 @@ import { Icon } from "@/components/ui/Icon";
 
 export function CtaBand() {
   const t = useTranslations("home.cta");
+  const { session } = useAuth();
+  if (session) return null; // sign-up call-to-action is only for visitors
   return (
     <section className="container-x py-20 md:py-28">
       <Reveal dir="scale">

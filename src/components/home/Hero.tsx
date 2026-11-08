@@ -8,6 +8,7 @@ import { buttonClasses } from "@/components/ui/buttonClasses";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { specialtySlugs } from "@/content/site";
 import { cn } from "@/lib/cn";
+import { useAuth } from "@/lib/auth";
 
 const HeroScene = dynamic(() => import("@/components/fx/HeroScene"), { ssr: false });
 
@@ -67,9 +68,31 @@ function RoleCard({ icon, title, text, cta, href, primary }: {
   );
 }
 
+/** Shown instead of "Who are you?" once the visitor is signed in. */
+function SignedInActions({ name, role }: { name: string; role: "client" | "specialist" | "admin" }) {
+  const t = useTranslations("home.hero.me");
+  const links = {
+    client: { primary: "/specialists", secondary: "/cabinet" },
+    specialist: { primary: "/cabinet", secondary: { pathname: "/cabinet", query: { tab: "profile" } } },
+    admin: { primary: "/admin", secondary: "/specialists" },
+  }[role];
+  return (
+    <div className="mt-8 w-full max-w-2xl rounded-[var(--radius-lg)] glass glass-edge p-6 md:p-8">
+      <p className="font-display text-xl font-bold md:text-2xl">{t("hello", { name })}</p>
+      <p className="mt-2 text-ink-1">{t(`${role}.text`)}</p>
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <Link href={links.primary} className={buttonClasses("primary", "lg", "w-full")}>{t(`${role}.primary`)} <Icon name="arrow" className="h-5 w-5" /></Link>
+        <Link href={links.secondary} className={buttonClasses("outline", "lg", "w-full")}>{t(`${role}.secondary`)}</Link>
+      </div>
+    </div>
+  );
+}
+
 export function Hero() {
   const t = useTranslations();
   const show3d = use3d();
+  const { session, profile } = useAuth();
+  const signedIn = Boolean(session && profile && profile.full_name);
 
   return (
     <section className="relative flex flex-col items-center overflow-hidden pb-10 pt-20 md:pt-24">
@@ -93,12 +116,18 @@ export function Hero() {
         <TextReveal trigger="mount" delay={0.05} stagger={0.04} text={t("home.hero.title")} highlightFrom={-2} className="mt-5 max-w-4xl text-hero font-bold" />
         <p className="mt-4 max-w-2xl text-base text-ink-1 md:text-xl">{t("home.hero.subtitle")}</p>
 
+        {signedIn ? (
+          <SignedInActions name={profile!.full_name} role={profile!.role} />
+        ) : (
+          <>
         {/* Two clear entrances */}
-        <p className="mt-6 text-sm font-semibold uppercase tracking-widest text-ink-2 md:mt-8">{t("home.hero.choose")}</p>
-        <div className="mt-4 grid w-full max-w-4xl gap-4 md:grid-cols-2">
-          <RoleCard primary icon="smm" title={t("home.hero.client.title")} text={t("home.hero.client.text")} cta={t("home.hero.client.cta")} href="/specialists" />
-          <RoleCard icon="star" title={t("home.hero.specialist.title")} text={t("home.hero.specialist.text")} cta={t("home.hero.specialist.cta")} href={{ pathname: "/login", query: { role: "specialist" } }} />
-        </div>
+          <p className="mt-6 text-sm font-semibold uppercase tracking-widest text-ink-2 md:mt-8">{t("home.hero.choose")}</p>
+          <div className="mt-4 grid w-full max-w-4xl gap-4 md:grid-cols-2">
+            <RoleCard primary icon="smm" title={t("home.hero.client.title")} text={t("home.hero.client.text")} cta={t("home.hero.client.cta")} href="/specialists" />
+            <RoleCard icon="star" title={t("home.hero.specialist.title")} text={t("home.hero.specialist.text")} cta={t("home.hero.specialist.cta")} href={{ pathname: "/login", query: { role: "specialist" } }} />
+          </div>
+          </>
+        )}
 
         <ul className="mt-8 flex max-w-3xl flex-wrap justify-center gap-2" aria-label={t("home.categories.title")}>
           {specialtySlugs.slice(0, 6).map((s) => (
