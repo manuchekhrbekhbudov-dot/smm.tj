@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { Header } from "./Header";
+import { Footer } from "./Footer";
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations();
@@ -10,9 +11,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       </a>
       <Header />
       <main id="main">{children}</main>
-      <footer className="container-x border-t border-ink-3 py-10 text-sm text-ink-2">
-        © {new Date().getFullYear()} SMM.TJ. {t("footer.rights")}
-      </footer>
+      <Footer />
     </>
   );
 }

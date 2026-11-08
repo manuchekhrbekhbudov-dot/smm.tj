@@ -234,3 +234,7 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Dark-styled OpenStreetMap embed (light theme shows the original) */
+.map-frame { filter: invert(0.92) hue-rotate(200deg) saturate(0.6) brightness(0.9); }
+:root[data-theme="light"] .map-frame { filter: saturate(0.8); }

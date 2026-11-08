@@ -2,11 +2,17 @@ import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { use } from "react";
 import { SiteShell } from "@/components/layout/SiteShell";
-import { TextReveal } from "@/components/fx/TextReveal";
-import { Eyebrow } from "@/components/ui/Card";
-import { buttonClasses } from "@/components/ui/buttonClasses";
-import { Magnetic } from "@/components/fx/Magnetic";
-import { Link } from "@/i18n/navigation";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { Hero } from "@/components/home/Hero";
+import { ClientsMarquee } from "@/components/home/ClientsMarquee";
+import { ServicesGrid } from "@/components/home/ServicesGrid";
+import { Stats } from "@/components/home/Stats";
+import { PortfolioScroll } from "@/components/home/PortfolioScroll";
+import { Process } from "@/components/home/Process";
+import { Testimonials } from "@/components/home/Testimonials";
+import { PricingCards } from "@/components/home/PricingCards";
+import { Faq } from "@/components/home/Faq";
+import { CtaBand } from "@/components/home/CtaBand";
 
 export default function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = use(params);
@@ -15,16 +21,25 @@ export default function HomePage({ params }: { params: Promise<{ locale: string 
 
   return (
     <SiteShell>
-      <section className="container-x flex min-h-[100dvh] flex-col justify-center pb-20 pt-32">
-        <Eyebrow>{t("eyebrow")}</Eyebrow>
-        <TextReveal trigger="mount" delay={0.4} text={t("title")} highlightFrom={-2} className="mt-6 max-w-[14ch] text-hero font-black" />
-        <p className="mt-8 max-w-xl text-lg text-ink-1">{t("subtitle")}</p>
-        <div className="mt-10 flex flex-wrap gap-4">
-          <Magnetic><Link href="/contact" data-cursor className={buttonClasses("primary", "lg")}>{t("cta")}</Link></Magnetic>
-          <Magnetic><Link href="/design-system" data-cursor className={buttonClasses("outline", "lg")}>{t("ctaSecondary")}</Link></Magnetic>
-        </div>
-        <p className="mt-16 text-sm text-ink-2">{t("comingSoon")}</p>
+      <Hero />
+      <ClientsMarquee />
+      <section className="container-x py-20 md:py-36">
+        <SectionHeader eyebrow={t("services.eyebrow")} title={t("services.title")} text={t("services.text")} className="mb-14" />
+        <ServicesGrid />
       </section>
+      <Stats />
+      <PortfolioScroll />
+      <Process />
+      <Testimonials />
+      <section className="container-x py-20 md:py-36">
+        <SectionHeader eyebrow={t("pricing.eyebrow")} title={t("pricing.title")} text={t("pricing.text")} align="center" className="mb-12" />
+        <PricingCards />
+      </section>
+      <section className="container-x grid gap-12 py-20 md:py-36 lg:grid-cols-[1fr_1.6fr]">
+        <SectionHeader eyebrow={t("faq.eyebrow")} title={t("faq.title")} />
+        <Faq />
+      </section>
+      <CtaBand />
     </SiteShell>
   );
 }

@@ -1,11 +1,10 @@
 "use client";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { cn } from "@/lib/cn";
-import type { ElementType } from "react";
 
 type Props = {
   text: string;
-  as?: ElementType;
+  as?: "h1" | "h2" | "h3" | "p" | "span";
   className?: string;
   delay?: number;
   stagger?: number;
@@ -14,6 +13,8 @@ type Props = {
   /** Words from this index on get the purple gradient. Negative counts from the end. */
   highlightFrom?: number;
 };
+
+const motionTags = { h1: motion.h1, h2: motion.h2, h3: motion.h3, p: motion.p, span: motion.span } as const;
 
 const letter: Variants = {
   hidden: { y: "110%", opacity: 0, filter: "blur(12px)", rotate: 6 },
@@ -25,7 +26,7 @@ export function TextReveal({ text, as: Tag = "h1", className, delay = 0, stagger
   const reduced = useReducedMotion();
   const words = text.split(" ");
   const hl = highlightFrom === undefined ? Infinity : highlightFrom < 0 ? words.length + highlightFrom : highlightFrom;
-  const MotionTag = motion.create(Tag);
+  const MotionTag = motionTags[Tag];
   const triggerProps =
     trigger === "mount"
       ? { animate: "show" }
