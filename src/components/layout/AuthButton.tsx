@@ -15,10 +15,7 @@ export function AuthButton({ className, block = false }: { className?: string; b
   }
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      {profile?.role === "admin" && (
-        <Link href="/admin" className={buttonClasses("outline", "sm", "h-10 px-4")}>{t("admin")}</Link>
-      )}
-      <Link href="/cabinet" className="flex h-10 items-center gap-2 rounded-full glass pl-1 pr-4 text-sm font-semibold hover:glow-sm" aria-label={t("cabinet")}>
+      <Link href={profile?.role === "admin" ? "/admin" : "/cabinet"} className="flex h-10 items-center gap-2 rounded-full glass pl-1 pr-4 text-sm font-semibold hover:glow-sm" aria-label={t("cabinet")}>
         <Avatar name={profile?.full_name || "?"} url={profile?.avatar_url} size={32} />
         <span className="max-w-[10ch] truncate">{profile?.full_name || t("cabinet")}</span>
       </Link>

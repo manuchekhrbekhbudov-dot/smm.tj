@@ -27,6 +27,8 @@ export function Cabinet() {
   const tabs = useMemo<Tab[]>(() => (isSpecialist ? ["incoming", "stats", "profile", "prices"] : ["orders"]), [isSpecialist]);
   const initial = params.get("tab") as Tab | null;
   const [tab, setTab] = useState<Tab>(initial && tabs.includes(initial) ? initial : tabs[0]);
+  // The director has no client/specialist cabinet: send them to the admin panel.
+  useEffect(() => { if (profile?.role === "admin") router.replace("/admin"); }, [profile?.role, router]);
   useEffect(() => { if (!tabs.includes(tab)) setTab(tabs[0] === "incoming" ? "profile" : tabs[0]); }, [tabs, tab]);
   const [status, setStatus] = useState<{ s: SpecialistStatus | "none"; reason: string | null } | null>(null);
 

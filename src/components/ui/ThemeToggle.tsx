@@ -7,7 +7,12 @@ export const THEME_KEY = "smmtj:theme";
 type Theme = "dark" | "light";
 
 /** Inline script for <head>: applies the saved theme before paint (no flash). */
-export const themeScript = `try{var t=localStorage.getItem("${THEME_KEY}");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}`;
+export const themeScript =
+  `try{var t=localStorage.getItem("${THEME_KEY}");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}` +
+  // After a deploy an already-open tab can request chunks that no longer exist: reload once.
+  `(function(){function r(m){if(/ChunkLoadError|Loading chunk|dynamically imported module/i.test(String(m))){try{if(sessionStorage.getItem("smmtj:reloaded")==="1")return;sessionStorage.setItem("smmtj:reloaded","1");}catch(e){}location.reload();}}` +
+  `addEventListener("error",function(e){r(e.message)});addEventListener("unhandledrejection",function(e){r(e.reason&&(e.reason.name+" "+e.reason.message))});` +
+  `addEventListener("load",function(){setTimeout(function(){try{sessionStorage.removeItem("smmtj:reloaded")}catch(e){}},10000)});})();`;
 
 export function ThemeToggle() {
   const t = useTranslations("common");
