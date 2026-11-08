@@ -16,13 +16,27 @@ export function getBotUsername(): Promise<string | null> {
   return botCache;
 }
 
+export type CodeStatus = { pending: boolean; blocked?: boolean; until?: string; attempts_left?: number };
+
+/** Has the bot already sent a code to this phone? (never returns the code itself) */
+export async function getCodeStatus(phone: string): Promise<CodeStatus | null> {
+  try {
+    const r = await fetch(fn("tg-auth"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone, check: true }) });
+    return r.ok ? ((await r.json()) as CodeStatus) : null;
+  } catch {
+    return null;
+  }
+}
+
+export type CodeResult = { error: string | null; attemptsLeft?: number; until?: string };
+
 /**
  * Exchanges phone + Telegram code for a Supabase session (or, with link=true, only connects
- * Telegram notifications to the signed-in account). Returns an error code or null on success.
+ * Telegram notifications to the signed-in account).
  */
-export async function loginWithTelegramCode(phone: string, code: string, link = false): Promise<string | null> {
+export async function loginWithTelegramCode(phone: string, code: string, link = false): Promise<CodeResult> {
   const sb = getSupabase();
-  if (!sb) return "generic";
+  if (!sb) return { error: "generic" };
   try {
     const token = link ? (await sb.auth.getSession()).data.session?.access_token : undefined;
     const r = await fetch(fn("tg-auth"), {
@@ -31,12 +45,13 @@ export async function loginWithTelegramCode(phone: string, code: string, link = 
       body: JSON.stringify({ phone, code, link }),
     });
     const d = await r.json().catch(() => ({}));
-    if (link) return r.ok && d.linked ? null : ((d.error as string) ?? "generic");
-    if (!r.ok || !d.token_hash) return (d.error as string) ?? "generic";
+    if (d.error) return { error: d.error as string, attemptsLeft: d.attempts_left, until: d.until };
+    if (link) return { error: r.ok && d.linked ? null : "generic" };
+    if (!r.ok || !d.token_hash) return { error: "generic" };
     const { error } = await sb.auth.verifyOtp({ type: "magiclink", token_hash: d.token_hash });
-    return error ? "generic" : null;
+    return { error: error ? "generic" : null };
   } catch {
-    return "generic";
+    return { error: "generic" };
   }
 }
 

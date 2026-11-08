@@ -4,26 +4,45 @@
 import { admin, cors, json, normPhone, sha256, PHONE_EMAIL_DOMAIN } from "../_shared/tg.ts";
 
 const MAX_ATTEMPTS = 5;
+const LOCK_HOURS = 24;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method" }, 405);
   const body = await req.json().catch(() => ({}));
   const phone = normPhone(body.phone);
-  const code = String(body.code ?? "").replace(/\D/g, "");
-  if (!phone || code.length !== 6) return json({ error: "invalid_input" }, 400);
+  if (!phone) return json({ error: "invalid_input" }, 400);
 
   const db = admin();
   const { data: row } = await db.from("mp_tg_codes").select("*").eq("phone", phone).maybeSingle();
+  const now = Date.now();
+  const lockedUntil = row && row.attempts >= MAX_ATTEMPTS && new Date(row.expires_at).getTime() > now ? row.expires_at : null;
+
+  // Status check (no code needed): has the bot sent a code to this number yet? Never reveals the code.
+  if (body.check === true) {
+    if (lockedUntil) return json({ blocked: true, until: lockedUntil });
+    const pending = !!row && row.attempts < MAX_ATTEMPTS && new Date(row.expires_at).getTime() > now;
+    return json({ pending, attempts_left: pending ? MAX_ATTEMPTS - row.attempts : MAX_ATTEMPTS });
+  }
+
+  const code = String(body.code ?? "").replace(/\D/g, "");
+  if (code.length !== 6) return json({ error: "invalid_input" }, 400);
+  if (lockedUntil) return json({ error: "blocked", until: lockedUntil }, 429);
   if (!row) return json({ error: "no_code" }, 400);
-  if (new Date(row.expires_at).getTime() < Date.now()) {
+  if (new Date(row.expires_at).getTime() < now) {
     await db.from("mp_tg_codes").delete().eq("phone", phone);
     return json({ error: "expired" }, 400);
   }
-  if (row.attempts >= MAX_ATTEMPTS) return json({ error: "too_many_attempts" }, 429);
   if ((await sha256(`${phone}:${code}`)) !== row.code_hash) {
-    await db.from("mp_tg_codes").update({ attempts: row.attempts + 1 }).eq("phone", phone);
-    return json({ error: "wrong_code" }, 400);
+    const attempts = row.attempts + 1;
+    if (attempts >= MAX_ATTEMPTS) {
+      // Lock the number: keep the row as a lock marker until expires_at.
+      const until = new Date(now + LOCK_HOURS * 3600000).toISOString();
+      await db.from("mp_tg_codes").update({ attempts, expires_at: until, code_hash: "locked" }).eq("phone", phone);
+      return json({ error: "blocked", until }, 429);
+    }
+    await db.from("mp_tg_codes").update({ attempts }).eq("phone", phone);
+    return json({ error: "wrong_code", attempts_left: MAX_ATTEMPTS - attempts }, 400);
   }
   await db.from("mp_tg_codes").delete().eq("phone", phone);
 

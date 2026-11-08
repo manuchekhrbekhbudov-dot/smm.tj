@@ -3,12 +3,16 @@
 import { admin, json, normPhone, sha256, tg, TOKEN, webhookSecret, SITE_URL } from "../_shared/tg.ts";
 
 const CODE_TTL_MIN = 10;
+const MAX_ATTEMPTS = 5;
 
 const T = {
   welcome:
     "👋 Салом! Ин боти расмии <b>SMM.TJ</b> аст.\n\nБарои гирифтани коди воридшавӣ тугмаи <b>«📱 Фиристодани рақами ман»</b>-ро пахш кунед.\n\n" +
     "Здравствуйте! Чтобы получить код входа, нажмите <b>«📱 Отправить мой номер»</b>.",
   button: "📱 Фиристодани рақами ман / Отправить мой номер",
+  locked: (until: string) =>
+    `⛔ Ин рақам барои 5 коди нодуруст муваққатан баста шуд то <b>${until}</b> (вақти Душанбе).\n` +
+    `Этот номер временно заблокирован из-за 5 неверных кодов до <b>${until}</b> (время Душанбе).`,
   notOwn: "⚠️ Лутфан рақами <b>худатонро</b> бо тугмаи поён фиристед.\nПожалуйста, отправьте <b>свой</b> номер кнопкой ниже.",
   code: (c: string) =>
     `🔐 Коди воридшавӣ / Код входа:\n\n<code>${c}</code>\n\nОнро дар сайт ворид кунед. Мӯҳлат: ${CODE_TTL_MIN} дақиқа.\nВведите его на сайте. Действует ${CODE_TTL_MIN} минут.\n\n${SITE_URL}/tg/login/\n\n` +
@@ -48,6 +52,12 @@ Deno.serve(async (req) => {
     }
     const phone = normPhone(msg.contact.phone_number);
     if (!phone) return json({ ok: true });
+    const { data: prev } = await admin().from("mp_tg_codes").select("attempts, expires_at").eq("phone", phone).maybeSingle();
+    if (prev && prev.attempts >= MAX_ATTEMPTS && new Date(prev.expires_at).getTime() > Date.now()) {
+      const until = new Date(prev.expires_at).toLocaleString("ru-RU", { timeZone: "Asia/Dushanbe", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+      await tg("sendMessage", { chat_id: chatId, text: T.locked(until), parse_mode: "HTML", reply_markup: { remove_keyboard: true } });
+      return json({ ok: true });
+    }
     const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, "0");
     await admin().from("mp_tg_codes").upsert({
       phone,
