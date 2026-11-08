@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { dateLocale } from "@/lib/date";
 import { useTranslations, useLocale } from "next-intl";
 import { motion } from "framer-motion";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase/client";
 import { SPECIALIST_SELECT, type Review, type Specialist, type SpecialistStatus } from "@/lib/supabase/types";
@@ -25,7 +25,8 @@ type ReviewRow = Review & { specialists?: { profiles: { full_name: string } | nu
 
 export function AdminPanel() {
   const t = useTranslations();
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("pending");
   const [stats, setStats] = useState<{ specialists: number; completed_orders: number; reviews: number } | null>(null);
 
@@ -40,7 +41,10 @@ export function AdminPanel() {
 
   return (
     <div>
-      <h1 className="text-h1 font-bold">{t("admin.title")}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-h1 font-bold">{t("admin.title")}</h1>
+        <Button variant="outline" size="sm" onClick={async () => { await signOut(); router.replace("/"); }}>{t("common.signOut")}</Button>
+      </div>
       {stats && (
         <div className="mt-6 flex flex-wrap gap-3 text-sm">
           <Badge>{t("home.stats.specialists")}: {stats.specialists}</Badge>
