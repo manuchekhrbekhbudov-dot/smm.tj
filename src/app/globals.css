@@ -72,6 +72,7 @@
 }
 
 :root {
+  --banner-h: 40px; /* pre-launch announcement bar; set to 0 by LaunchBar after launch/close */
   /* Dark (default) */
   --bg-0: #05010a;
   --bg-1: #0b0614;

@@ -10,7 +10,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
         {t("common.skip")}
       </a>
       <Header />
-      <main id="main">{children}</main>
+      <main id="main" style={{ paddingTop: "var(--banner-h)" }}>{children}</main>
       <Footer />
     </>
   );

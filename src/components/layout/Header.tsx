@@ -5,6 +5,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { LogoMark } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { AuthButton } from "./AuthButton";
+import { LaunchBar } from "./LaunchBar";
 import { cn } from "@/lib/cn";
 
 const links = [
@@ -57,6 +58,7 @@ export function Header() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
+      <LaunchBar />
       <div className={cn("container-x transition-[padding] duration-300", scrolled ? "pt-2" : "pt-3 md:pt-4")}>
         <nav className={cn("flex h-14 items-center justify-between gap-2 rounded-full px-2 pl-3 md:h-16 md:pl-5", scrolled ? "glass-solid shadow-[0_14px_40px_-12px_rgb(0_0_0/0.45)]" : "glass")}>
           <Link href="/" aria-label="SMM.TJ" className="flex shrink-0 items-center gap-2">
@@ -99,7 +101,7 @@ export function Header() {
       </div>
 
       {open && (
-        <div id="mobile-menu" className="fixed inset-0 -z-10 flex flex-col bg-bg-0/95 px-5 pb-8 pt-24 lg:hidden">
+        <div id="mobile-menu" className="fixed inset-0 -z-10 flex flex-col bg-bg-0/95 px-5 pb-8 pt-[calc(6rem+var(--banner-h))] lg:hidden">
           <ul className="flex flex-col gap-1">
             {links.map((l) => (
               <li key={l.href}>
