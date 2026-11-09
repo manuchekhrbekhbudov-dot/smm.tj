@@ -29,6 +29,20 @@
 <priority>0.8</priority>
 </url>
 <url>
+<loc>https://manuchekhrbekhbudov-dot.github.io/smm.tj/tg/guide/</loc>
+<xhtml:link rel="alternate" hreflang="tg" href="https://manuchekhrbekhbudov-dot.github.io/smm.tj/tg/guide/" />
+<xhtml:link rel="alternate" hreflang="ru" href="https://manuchekhrbekhbudov-dot.github.io/smm.tj/ru/guide/" />
+<changefreq>weekly</changefreq>
+<priority>0.8</priority>
+</url>
+<url>
+<loc>https://manuchekhrbekhbudov-dot.github.io/smm.tj/ru/guide/</loc>
+<xhtml:link rel="alternate" hreflang="tg" href="https://manuchekhrbekhbudov-dot.github.io/smm.tj/tg/guide/" />
+<xhtml:link rel="alternate" hreflang="ru" href="https://manuchekhrbekhbudov-dot.github.io/smm.tj/ru/guide/" />
+<changefreq>weekly</changefreq>
+<priority>0.8</priority>
+</url>
+<url>
 <loc>https://manuchekhrbekhbudov-dot.github.io/smm.tj/tg/about/</loc>
 <xhtml:link rel="alternate" hreflang="tg" href="https://manuchekhrbekhbudov-dot.github.io/smm.tj/tg/about/" />
 <xhtml:link rel="alternate" hreflang="ru" href="https://manuchekhrbekhbudov-dot.github.io/smm.tj/ru/about/" />

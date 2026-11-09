@@ -16,6 +16,7 @@ import { SpecialistStats } from "@/components/stats/SpecialistStats";
 import { TelegramConnect } from "./TelegramConnect";
 import { PlanTab } from "./PlanTab";
 import { TrustBanner } from "@/components/trust/TrustBanner";
+import { GuideHint } from "@/components/guide/GuideHint";
 import { cn } from "@/lib/cn";
 
 type Tab = "orders" | "incoming" | "profile" | "prices" | "stats" | "plan";
@@ -71,6 +72,8 @@ export function Cabinet() {
       )}
 
       {isSpecialist && status && status.s !== "none" && <TrustBanner specialistId={profile!.id} />}
+
+      <GuideHint who={isSpecialist ? "specialist" : "client"} />
 
       <TelegramConnect />
 

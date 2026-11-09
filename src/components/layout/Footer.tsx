@@ -15,7 +15,8 @@ export function Footer() {
           <h2 className="font-sans text-sm font-bold uppercase tracking-widest text-ink-2">{t("footer.forClients")}</h2>
           <ul className="mt-5 space-y-3">
             <li><Link href="/specialists" className="text-ink-1 hover:text-purple">{t("nav.specialists")}</Link></li>
-            <li><Link href="/about" className="text-ink-1 hover:text-purple">{t("nav.how")}</Link></li>
+            <li><Link href="/guide" className="text-ink-1 hover:text-purple">{t("nav.guide")}</Link></li>
+            <li><Link href="/about" className="text-ink-1 hover:text-purple">{t("nav.about")}</Link></li>
             <li><Link href="/login" className="text-ink-1 hover:text-purple">{t("common.login")}</Link></li>
           </ul>
         </nav>

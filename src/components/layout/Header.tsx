@@ -11,7 +11,8 @@ import { cn } from "@/lib/cn";
 const links = [
   { href: "/", key: "home" },
   { href: "/specialists", key: "specialists" },
-  { href: "/about", key: "how" },
+  { href: "/guide", key: "guide" },
+  { href: "/about", key: "about" },
 ] as const;
 
 function LocaleSwitch() {
