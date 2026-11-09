@@ -14,6 +14,7 @@ import { notifyOrder } from "@/lib/telegram";
 import { TelegramCodeForm } from "@/components/auth/TelegramCodeForm";
 import { BlockedNotice } from "@/components/auth/BlockedNotice";
 import { DecisionGate } from "@/components/trust/DecisionGate";
+import { Consent } from "@/components/legal/Consent";
 
 export function OrderForm({ specialistId, name, services }: { specialistId: string; name: string; services: Service[] }) {
   const t = useTranslations();
@@ -29,6 +30,7 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
         <h3 className="text-h3 font-bold">{t("order.title", { name })}</h3>
         <p className="mt-2 text-sm text-ink-1">{t("order.quick")}</p>
         <div className="mt-5"><TelegramCodeForm submitLabel={t("order.quickContinue")} /></div>
+        <Consent className="mt-3" />
         <p className="mt-5 text-center text-sm text-ink-2">
           {t("order.haveAccount")}{" "}
           <Link href={{ pathname: "/login", query: { next: `/specialist?id=${specialistId}`, role: "client" } }} className="font-semibold text-purple">{t("common.login")}</Link>

@@ -14,6 +14,7 @@ import { cn } from "@/lib/cn";
 import { TelegramCodeForm } from "./TelegramCodeForm";
 import { SetPasswordForm } from "./SetPasswordForm";
 import { BlockedNotice } from "./BlockedNotice";
+import { Consent } from "@/components/legal/Consent";
 
 /** Only allow internal paths as post-login redirect targets. */
 const safeNext = (v: string | null) => (v && v.startsWith("/") && !v.startsWith("//") ? v : null);
@@ -121,6 +122,7 @@ export function LoginForm() {
         <div className="space-y-4">
           <p className="font-semibold">{t("auth.codeLoginTitle")}</p>
           <TelegramCodeForm />
+          <Consent />
           <p className="text-center text-sm"><button type="button" className="font-semibold text-purple" onClick={() => setCodeLogin(false)}>{t("auth.backToLogin")}</button></p>
         </div>
       ) : reset ? (
@@ -143,6 +145,7 @@ export function LoginForm() {
         <div className="space-y-4">
           <p className="font-semibold">{t("auth.regStep1")}</p>
           <TelegramCodeForm submitLabel={t("auth.verify")} onStart={() => setFlow("verify")} onSuccess={() => setFlow("password")} />
+          <Consent />
           <p className="text-center text-sm text-ink-2">
             {t("auth.haveAccount")}{" "}
             <button type="button" className="font-semibold text-purple" onClick={() => setMode("login")}>{t("auth.toLogin")}</button>

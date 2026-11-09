@@ -6,7 +6,6 @@ import { Link } from "@/i18n/navigation";
 import { TextReveal } from "@/components/fx/TextReveal";
 import { buttonClasses } from "@/components/ui/buttonClasses";
 import { Icon, type IconName } from "@/components/ui/Icon";
-import { specialtySlugs } from "@/content/site";
 import { cn } from "@/lib/cn";
 import { useAuth } from "@/lib/auth";
 
@@ -129,15 +128,6 @@ export function Hero() {
           </>
         )}
 
-        <ul className="mt-8 flex max-w-3xl flex-wrap justify-center gap-2" aria-label={t("home.categories.title")}>
-          {specialtySlugs.slice(0, 6).map((s) => (
-            <li key={s}>
-              <Link href={{ pathname: "/specialists", query: { s } }} className="inline-flex rounded-full glass px-4 py-2 text-sm text-ink-1 transition-colors hover:text-ink-0">
-                {t(`specialties.${s}.title`)}
-              </Link>
-            </li>
-          ))}
-        </ul>
       </div>
     </section>
   );

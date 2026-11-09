@@ -56,4 +56,32 @@
 <changefreq>weekly</changefreq>
 <priority>0.8</priority>
 </url>
+<url>
+<loc>https://manuchekhrbekhbudov-dot.github.io/smm.tj/tg/privacy/</loc>
+<xhtml:link rel="alternate" hreflang="tg" href="https://manuchekhrbekhbudov-dot.github.io/smm.tj/tg/privacy/" />
+<xhtml:link rel="alternate" hreflang="ru" href="https://manuchekhrbekhbudov-dot.github.io/smm.tj/ru/privacy/" />
+<changefreq>weekly</changefreq>
+<priority>0.8</priority>
+</url>
+<url>
+<loc>https://manuchekhrbekhbudov-dot.github.io/smm.tj/ru/privacy/</loc>
+<xhtml:link rel="alternate" hreflang="tg" href="https://manuchekhrbekhbudov-dot.github.io/smm.tj/tg/privacy/" />
+<xhtml:link rel="alternate" hreflang="ru" href="https://manuchekhrbekhbudov-dot.github.io/smm.tj/ru/privacy/" />
+<changefreq>weekly</changefreq>
+<priority>0.8</priority>
+</url>
+<url>
+<loc>https://manuchekhrbekhbudov-dot.github.io/smm.tj/tg/terms/</loc>
+<xhtml:link rel="alternate" hreflang="tg" href="https://manuchekhrbekhbudov-dot.github.io/smm.tj/tg/terms/" />
+<xhtml:link rel="alternate" hreflang="ru" href="https://manuchekhrbekhbudov-dot.github.io/smm.tj/ru/terms/" />
+<changefreq>weekly</changefreq>
+<priority>0.8</priority>
+</url>
+<url>
+<loc>https://manuchekhrbekhbudov-dot.github.io/smm.tj/ru/terms/</loc>
+<xhtml:link rel="alternate" hreflang="tg" href="https://manuchekhrbekhbudov-dot.github.io/smm.tj/tg/terms/" />
+<xhtml:link rel="alternate" hreflang="ru" href="https://manuchekhrbekhbudov-dot.github.io/smm.tj/ru/terms/" />
+<changefreq>weekly</changefreq>
+<priority>0.8</priority>
+</url>
 </urlset>

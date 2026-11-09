@@ -32,7 +32,6 @@ export default function HomePage({ params }: { params: Promise<{ locale: string 
         <Categories />
       </section>
       <section className="container-x py-20 md:py-28">
-        <SectionHeader eyebrow={t("latest.eyebrow")} title={t("latest.title")} className="mb-12" />
         <LatestSpecialists />
       </section>
       <section className="container-x py-20 md:py-28">

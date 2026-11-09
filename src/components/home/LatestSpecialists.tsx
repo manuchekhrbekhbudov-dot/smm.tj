@@ -7,6 +7,7 @@ import { SPECIALIST_SELECT, type Specialist } from "@/lib/supabase/types";
 import { SpecialistCard } from "@/components/market/SpecialistCard";
 import { sortByPlan, withPlans } from "@/lib/plans";
 import { Card } from "@/components/ui/Card";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Skeleton } from "@/components/ui/Notice";
 import { buttonClasses } from "@/components/ui/buttonClasses";
 
@@ -23,18 +24,24 @@ export function LatestSpecialists() {
   }, []);
 
   if (list === null) {
-    return <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-56" />)}</div>;
+    return (<>
+      <SectionHeader eyebrow={t("home.latest.eyebrow")} title={t("home.latest.title")} className="mb-12" />
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-56" />)}</div>
+    </>);
   }
   if (list.length === 0) {
-    return (
+    // Before launch there may be nobody yet: say so honestly instead of an empty "Newest specialists".
+    return (<>
+      <SectionHeader eyebrow={t("home.latest.eyebrow")} title={t("home.latest.soonTitle")} className="mb-12" />
       <Card className="flex flex-col items-start gap-5 md:flex-row md:items-center md:justify-between">
         <p className="text-lg text-ink-1">{t("home.latest.empty")}</p>
-        <Link href={{ pathname: "/login", query: { role: "specialist" } }} className={buttonClasses("primary", "md")}>{t("home.latest.emptyCta")}</Link>
+        <Link href={{ pathname: "/login", query: { role: "specialist" } }} className={buttonClasses("primary", "md", "shrink-0 whitespace-nowrap")}>{t("home.latest.emptyCta")}</Link>
       </Card>
-    );
+    </>);
   }
   return (
     <div>
+      <SectionHeader eyebrow={t("home.latest.eyebrow")} title={t("home.latest.title")} className="mb-12" />
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {list.map((s) => <SpecialistCard key={s.id} s={s} />)}
       </div>

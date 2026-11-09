@@ -18,11 +18,13 @@ rm -rf "src/app/[locale]/[...rest]"
 
 STATIC_EXPORT=1 PAGES_BASE_PATH="$BASE" NEXT_TELEMETRY_DISABLED=1 npx next build
 
+SITE="${NEXT_PUBLIC_SITE_URL:-https://manuchekhrbekhbudov-dot.github.io${BASE}}"
 # Root → Tajik home; keep Jekyll away from _next/
 cat > out/index.html <<HTML
 <!doctype html><html lang="tg"><head><meta charset="utf-8"><title>SMM.TJ</title>
 <meta http-equiv="refresh" content="0; url=${BASE}/tg/">
-<link rel="canonical" href="${BASE}/tg/"></head>
+<link rel="canonical" href="${SITE}/tg/">
+<link rel="alternate" hreflang="tg" href="${SITE}/tg/"><link rel="alternate" hreflang="ru" href="${SITE}/ru/"><link rel="alternate" hreflang="x-default" href="${SITE}/tg/"></head>
 <body style="background:#05010A"><script>location.replace("${BASE}/tg/"+location.search)</script></body></html>
 HTML
 # Bilingual 404 for GitHub Pages (served for any unknown URL)
