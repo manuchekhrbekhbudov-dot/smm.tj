@@ -87,11 +87,10 @@ Deno.serve(async (req) => {
 
   try {
     const client = new Anthropic({ apiKey: key, maxRetries: 2, timeout: 60_000 });
-    const res = await client.beta.messages.create({
-      model: "claude-opus-5-5",
+    // Low-cost model for chat (~0.01 TJS per answer). Haiku 5.5 has no server-side fallback.
+    const res = await client.messages.create({
+      model: "claude-haiku-5-5",
       max_tokens: 2000,
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
       output_config: { effort: "low" },
       system: system(locale, role, catalog),
       messages,
