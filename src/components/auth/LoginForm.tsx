@@ -33,7 +33,9 @@ export function LoginForm() {
   // Sign-up and password recovery: Telegram code first, then the user sets a password.
   const [flow, setFlow] = useState<"none" | "verify" | "password">("none");
   const [reset, setReset] = useState(false);
-  const [codeLogin, setCodeLogin] = useState(false); // sign in with a Telegram code only, no password
+  const [codeLogin, setCodeLogin] = useState(false);
+  // On a blocked device the director can still sign in (the database never blocks the director).
+  const [directorOverride, setDirectorOverride] = useState(false); // sign in with a Telegram code only, no password
   const [phone, setPhone] = useState("+992 ");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -53,7 +55,15 @@ export function LoginForm() {
   }, [ready, session, profile, role, next, router, flow]);
 
   if (!sb) return <Notice tone="warning">{t("common.notConfigured")}</Notice>;
-  if (blocked) return <BlockedNotice />;
+  if (blocked && !directorOverride) {
+    return (
+      <div>
+        <BlockedNotice />
+        <button type="button" onClick={() => { setDirectorOverride(true); setRole("client"); setMode("login"); }}
+          className="mt-4 w-full text-center text-sm font-semibold text-purple hover:underline">{t("auth.asAdmin")}</button>
+      </div>
+    );
+  }
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
