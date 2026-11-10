@@ -1,6 +1,8 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/ui/Logo";
+import { Icon } from "@/components/ui/Icon";
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/content/site";
 
 export function Footer() {
   const t = useTranslations();
@@ -32,6 +34,7 @@ export function Footer() {
           <h2 className="font-sans text-sm font-bold uppercase tracking-widest text-ink-2">{t("footer.contacts")}</h2>
           <ul className="mt-5 space-y-3">
             <li><a href="tel:+992504440101" className="text-ink-1 hover:text-purple">📞 +992 50 444 01 01</a></li>
+            <li><a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-ink-1 hover:text-purple"><Icon name="instagram" className="h-4 w-4" /> Instagram: @{INSTAGRAM_HANDLE}</a></li>
             <li><a href="https://t.me/smmtj_login_bot" target="_blank" rel="noopener noreferrer" className="text-ink-1 hover:text-purple">✈️ Telegram: @smmtj_login_bot</a></li>
             <li className="text-ink-2">📍 {t("about.contacts.city")}</li>
           </ul>

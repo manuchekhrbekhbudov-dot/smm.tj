@@ -8,6 +8,7 @@ import { Faq } from "@/components/home/Faq";
 import { CtaBand } from "@/components/home/CtaBand";
 import { Link } from "@/i18n/navigation";
 import { buttonClasses } from "@/components/ui/buttonClasses";
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/content/site";
 
 type Rule = { title: string; text: string };
 
@@ -55,7 +56,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
         <Faq />
       </section>
       <section className="container-x pb-20">
-        <div className="grid gap-6 rounded-[var(--radius-lg)] glass glass-edge p-8 md:grid-cols-3 md:p-10">
+        <div className="grid gap-6 rounded-[var(--radius-lg)] glass glass-edge p-8 sm:grid-cols-2 md:p-10 lg:grid-cols-4">
           <div>
             <p className="text-sm text-ink-2">{t("about.contacts.director")}</p>
             <a href="tel:+992504440101" className="mt-1 block font-display text-2xl font-bold hover:text-purple">+992 50 444 01 01</a>
@@ -63,6 +64,10 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
           <div>
             <p className="text-sm text-ink-2">{t("about.contacts.bot")}</p>
             <a href="https://t.me/smmtj_login_bot" target="_blank" rel="noopener noreferrer" className="mt-1 block font-display text-2xl font-bold hover:text-purple">@smmtj_login_bot</a>
+          </div>
+          <div>
+            <p className="text-sm text-ink-2">Instagram</p>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="mt-1 block font-display text-2xl font-bold hover:text-purple">@{INSTAGRAM_HANDLE}</a>
           </div>
           <div>
             <p className="text-sm text-ink-2">{t("about.contacts.launch")}</p>

@@ -35,3 +35,7 @@ export function userPhone(user: { phone?: string | null; email?: string | null }
   const m = user.email?.match(/^(\d{12})@phone\.smm\.tj$/);
   return m ? `+${m[1]}` : null;
 }
+
+/** Official SMM.TJ social accounts. */
+export const INSTAGRAM_HANDLE = "smm.tjj";
+export const INSTAGRAM_URL = `https://www.instagram.com/${INSTAGRAM_HANDLE}/`;

@@ -8,6 +8,7 @@ import { Background } from "@/components/fx/Background";
 import { themeScript } from "@/components/ui/ThemeToggle";
 import { AuthProvider } from "@/lib/auth";
 import { SITE_URL } from "@/lib/site-url";
+import { INSTAGRAM_URL } from "@/content/site";
 import "../globals.css";
 
 const onest = Onest({
@@ -56,6 +57,12 @@ export default async function LocaleLayout({ children, params }: { children: Rea
     <html lang={locale === "tg" ? "tg" : "ru"} className={onest.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* Organization info for search engines (links the Instagram profile to the site) */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org", "@type": "Organization", name: "SMM.TJ", url: `${SITE_URL}/${locale}/`,
+          logo: `${SITE_URL}/icon.svg`, sameAs: [INSTAGRAM_URL, "https://t.me/smmtj_login_bot"],
+          contactPoint: { "@type": "ContactPoint", telephone: "+992504440101", contactType: "customer support", areaServed: "TJ", availableLanguage: ["tg", "ru"] },
+        }) }} />
       </head>
       <body>
         <NextIntlClientProvider>
