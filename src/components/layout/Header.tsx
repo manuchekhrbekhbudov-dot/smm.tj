@@ -29,7 +29,7 @@ function LocaleSwitch() {
           locale={l}
           aria-current={locale === l ? "true" : undefined}
           className={cn(
-            "flex h-8 w-9 items-center justify-center rounded-full uppercase transition-colors",
+            "flex h-8 w-8 items-center justify-center rounded-full uppercase transition-colors min-[400px]:w-9",
             locale === l ? "bg-gradient-primary text-white" : "text-ink-2 hover:text-ink-0"
           )}
         >

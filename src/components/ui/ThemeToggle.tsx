@@ -36,7 +36,7 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label={isLight ? t("themeDark") : t("themeLight")}
       title={isLight ? t("themeDark") : t("themeLight")}
-      className="relative flex h-10 w-[72px] items-center rounded-full glass p-1"
+      className="relative flex h-10 w-10 shrink-0 items-center rounded-full glass p-1 min-[400px]:w-[72px]"
     >
       <motion.span
         layout
