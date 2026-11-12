@@ -2,6 +2,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { askAssistant, assistantEnabled, type ChatMsg } from "@/lib/assistant";
+import { localAnswer } from "@/lib/localAssistant";
 import { useAuth } from "@/lib/auth";
 import { Spinner } from "@/components/ui/Notice";
 import { cn } from "@/lib/cn";
@@ -27,6 +28,7 @@ function Rich({ text }: { text: string }) {
 /** Floating AI helper: clients get help finding a specialist, specialists get answers about the platform. */
 export function Assistant() {
   const t = useTranslations("assistant");
+  const tAll = useTranslations();
   const locale = useLocale();
   const { profile, blocked } = useAuth();
   const [enabled, setEnabled] = useState(false);
@@ -45,7 +47,7 @@ export function Assistant() {
     if (box) box.scrollTop = box.scrollHeight;
   }, [msgs, open, busy]);
 
-  if (blocked || !enabled) return null;
+  if (blocked) return null;
   const isSpec = profile?.role === "specialist";
   const suggestions = isSpec ? [t("s.spec1"), t("s.spec2"), t("s.spec3")] : [t("s.client1"), t("s.client2"), t("s.client3")];
 
@@ -54,7 +56,9 @@ export function Assistant() {
     if (!q || busy) return;
     const next: ChatMsg[] = [...msgs, { role: "user", content: q }];
     setMsgs(next); setInput(""); setBusy(true); setErr(null);
-    const r = await askAssistant(next, locale);
+    // Without an AI key the free built-in helper answers from the site's own texts and the real catalog.
+    const r = enabled ? await askAssistant(next, locale)
+      : { reply: await localAnswer(q, locale, (k, v) => t(k, v), tAll.raw("faq") as { q: string; a: string }[], isSpec).catch(() => "") || undefined };
     setBusy(false);
     if (r.reply) setMsgs([...next, { role: "assistant", content: r.reply }]);
     else { setErr(t(`errors.${["not_configured", "rate_limited", "blocked"].includes(r.error ?? "") ? r.error : "generic"}`)); setMsgs(msgs); setInput(q); }
@@ -62,9 +66,9 @@ export function Assistant() {
 
   return (
     <>
-      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-controls="ai-panel" aria-label={open ? t("close") : t("open")}
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-controls="ai-panel" aria-label={open ? t("close") : enabled ? t("open") : t("openLocal")}
         className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-40 flex h-14 items-center gap-2 rounded-full bg-gradient-primary px-5 font-semibold text-white glow-md transition-transform hover:-translate-y-0.5 md:right-6">
-        <span aria-hidden className="text-xl">{open ? "×" : "✨"}</span><span className="hidden sm:inline">{open ? t("close") : t("open")}</span>
+        <span aria-hidden className="text-xl">{open ? "×" : "✨"}</span><span className="hidden sm:inline">{open ? t("close") : enabled ? t("open") : t("openLocal")}</span>
       </button>
       {open && (
         <div id="ai-panel" role="dialog" aria-label={t("title")}
@@ -79,7 +83,7 @@ export function Assistant() {
           <div ref={boxRef} className="flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-4 text-sm">
             {msgs.length === 0 && (
               <div className="space-y-2">
-                <p className="text-ink-1">{t("hello")}</p>
+                <p className="text-ink-1">{enabled ? t("hello") : t("local.hello")}</p>
                 {suggestions.map((s) => (
                   <button key={s} type="button" onClick={() => send(s)} className="block w-full rounded-2xl bg-ink-3 px-4 py-2.5 text-left hover:bg-purple/15">{s}</button>
                 ))}
@@ -98,7 +102,7 @@ export function Assistant() {
               className="h-11 min-w-0 flex-1 rounded-full bg-ink-3 px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-purple" />
             <button type="submit" disabled={busy || !input.trim()} className="h-11 shrink-0 rounded-full bg-gradient-primary px-4 font-semibold text-white disabled:opacity-50">{t("send")}</button>
           </form>
-          <p className="px-4 pb-3 text-[11px] text-ink-2">{t("disclaimer")}</p>
+          <p className="px-4 pb-3 text-[11px] text-ink-2">{enabled ? t("disclaimer") : t("local.disclaimer")}</p>
         </div>
       )}
     </>
