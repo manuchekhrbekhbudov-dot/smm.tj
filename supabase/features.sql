@@ -2,6 +2,28 @@
 -- SMM.TJ — portfolio, chat, order brief, visit counter (run AFTER schema/plans/trust/stats; safe to re-run)
 -- =====================================================================
 
+-- ---------- 0. Tables used by the chat (created first) ----------
+create table if not exists public.mp_conversations (
+  id uuid primary key default gen_random_uuid(),
+  client_id uuid not null references public.mp_profiles(id) on delete cascade,
+  specialist_id uuid not null references public.mp_specialists(id) on delete cascade,
+  last_message_at timestamptz not null default now(),
+  client_read_at timestamptz,
+  specialist_read_at timestamptz,
+  tg_notified_at timestamptz,
+  created_at timestamptz not null default now(),
+  unique (client_id, specialist_id),
+  check (client_id <> specialist_id)
+);
+create table if not exists public.mp_messages (
+  id uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references public.mp_conversations(id) on delete cascade,
+  sender_id uuid not null references public.mp_profiles(id) on delete cascade,
+  body text not null check (char_length(body) between 1 and 2000),
+  created_at timestamptz not null default now()
+);
+create index if not exists mp_messages_conv_idx on public.mp_messages(conversation_id, created_at);
+
 -- ---------- 1. Portfolio images (up to 9 per specialist) ----------
 create table if not exists public.mp_portfolio_items (
   id uuid primary key default gen_random_uuid(),
@@ -51,26 +73,7 @@ create policy mp_portfolio_files_delete on storage.objects for delete to authent
   using (bucket_id = 'mp-portfolio' and (storage.foldername(name))[1] = auth.uid()::text);
 
 -- ---------- 2. Chat: one conversation per client + specialist ----------
-create table if not exists public.mp_conversations (
-  id uuid primary key default gen_random_uuid(),
-  client_id uuid not null references public.mp_profiles(id) on delete cascade,
-  specialist_id uuid not null references public.mp_specialists(id) on delete cascade,
-  last_message_at timestamptz not null default now(),
-  client_read_at timestamptz,
-  specialist_read_at timestamptz,
-  tg_notified_at timestamptz,
-  created_at timestamptz not null default now(),
-  unique (client_id, specialist_id),
-  check (client_id <> specialist_id)
-);
-create table if not exists public.mp_messages (
-  id uuid primary key default gen_random_uuid(),
-  conversation_id uuid not null references public.mp_conversations(id) on delete cascade,
-  sender_id uuid not null references public.mp_profiles(id) on delete cascade,
-  body text not null check (char_length(body) between 1 and 2000),
-  created_at timestamptz not null default now()
-);
-create index if not exists mp_messages_conv_idx on public.mp_messages(conversation_id, created_at);
+
 
 create or replace function public.mp_guard_conversation() returns trigger
 language plpgsql security definer set search_path = public as $$
@@ -102,7 +105,7 @@ create trigger mp_guard_conversation before insert or update on public.mp_conver
 
 create or replace function public.mp_guard_message() returns trigger
 language plpgsql security definer set search_path = public as $$
-declare c public.mp_conversations%rowtype;
+declare c record;
 begin
   if tg_op <> 'INSERT' then raise exception 'messages_are_immutable'; end if;
   select * into c from public.mp_conversations where id = new.conversation_id;
