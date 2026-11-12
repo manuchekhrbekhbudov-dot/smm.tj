@@ -15,11 +15,12 @@ import { PriceList } from "./PriceList";
 import { SpecialistStats } from "@/components/stats/SpecialistStats";
 import { TelegramConnect } from "./TelegramConnect";
 import { PlanTab } from "./PlanTab";
+import { PortfolioEditor } from "@/components/portfolio/PortfolioEditor";
 import { TrustBanner } from "@/components/trust/TrustBanner";
 import { GuideHint } from "@/components/guide/GuideHint";
 import { cn } from "@/lib/cn";
 
-type Tab = "orders" | "incoming" | "profile" | "prices" | "stats" | "plan";
+type Tab = "orders" | "incoming" | "profile" | "portfolio" | "prices" | "stats" | "plan";
 
 export function Cabinet() {
   const t = useTranslations();
@@ -27,7 +28,7 @@ export function Cabinet() {
   const router = useRouter();
   const params = useSearchParams();
   const isSpecialist = profile!.role === "specialist";
-  const tabs = useMemo<Tab[]>(() => (isSpecialist ? ["incoming", "stats", "profile", "prices", "plan"] : ["orders"]), [isSpecialist]);
+  const tabs = useMemo<Tab[]>(() => (isSpecialist ? ["incoming", "stats", "profile", "portfolio", "prices", "plan"] : ["orders"]), [isSpecialist]);
   const initial = params.get("tab") as Tab | null;
   const [tab, setTab] = useState<Tab>(initial && tabs.includes(initial) ? initial : tabs[0]);
   // The director has no client/specialist cabinet: send them to the admin panel.
@@ -96,6 +97,7 @@ export function Cabinet() {
         {tab === "prices" && <PriceList userId={profile!.id} />}
         {tab === "stats" && <SpecialistStats specialistId={profile!.id} showTitle={false} />}
         {tab === "plan" && <PlanTab userId={profile!.id} />}
+        {tab === "portfolio" && <PortfolioEditor userId={profile!.id} />}
       </div>
     </div>
   );

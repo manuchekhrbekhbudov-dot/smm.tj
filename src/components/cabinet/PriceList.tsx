@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
+import { looksLikeGibberish } from "@/lib/quality";
 import { useTranslations } from "next-intl";
 import { getSupabase } from "@/lib/supabase/client";
 import type { PriceUnit, Service } from "@/lib/supabase/types";
@@ -31,6 +32,7 @@ export function PriceList({ userId }: { userId: string }) {
     const price = Math.round(Number(fd.get("price")));
     const errs: typeof errors = {};
     if (title.length < 2) errs.title = t("cabinet.prices.errors.title");
+    else if (looksLikeGibberish(title)) errs.title = t("quality.gibberish");
     if (!Number.isFinite(price) || price < 1 || price > 10_000_000) errs.price = t("cabinet.prices.errors.price");
     setErrors(errs);
     if (Object.keys(errs).length) return;

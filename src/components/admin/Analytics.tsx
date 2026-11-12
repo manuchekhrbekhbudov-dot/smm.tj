@@ -169,6 +169,8 @@ export function Analytics() {
       </div>
       <Tile label={t("stats.budget")} value={`${formatTjs(m.budget)} TJS`} />
 
+      <Visits />
+
       <div className="grid gap-6 lg:grid-cols-2">
         <DailyColumns title={t("stats.signups30")} data={m.signups} locale={locale} unit={t("stats.total")} />
         <DailyColumns title={t("stats.orders30")} data={m.orders30} locale={locale} unit={t("stats.total")} />
@@ -231,6 +233,32 @@ export function Analytics() {
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+/** Page views of the last 30 days (from mp_visits; hidden until features.sql is applied). */
+function Visits() {
+  const t = useTranslations();
+  const locale = useLocale();
+  const [v, setV] = useState<{ day: string; source: string | null; path: string }[] | null>(null);
+  useEffect(() => {
+    const since = new Date(Date.now() - 30 * 86400000).toISOString();
+    void getSupabase()!.from("mp_visits").select("day, source, path").gte("created_at", since).limit(20000).then(({ data, error }) => setV(error ? [] : ((data as { day: string; source: string | null; path: string }[]) ?? [])));
+  }, []);
+  if (!v || v.length === 0) return null;
+  const count = (key: (x: { source: string | null; path: string }) => string) => {
+    const m = new Map<string, number>();
+    for (const x of v) m.set(key(x), (m.get(key(x)) ?? 0) + 1);
+    return [...m.entries()].map(([k, n]) => ({ key: k, label: k, value: n })).sort((a, b) => b.value - a.value).slice(0, 8);
+  };
+  return (
+    <div className="grid gap-6 lg:grid-cols-2">
+      <DailyColumns title={t("stats.visits30")} data={perDay(v.map((x) => x.day))} locale={locale} unit={t("stats.total")} />
+      <div className="grid gap-6">
+        <Bars title={t("stats.visitSources")} rows={count((x) => x.source || "direct")} empty="—" />
+        <Bars title={t("stats.visitPages")} rows={count((x) => x.path)} empty="—" />
+      </div>
     </div>
   );
 }

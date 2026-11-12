@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { looksLikeGibberish } from "@/lib/quality";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/lib/auth";
 import { getSupabase } from "@/lib/supabase/client";
@@ -67,7 +68,10 @@ export function SpecialistEditor({ onSaved }: { onSaved: () => void }) {
     const errs: Record<string, string> = {};
     if (f.full_name.trim().length < 2) errs.full_name = t("onboarding.errors.name");
     if (f.headline.trim().length < 5) errs.headline = t("cabinet.profile.errors.headline");
+    else if (looksLikeGibberish(f.headline)) errs.headline = t("quality.gibberish");
     if (f.bio.trim().length < 30) errs.bio = t("cabinet.profile.errors.bio");
+    else if (looksLikeGibberish(f.bio)) errs.bio = t("quality.gibberish");
+    if (looksLikeGibberish(f.full_name) && f.full_name.trim().length >= 6) errs.full_name = t("quality.gibberish");
     if (f.specialties.length === 0) errs.specialties = t("cabinet.profile.errors.specialties");
     setErrors(errs);
     if (Object.keys(errs).length) return;

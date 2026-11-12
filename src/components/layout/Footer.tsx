@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/ui/Logo";
 import { Icon } from "@/components/ui/Icon";
+import { InstallApp } from "./InstallApp";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "@/content/site";
 
 export function Footer() {
@@ -12,11 +13,13 @@ export function Footer() {
         <div>
           <Logo />
           <p className="mt-5 max-w-sm text-ink-2">{t("footer.tagline")}</p>
+          <InstallApp className="mt-5" />
         </div>
         <nav aria-label={t("footer.forClients")}>
           <h2 className="font-sans text-sm font-bold uppercase tracking-widest text-ink-2">{t("footer.forClients")}</h2>
           <ul className="mt-5 space-y-3">
             <li><Link href="/specialists" className="text-ink-1 hover:text-purple">{t("nav.specialists")}</Link></li>
+            <li><Link href="/prices" className="text-ink-1 hover:text-purple">{t("prices.title")}</Link></li>
             <li><Link href="/guide" className="text-ink-1 hover:text-purple">{t("nav.guide")}</Link></li>
             <li><Link href="/about" className="text-ink-1 hover:text-purple">{t("nav.about")}</Link></li>
             <li><Link href="/login" className="text-ink-1 hover:text-purple">{t("common.login")}</Link></li>

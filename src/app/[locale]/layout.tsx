@@ -39,6 +39,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     },
     twitter: { card: "summary_large_image", title: t("title"), description: t("description"), images: [`${SITE_URL}/og.png`] },
     applicationName: "SMM.TJ",
+    icons: { apple: `${SITE_URL}/apple-touch-icon.png` },
+    appleWebApp: { capable: true, title: "SMM.TJ", statusBarStyle: "black-translucent" },
   };
 }
 

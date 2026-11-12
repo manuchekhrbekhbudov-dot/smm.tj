@@ -14,6 +14,7 @@ import { ReviewForm } from "./ReviewForm";
 import { notifyOrder } from "@/lib/telegram";
 import { HireDecision, NotHiredReport } from "@/components/trust/HireDecision";
 import { ComplaintForm } from "@/components/trust/ComplaintForm";
+import type { Brief } from "@/content/brief";
 
 type Row = Order & {
   specialists?: { id: string; profiles: { full_name: string } | null } | null;
@@ -98,6 +99,17 @@ export function OrderList({ mode, userId }: { mode: "client" | "specialist"; use
                 <Badge tone={tone[o.status]}>{t(`cabinet.statuses.${o.status}`)}</Badge>
               </span>
             </div>
+            {(o as Row & { brief?: Brief | null }).brief && (() => {
+              const b = (o as Row & { brief?: Brief | null }).brief!;
+              return (
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {b.business && <Badge tone="neutral">{t(`brief.business.${b.business}`)}</Badge>}
+                  {b.goal && <Badge tone="neutral">🎯 {t(`brief.goal.${b.goal}`)}</Badge>}
+                  {b.deadline && <Badge tone="neutral">⏱ {t(`brief.deadline.${b.deadline}`)}</Badge>}
+                  {b.link && <Badge tone="purple">{b.link}</Badge>}
+                </div>
+              );
+            })()}
             <p className="mt-4 whitespace-pre-line text-ink-1">{o.message}</p>
             <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-ink-2">
               {o.budget_tjs != null && <span>{t("cabinet.budget")}: <b className="text-ink-0">{formatTjs(o.budget_tjs)} TJS</b></span>}
@@ -122,6 +134,12 @@ export function OrderList({ mode, userId }: { mode: "client" | "specialist"; use
               )}
               {mode === "client" && o.status === "accepted" && !needsDecision && (
                 <Button size="sm" variant="outline" onClick={() => setDeciding(o.id)}>{t("cabinet.actions.cancel")}</Button>
+              )}
+              {mode === "client" && (
+                <Link href={{ pathname: "/messages", query: { to: o.specialist_id } }} className={buttonClasses("ghost", "sm")}>💬 {t("chat.open")}</Link>
+              )}
+              {mode === "specialist" && (
+                <Link href="/messages" className={buttonClasses("ghost", "sm")}>💬 {t("chat.title")}</Link>
               )}
               {canComplain && complaining !== o.id && (
                 <Button size="sm" variant="ghost" onClick={() => setComplaining(o.id)}>{t("trust.complain")}</Button>

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { usePathname, useRouter } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { getSupabase } from "@/lib/supabase/client";
 import { SPECIALIST_SELECT, type Specialist } from "@/lib/supabase/types";
 import { citySlugs, specialtySlugs } from "@/content/site";
@@ -87,6 +87,7 @@ export function Catalog() {
         ))}
       </div>
 
+      <p className="-mt-2 mb-4 text-sm"><Link href="/prices" className="font-semibold text-purple hover:underline">💰 {t("prices.title")} →</Link></p>
       <div className="mb-8 grid gap-3 sm:grid-cols-3">
         <Select label={t("catalog.city")} value={city} onChange={(e) => setParam("city", e.target.value)}>
           <option value="">{t("catalog.anyCity")}</option>

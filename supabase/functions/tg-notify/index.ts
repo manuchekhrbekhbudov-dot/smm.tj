@@ -17,6 +17,7 @@ Deno.serve(async (req) => {
   const body = await req.json().catch(() => ({}));
   const { order_id } = body;
   if (auth.startsWith("Bearer ") && typeof body.trust_specialist === "string") return trustEvent(body.trust_specialist);
+  if (auth.startsWith("Bearer ") && typeof body.conversation_id === "string") return chatEvent(auth, body.conversation_id);
   if (!auth.startsWith("Bearer ") || !order_id) return json({ error: "bad_request" }, 400);
 
   // Read the order AS THE CALLER: RLS guarantees they are its client or specialist.
@@ -86,4 +87,34 @@ async function trustEvent(specialistId: string) {
       : `⚠️ ${who}: 2 шикоят / баҳои паст — огоҳӣ фиристода шуд.\n${SITE_URL}/tg/admin/`);
   }
   return json({ ok: true, sent: state });
+}
+
+/**
+ * New chat message → Telegram ping to the other participant. At most one ping per 10 minutes per
+ * conversation unless the recipient has read the chat since the last ping.
+ */
+async function chatEvent(auth: string, conversationId: string) {
+  const asUser = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: auth } }, auth: { persistSession: false },
+  });
+  const { data: me } = await asUser.auth.getUser();
+  const { data: c } = await asUser.from("mp_conversations").select("*").eq("id", conversationId).maybeSingle();
+  if (!me?.user || !c) return json({ error: "not_found" }, 404);
+  const toClient = me.user.id === c.specialist_id;
+  const target = toClient ? c.client_id : c.specialist_id;
+  const readAt = toClient ? c.client_read_at : c.specialist_read_at;
+  const last = c.tg_notified_at ? new Date(c.tg_notified_at).getTime() : 0;
+  const recipientReadSince = readAt && new Date(readAt).getTime() > last;
+  if (last && Date.now() - last < 10 * 60_000 && !recipientReadSince) return json({ ok: true, skipped: "throttled" });
+
+  const db = admin();
+  const { data: msg } = await db.from("mp_messages").select("body, sender_id").eq("conversation_id", c.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+  if (!msg || msg.sender_id !== me.user.id) return json({ ok: true, skipped: "no_message" });
+  const { data: p } = await db.from("mp_profiles").select("full_name").eq("id", me.user.id).maybeSingle();
+  const { data: link } = await db.from("mp_tg_links").select("chat_id").eq("user_id", target).maybeSingle();
+  await db.from("mp_conversations").update({ tg_notified_at: new Date().toISOString() }).eq("id", c.id);
+  if (!link) return json({ ok: true, skipped: "no_telegram" });
+  const text = `💬 <b>${escapeHtml(p?.full_name || "—")}</b>:\n${escapeHtml(String(msg.body).slice(0, 300))}\n\n👉 ${SITE_URL}/tg/messages/?c=${c.id}`;
+  await tg("sendMessage", { chat_id: link.chat_id, text, parse_mode: "HTML", disable_web_page_preview: true });
+  return json({ ok: true, sent: true });
 }

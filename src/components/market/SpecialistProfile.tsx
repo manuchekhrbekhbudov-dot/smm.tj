@@ -16,6 +16,8 @@ import { Icon } from "@/components/ui/Icon";
 import { Notice, Skeleton } from "@/components/ui/Notice";
 import { Reveal } from "@/components/fx/Reveal";
 import { OrderForm } from "./OrderForm";
+import { PortfolioGallery } from "@/components/portfolio/PortfolioGallery";
+import { AskSpecialist } from "@/components/chat/AskSpecialist";
 
 export function SpecialistProfile() {
   const t = useTranslations();
@@ -109,6 +111,8 @@ export function SpecialistProfile() {
           </section>
         )}
 
+        <PortfolioGallery specialistId={s.id} />
+
         <section>
           <h2 className="mb-4 text-h3 font-bold">{t("specialist.services")}</h2>
           {services.length === 0 ? <p className="text-ink-2">{t("specialist.noServices")}</p> : (
@@ -170,6 +174,7 @@ export function SpecialistProfile() {
             <p className="mb-6 text-ink-2">{t("common.from")} <span className="tabular font-display text-3xl font-bold text-ink-0">{formatTjs(s.min_price)}</span> TJS</p>
           )}
           <OrderForm specialistId={s.id} name={name} services={services} />
+          <AskSpecialist specialistId={s.id} />
         </Card>
         {contacts.length > 0 && (
           <Card>

@@ -5,6 +5,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { LogoMark } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { AuthButton } from "./AuthButton";
+import { ChatBadge } from "@/components/chat/ChatBadge";
 import { LaunchBar } from "./LaunchBar";
 import { cn } from "@/lib/cn";
 
@@ -83,6 +84,7 @@ export function Header() {
           <div className="flex items-center gap-1.5 md:gap-2">
             <LocaleSwitch />
             <ThemeToggle />
+            <ChatBadge />
             <AuthButton className="hidden md:flex" />
             <button
               type="button"

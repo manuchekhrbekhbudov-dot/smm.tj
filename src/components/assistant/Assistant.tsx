@@ -43,7 +43,10 @@ export function Assistant() {
 
   useEffect(() => { void assistantEnabled().then(setEnabled); }, []);
   const [greet, setGreet] = useState(false);
-  const onHome = usePathname() === "/";
+  const pathname = usePathname();
+  const onHome = pathname === "/";
+  // The chat and admin pages have their own input at the bottom: keep the helper out of the way there.
+  const hidden = pathname.startsWith("/messages") || pathname.startsWith("/admin");
   // Rendered into <body>: an animated (transformed) page wrapper would otherwise pin "fixed" elements to the page bottom.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -62,13 +65,14 @@ export function Assistant() {
   }, [pending, busy]);
   // First visit: a friendly bubble pops up after 3 s so clients notice the helper right away.
   useEffect(() => {
-    if (onHome) return; // the home page already has the big "What do you need?" bar
+    // Only on public pages, for visitors and clients (the home page already has the big bar).
+    if (onHome || /^\/(cabinet|login|onboarding|feedback)/.test(pathname) || profile?.role === "specialist" || profile?.role === "admin") return;
     let seen = false;
     try { seen = sessionStorage.getItem("smmtj_greeted") === "1"; } catch { /* ignore */ }
     if (seen) return;
     const id = setTimeout(() => { setGreet(true); try { sessionStorage.setItem("smmtj_greeted", "1"); } catch { /* ignore */ } }, 3000);
     return () => clearTimeout(id);
-  }, [onHome]);
+  }, [onHome, pathname, profile?.role]);
   useEffect(() => { try { const s = sessionStorage.getItem(STORE); if (s) setMsgs(JSON.parse(s)); } catch { /* ignore */ } }, []);
   useEffect(() => {
     try { sessionStorage.setItem(STORE, JSON.stringify(msgs.slice(-20))); } catch { /* ignore */ }
@@ -76,7 +80,7 @@ export function Assistant() {
     if (box) box.scrollTop = box.scrollHeight;
   }, [msgs, open, busy]);
 
-  if (blocked || !mounted) return null;
+  if (blocked || !mounted || hidden) return null;
   const isSpec = profile?.role === "specialist";
   const suggestions = isSpec ? [t("s.spec1"), t("s.spec2"), t("s.spec3")] : [t("s.client1"), t("s.client2"), t("s.client3")];
 

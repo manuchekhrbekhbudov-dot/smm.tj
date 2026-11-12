@@ -15,6 +15,7 @@ import { TelegramCodeForm } from "@/components/auth/TelegramCodeForm";
 import { BlockedNotice } from "@/components/auth/BlockedNotice";
 import { DecisionGate } from "@/components/trust/DecisionGate";
 import { Consent } from "@/components/legal/Consent";
+import { BRIEF, cleanBrief } from "@/content/brief";
 
 export function OrderForm({ specialistId, name, services }: { specialistId: string; name: string; services: Service[] }) {
   const t = useTranslations();
@@ -62,14 +63,19 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
       await getSupabase()!.from("mp_profiles").update({ full_name: fullName.slice(0, 100) }).eq("id", session.user.id);
       void refreshProfile();
     }
-    const { data: created, error } = await getSupabase()!.from("mp_orders").insert({
+    const row = {
       client_id: session.user.id,
       specialist_id: specialistId,
       service_id: serviceId,
       message: message.slice(0, 3000),
       contact_phone: phone,
       budget_tjs: budget > 0 ? Math.round(budget) : null,
-    }).select("id").single();
+    };
+    const brief = cleanBrief(f);
+    let res = await getSupabase()!.from("mp_orders").insert(brief ? { ...row, brief } : row).select("id").single();
+    // Database without the brief column yet: send the order without it.
+    if (res.error && brief && /brief/.test(res.error.message)) res = await getSupabase()!.from("mp_orders").insert(row).select("id").single();
+    const { data: created, error } = res;
     setState(error ? (error.message.includes("decision_required") ? "decision" : "error") : "done");
     if (created?.id) void notifyOrder(created.id);
   };
@@ -87,6 +93,16 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
           {services.map((s) => <option key={s.id} value={s.id}>{s.title} — {formatTjs(s.price_tjs)} TJS</option>)}
         </Select>
       )}
+      <fieldset className="grid gap-3 sm:grid-cols-3">
+        <legend className="mb-2 text-sm font-semibold text-ink-1">{t("brief.title")}</legend>
+        {(Object.keys(BRIEF) as (keyof typeof BRIEF)[]).map((k) => (
+          <Select key={k} label={t(`brief.${k}.label`)} name={`brief_${k}`} defaultValue="">
+            <option value="">—</option>
+            {BRIEF[k].map((v) => <option key={v} value={v}>{t(`brief.${k}.${v}`)}</option>)}
+          </Select>
+        ))}
+      </fieldset>
+      <Input label={t("brief.link")} name="brief_link" maxLength={200} />
       {needName && <Input label={t("order.name")} name="full_name" autoComplete="name" maxLength={100} error={errors.name} />}
       <Textarea label={t("order.message")} name="message" maxLength={3000} error={errors.message} />
       <Input label={t("order.budget")} name="budget" type="number" inputMode="numeric" min={0} />
