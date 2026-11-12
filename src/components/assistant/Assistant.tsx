@@ -1,9 +1,11 @@
 "use client";
 import { Fragment, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 import { askAssistant, assistantEnabled, type ChatMsg } from "@/lib/assistant";
 import { localAnswer } from "@/lib/localAssistant";
 import { useAuth } from "@/lib/auth";
+import { usePathname } from "@/i18n/navigation";
 import { Spinner } from "@/components/ui/Notice";
 import { cn } from "@/lib/cn";
 
@@ -40,6 +42,33 @@ export function Assistant() {
   const boxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { void assistantEnabled().then(setEnabled); }, []);
+  const [greet, setGreet] = useState(false);
+  const onHome = usePathname() === "/";
+  // Rendered into <body>: an animated (transformed) page wrapper would otherwise pin "fixed" elements to the page bottom.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const [pending, setPending] = useState<string | null>(null);
+  // Questions typed in the home-page bar open the chat here.
+  useEffect(() => {
+    const on = (e: Event) => { setOpen(true); setGreet(false); setPending(String((e as CustomEvent).detail ?? "")); };
+    window.addEventListener("smmtj-ask", on);
+    return () => window.removeEventListener("smmtj-ask", on);
+  }, []);
+  const sendRef = useRef<(q: string) => Promise<void>>(async () => {});
+  useEffect(() => {
+    if (pending === null || busy) return;
+    const q = pending; setPending(null);
+    if (q) void sendRef.current(q);
+  }, [pending, busy]);
+  // First visit: a friendly bubble pops up after 3 s so clients notice the helper right away.
+  useEffect(() => {
+    if (onHome) return; // the home page already has the big "What do you need?" bar
+    let seen = false;
+    try { seen = sessionStorage.getItem("smmtj_greeted") === "1"; } catch { /* ignore */ }
+    if (seen) return;
+    const id = setTimeout(() => { setGreet(true); try { sessionStorage.setItem("smmtj_greeted", "1"); } catch { /* ignore */ } }, 3000);
+    return () => clearTimeout(id);
+  }, [onHome]);
   useEffect(() => { try { const s = sessionStorage.getItem(STORE); if (s) setMsgs(JSON.parse(s)); } catch { /* ignore */ } }, []);
   useEffect(() => {
     try { sessionStorage.setItem(STORE, JSON.stringify(msgs.slice(-20))); } catch { /* ignore */ }
@@ -47,7 +76,7 @@ export function Assistant() {
     if (box) box.scrollTop = box.scrollHeight;
   }, [msgs, open, busy]);
 
-  if (blocked) return null;
+  if (blocked || !mounted) return null;
   const isSpec = profile?.role === "specialist";
   const suggestions = isSpec ? [t("s.spec1"), t("s.spec2"), t("s.spec3")] : [t("s.client1"), t("s.client2"), t("s.client3")];
 
@@ -64,9 +93,18 @@ export function Assistant() {
     else { setErr(t(`errors.${["not_configured", "rate_limited", "blocked"].includes(r.error ?? "") ? r.error : "generic"}`)); setMsgs(msgs); setInput(q); }
   };
 
-  return (
+  sendRef.current = send;
+
+  return createPortal(
     <>
-      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-controls="ai-panel" aria-label={open ? t("close") : enabled ? t("open") : t("openLocal")}
+      {greet && !open && (
+        <div role="status" className="fixed bottom-[calc(max(1rem,env(safe-area-inset-bottom))+4.5rem)] right-4 z-40 max-w-[min(86vw,320px)] rounded-[var(--radius-md)] border border-purple/30 bg-bg-1 p-4 text-sm shadow-2xl md:right-6">
+          <button type="button" aria-label={t("close")} onClick={() => setGreet(false)} className="absolute right-2 top-1 px-1 text-lg text-ink-2 hover:text-ink-0">×</button>
+          <p className="pr-4 font-semibold">{isSpec ? t("greetSpec") : t("greet")}</p>
+          <button type="button" onClick={() => { setGreet(false); setOpen(true); }} className="mt-3 rounded-full bg-gradient-primary px-4 py-2 font-semibold text-white">{t("greetCta")}</button>
+        </div>
+      )}
+      <button type="button" onClick={() => { setOpen((v) => !v); setGreet(false); }} aria-expanded={open} aria-controls="ai-panel" aria-label={open ? t("close") : enabled ? t("open") : t("openLocal")}
         className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-40 flex h-14 items-center gap-2 rounded-full bg-gradient-primary px-5 font-semibold text-white glow-md transition-transform hover:-translate-y-0.5 md:right-6">
         <span aria-hidden className="text-xl">{open ? "×" : "✨"}</span><span className="hidden sm:inline">{open ? t("close") : enabled ? t("open") : t("openLocal")}</span>
       </button>
@@ -105,6 +143,7 @@ export function Assistant() {
           <p className="px-4 pb-3 text-[11px] text-ink-2">{enabled ? t("disclaimer") : t("local.disclaimer")}</p>
         </div>
       )}
-    </>
+    </>,
+    document.body,
   );
 }

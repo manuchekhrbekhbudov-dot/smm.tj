@@ -87,6 +87,8 @@ function SignedInActions({ name, role }: { name: string; role: "client" | "speci
   );
 }
 
+import { AskBar } from "@/components/assistant/AskBar";
+
 export function Hero() {
   const t = useTranslations();
   const show3d = use3d();
@@ -114,6 +116,7 @@ export function Hero() {
         </span>
         <TextReveal trigger="mount" delay={0.05} stagger={0.04} text={t("home.hero.title")} highlightFrom={-2} className="mt-5 max-w-4xl text-hero font-bold" />
         <p className="mt-4 max-w-2xl text-base text-ink-1 md:text-xl">{t("home.hero.subtitle")}</p>
+        {profile?.role !== "specialist" && profile?.role !== "admin" && <AskBar />}
 
         {signedIn ? (
           <SignedInActions name={profile!.full_name} role={profile!.role} />
