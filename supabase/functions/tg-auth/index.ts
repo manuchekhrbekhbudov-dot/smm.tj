@@ -1,9 +1,18 @@
 // POST { phone, code } → verifies the Telegram code and returns a one-time token_hash.
 // The browser exchanges it with supabase.auth.verifyOtp({ type: "magiclink", token_hash }) for a session.
 // Works for new accounts (created here) and existing ones (= password recovery).
-import { admin, cors, json, normPhone, sha256, PHONE_EMAIL_DOMAIN, isBlocked } from "../_shared/tg.ts";
+import { admin, cors, json, normPhone, sha256, PHONE_EMAIL_DOMAIN, isBlocked, tg, SITE_URL } from "../_shared/tg.ts";
 
 const MAX_ATTEMPTS = 5;
+
+const WELCOME =
+  `🎉 <b>Табрик!</b> Шумо бомуваффақият ба платформаи <b>SMM.TJ</b> илова шудед.\n\n` +
+  `Раҳмат, ки бо мо ҳастед! 💜 SMM.TJ — бозори мутахассисони SMM дар Тоҷикистон: профилҳои санҷидашуда, нархҳои ошкоро ва шарҳҳои воқеӣ.\n\n` +
+  `🛍️ <b>Мизоҷ ҳастед?</b> Мутахассиси SMM-и худро ёбед:\n${SITE_URL}/tg/specialists/\n\n` +
+  `🚀 <b>Мутахассиси SMM ҳастед?</b> Профил, портфолио ва нархномаи худро пур кунед:\n${SITE_URL}/tg/cabinet/\n\n` +
+  `📖 Роҳнамо: ${SITE_URL}/tg/guide/\n` +
+  `📞 Савол доред? Директор: +992 50 444 01 01\n` +
+  `📸 Instagram: @smm.tjj`;
 const LOCK_HOURS = 24;
 
 Deno.serve(async (req) => {
@@ -68,6 +77,10 @@ Deno.serve(async (req) => {
   if (userId) {
     await db.from("mp_tg_links").delete().eq("chat_id", row.chat_id).neq("user_id", userId);
     await db.from("mp_tg_links").upsert({ user_id: userId, chat_id: row.chat_id, phone });
+  }
+  // Brand-new account → welcome + thank-you message in Telegram (Tajik). Never blocks the sign-in.
+  if (!created.error && row.chat_id) {
+    await tg("sendMessage", { chat_id: row.chat_id, text: WELCOME, parse_mode: "HTML", disable_web_page_preview: true }).catch(() => {});
   }
   return json({ token_hash: link.data.properties.hashed_token, is_new: !created.error });
 });
