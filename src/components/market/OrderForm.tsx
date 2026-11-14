@@ -30,7 +30,7 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
       <div>
         <h3 className="text-h3 font-bold">{t("order.title", { name })}</h3>
         <p className="mt-2 text-sm text-ink-1">{t("order.quick")}</p>
-        <div className="mt-5"><TelegramCodeForm submitLabel={t("order.quickContinue")} /></div>
+        <div className="mt-5"><TelegramCodeForm role="client" submitLabel={t("order.quickContinue")} /></div>
         <Consent className="mt-3" />
         <p className="mt-5 text-center text-sm text-ink-2">
           {t("order.haveAccount")}{" "}

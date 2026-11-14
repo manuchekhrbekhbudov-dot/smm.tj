@@ -14,8 +14,10 @@ import { BlockedNotice } from "./BlockedNotice";
  * "Open bot → share number → enter code". The code field stays locked until the bot has really
  * sent a code to this number; after 5 wrong codes the number is blocked for 24 hours.
  */
-export function TelegramCodeForm({ onSuccess, onStart, defaultPhone = "+992 ", link = false, submitLabel }: {
+export function TelegramCodeForm({ onSuccess, onStart, defaultPhone = "+992 ", link = false, submitLabel, role }: {
   onSuccess?: () => void; onStart?: () => void; defaultPhone?: string; link?: boolean; submitLabel?: string;
+  /** Who is signing up — chooses the Telegram welcome message for a new account. */
+  role?: "client" | "specialist";
 }) {
   const t = useTranslations("auth");
   const locale = useLocale();
@@ -68,7 +70,7 @@ export function TelegramCodeForm({ onSuccess, onStart, defaultPhone = "+992 ", l
     if (!/^\d{6}$/.test(code)) { setErr(t("tgErrors.wrong_code")); return; }
     setBusy(true); setErr(null);
     onStart?.();
-    const res = await loginWithTelegramCode(p, code, link);
+    const res = await loginWithTelegramCode(p, code, link, role);
     setBusy(false);
     if (!res.error) { onSuccess?.(); return; }
     if (res.error === "account_blocked") { setStatus({ pending: false, blocked_account: true }); return; }

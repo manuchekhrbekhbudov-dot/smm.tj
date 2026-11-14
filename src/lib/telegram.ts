@@ -36,7 +36,8 @@ export type CodeResult = { error: string | null; attemptsLeft?: number; until?: 
  * Exchanges phone + Telegram code for a Supabase session (or, with link=true, only connects
  * Telegram notifications to the signed-in account).
  */
-export async function loginWithTelegramCode(phone: string, code: string, link = false): Promise<CodeResult> {
+/** role: who is signing up ("client" | "specialist") — picks the right Telegram welcome for new accounts. */
+export async function loginWithTelegramCode(phone: string, code: string, link = false, role?: "client" | "specialist"): Promise<CodeResult> {
   const sb = getSupabase();
   if (!sb) return { error: "generic" };
   try {
@@ -44,7 +45,7 @@ export async function loginWithTelegramCode(phone: string, code: string, link = 
     const r = await fetch(fn("tg-auth"), {
       method: "POST",
       headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-      body: JSON.stringify({ phone, code, link }),
+      body: JSON.stringify({ phone, code, link, role }),
     });
     const d = await r.json().catch(() => ({}));
     if (d.blocked_account) return { error: "account_blocked" };
@@ -86,4 +87,11 @@ export async function notifyTrust(specialistId: string) {
   const token = (await sb?.auth.getSession())?.data.session?.access_token;
   if (!token) return;
   fetch(fn("tg-notify"), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ trust_specialist: specialistId }) }).catch(() => {});
+}
+
+/** After a password reset: Telegram confirmation "your password was changed" (security notice). */
+export async function notifyPasswordChanged() {
+  const token = (await getSupabase()?.auth.getSession())?.data.session?.access_token;
+  if (!token) return;
+  fetch(fn("tg-notify"), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ event: "password_changed" }) }).catch(() => {});
 }

@@ -2,12 +2,13 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { getSupabase } from "@/lib/supabase/client";
+import { notifyPasswordChanged } from "@/lib/telegram";
 import { Input } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Notice";
 
 /** Lets a just-verified (Telegram) user choose their own password. */
-export function SetPasswordForm({ onDone }: { onDone: () => void }) {
+export function SetPasswordForm({ onDone, purpose = "register" }: { onDone: () => void; purpose?: "register" | "reset" }) {
   const t = useTranslations("auth");
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
@@ -22,6 +23,7 @@ export function SetPasswordForm({ onDone }: { onDone: () => void }) {
     const { error } = await getSupabase()!.auth.updateUser({ password: pw });
     setBusy(false);
     if (error) { setErr(t("errors.generic")); return; }
+    if (purpose === "reset") void notifyPasswordChanged();
     onDone();
   };
 

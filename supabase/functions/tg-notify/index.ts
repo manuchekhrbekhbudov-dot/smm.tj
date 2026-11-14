@@ -18,6 +18,7 @@ Deno.serve(async (req) => {
   const { order_id } = body;
   if (auth.startsWith("Bearer ") && typeof body.trust_specialist === "string") return trustEvent(body.trust_specialist);
   if (auth.startsWith("Bearer ") && typeof body.conversation_id === "string") return chatEvent(auth, body.conversation_id);
+  if (auth.startsWith("Bearer ") && body.event === "password_changed") return passwordChanged(auth);
   if (!auth.startsWith("Bearer ") || !order_id) return json({ error: "bad_request" }, 400);
 
   // Read the order AS THE CALLER: RLS guarantees they are its client or specialist.
@@ -115,6 +116,24 @@ async function chatEvent(auth: string, conversationId: string) {
   await db.from("mp_conversations").update({ tg_notified_at: new Date().toISOString() }).eq("id", c.id);
   if (!link) return json({ ok: true, skipped: "no_telegram" });
   const text = `💬 <b>${escapeHtml(p?.full_name || "—")}</b>:\n${escapeHtml(String(msg.body).slice(0, 300))}\n\n👉 ${SITE_URL}/tg/messages/?c=${c.id}`;
+  await tg("sendMessage", { chat_id: link.chat_id, text, parse_mode: "HTML", disable_web_page_preview: true });
+  return json({ ok: true, sent: true });
+}
+
+/** Security notice after a password reset — sent only to the account's own Telegram chat. */
+async function passwordChanged(auth: string) {
+  const asUser = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: auth } }, auth: { persistSession: false },
+  });
+  const { data: me } = await asUser.auth.getUser();
+  if (!me?.user) return json({ error: "unauthorized" }, 401);
+  const { data: link } = await admin().from("mp_tg_links").select("chat_id").eq("user_id", me.user.id).maybeSingle();
+  if (!link) return json({ ok: true, skipped: "no_telegram" });
+  const when = new Date().toLocaleString("ru-RU", { timeZone: "Asia/Dushanbe", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  const text =
+    `🔐 <b>Пароли шумо иваз шуд</b> (${when}).\n\n` +
+    `Акнун бо рақами телефон ва пароли нав ворид шавед:\n${SITE_URL}/tg/login/\n\n` +
+    `⚠️ Агар ин шумо набудед — фавран ба директор занг занед: ${DIRECTOR_PHONE}`;
   await tg("sendMessage", { chat_id: link.chat_id, text, parse_mode: "HTML", disable_web_page_preview: true });
   return json({ ok: true, sent: true });
 }

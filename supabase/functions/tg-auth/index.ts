@@ -5,14 +5,25 @@ import { admin, cors, json, normPhone, sha256, PHONE_EMAIL_DOMAIN, isBlocked, tg
 
 const MAX_ATTEMPTS = 5;
 
-const WELCOME =
-  `🎉 <b>Табрик!</b> Шумо бомуваффақият ба платформаи <b>SMM.TJ</b> илова шудед.\n\n` +
-  `Раҳмат, ки бо мо ҳастед! 💜 SMM.TJ — бозори мутахассисони SMM дар Тоҷикистон: профилҳои санҷидашуда, нархҳои ошкоро ва шарҳҳои воқеӣ.\n\n` +
-  `🛍️ <b>Мизоҷ ҳастед?</b> Мутахассиси SMM-и худро ёбед:\n${SITE_URL}/tg/specialists/\n\n` +
-  `🚀 <b>Мутахассиси SMM ҳастед?</b> Профил, портфолио ва нархномаи худро пур кунед:\n${SITE_URL}/tg/cabinet/\n\n` +
-  `📖 Роҳнамо: ${SITE_URL}/tg/guide/\n` +
-  `📞 Савол доред? Директор: +992 50 444 01 01\n` +
-  `📸 Instagram: @smm.tjj`;
+// Welcome messages for brand-new accounts (Tajik), chosen by who is signing up.
+const WELCOME_CLIENT =
+  `🎉 <b>Хуш омадед ба SMM.TJ!</b>\n\n` +
+  `Шумо ҳамчун <b>мизоҷ</b> бомуваффақият ба платформаи SMM.TJ илова шудед. Раҳмат, ки моро интихоб кардед! 💜\n\n` +
+  `🔎 Мутахассиси SMM-и худро ёбед — профилҳои санҷидашуда, нархҳои ошкоро ва шарҳҳои воқеӣ:\n${SITE_URL}/tg/specialists/\n\n` +
+  `💬 Пеш аз фармоиш ба мутахассис дар чат савол диҳед.\n` +
+  `🎁 Пас аз анҷоми кор шарҳи ростқавлона нависед — ширкат тӯҳфа медиҳад.\n\n` +
+  `📞 Савол доред? Директор: +992 50 444 01 01 · Instagram: @smm.tjj`;
+const WELCOME_SPECIALIST =
+  `🚀 <b>Хуш омадед ба SMM.TJ!</b>\n\n` +
+  `Шумо ҳамчун <b>мутахассиси SMM</b> бомуваффақият ба платформа илова шудед. Раҳмат, ки бо мо ҳастед! 💜\n\n` +
+  `Қадамҳои навбатӣ:\n` +
+  `1️⃣ Профилро пур кунед: сурат, самтҳо, таҷриба ва тавсиф\n` +
+  `2️⃣ То 9 намунаи кор ба портфолио бор кунед\n` +
+  `3️⃣ Нархномаи худро нависед\n` +
+  `4️⃣ Директор профилро месанҷад — баъд шумо дар каталог пайдо мешавед\n` +
+  `👉 ${SITE_URL}/tg/cabinet/\n\n` +
+  `🎁 3 шарҳи хуб дар моҳи аввал — 1 ҳафта тарифи «Топ» ройгон!\n\n` +
+  `📞 Савол доред? Директор: +992 50 444 01 01 · Instagram: @smm.tjj`;
 const LOCK_HOURS = 24;
 
 Deno.serve(async (req) => {
@@ -80,7 +91,7 @@ Deno.serve(async (req) => {
   }
   // Brand-new account → welcome + thank-you message in Telegram (Tajik). Never blocks the sign-in.
   if (!created.error && row.chat_id) {
-    await tg("sendMessage", { chat_id: row.chat_id, text: WELCOME, parse_mode: "HTML", disable_web_page_preview: true }).catch(() => {});
+    await tg("sendMessage", { chat_id: row.chat_id, text: body.role === "specialist" ? WELCOME_SPECIALIST : WELCOME_CLIENT, parse_mode: "HTML", disable_web_page_preview: true }).catch(() => {});
   }
   return json({ token_hash: link.data.properties.hashed_token, is_new: !created.error });
 });

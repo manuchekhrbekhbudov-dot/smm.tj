@@ -127,11 +127,11 @@ export function LoginForm() {
       </div>
 
       {(mode === "register" || reset) && flow === "password" ? (
-        <SetPasswordForm onDone={() => setFlow("none")} />
+        <SetPasswordForm purpose={reset ? "reset" : "register"} onDone={() => setFlow("none")} />
       ) : codeLogin ? (
         <div className="space-y-4">
           <p className="font-semibold">{t("auth.codeLoginTitle")}</p>
-          <TelegramCodeForm />
+          <TelegramCodeForm role={role ?? "client"} />
           <Consent />
           <p className="text-center text-sm"><button type="button" className="font-semibold text-purple" onClick={() => setCodeLogin(false)}>{t("auth.backToLogin")}</button></p>
         </div>
@@ -154,7 +154,7 @@ export function LoginForm() {
       {mode === "register" ? (
         <div className="space-y-4">
           <p className="font-semibold">{t("auth.regStep1")}</p>
-          <TelegramCodeForm submitLabel={t("auth.verify")} onStart={() => setFlow("verify")} onSuccess={() => setFlow("password")} />
+          <TelegramCodeForm role={role ?? "client"} submitLabel={t("auth.verify")} onStart={() => setFlow("verify")} onSuccess={() => setFlow("password")} />
           <Consent />
           <p className="text-center text-sm text-ink-2">
             {t("auth.haveAccount")}{" "}
