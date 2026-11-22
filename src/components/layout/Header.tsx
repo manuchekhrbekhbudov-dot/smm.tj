@@ -6,6 +6,7 @@ import { LogoMark } from "@/components/ui/Logo";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { AuthButton } from "./AuthButton";
 import { ChatBadge } from "@/components/chat/ChatBadge";
+import { InstallApp } from "./InstallApp";
 import { LaunchBar } from "./LaunchBar";
 import { cn } from "@/lib/cn";
 
@@ -112,6 +113,7 @@ export function Header() {
               </li>
             ))}
           </ul>
+          <InstallApp className="mt-6 px-4" />
           <div className="mt-auto">
             <AuthButton block />
           </div>
