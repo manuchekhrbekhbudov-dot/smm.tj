@@ -54,7 +54,7 @@ export function Messages() {
     <div>
       <h1 className="text-h1 font-bold">{t("title")}</h1>
       {err && <Notice tone="danger" className="mt-4">{err}</Notice>}
-      <div className="mt-6 grid min-h-[60dvh] gap-4 md:grid-cols-[300px_1fr]">
+      <div className="mt-6 grid min-h-[60dvh] min-w-0 grid-cols-1 gap-4 md:grid-cols-[300px_minmax(0,1fr)]">
         <aside className={cn("rounded-[var(--radius-lg)] glass p-2", cur && "hidden md:block")}>
           {convs.length === 0 ? (
             <div className="p-6 text-center text-ink-2">
@@ -125,7 +125,7 @@ function Thread({ conv, me, name, onBack, onSent }: { conv: Conversation; me: st
   const otherLink = me === conv.client_id ? { pathname: "/specialist", query: { id: conv.specialist_id } } : null;
 
   return (
-    <section className="flex min-h-[60dvh] flex-col rounded-[var(--radius-lg)] glass">
+    <section className="flex min-h-[60dvh] min-w-0 flex-col rounded-[var(--radius-lg)] glass">
       <header className="flex items-center gap-3 border-b border-ink-3 px-4 py-3">
         <button type="button" onClick={onBack} className="rounded-full px-2 py-1 text-xl md:hidden" aria-label={t("back")}>←</button>
         {otherLink ? <Link href={otherLink} className="font-display text-lg font-bold hover:text-purple">{name}</Link> : <span className="font-display text-lg font-bold">{name}</span>}
@@ -134,7 +134,7 @@ function Thread({ conv, me, name, onBack, onSent }: { conv: Conversation; me: st
         {msgs === null ? <div className="flex justify-center py-10"><Spinner /></div>
           : msgs.length === 0 ? <p className="py-10 text-center text-ink-2">{t("first")}</p>
           : msgs.map((m) => (
-            <div key={m.id} className={cn("max-w-[80%] whitespace-pre-line rounded-2xl px-4 py-2.5", m.sender_id === me ? "ml-auto bg-gradient-primary text-white" : "bg-ink-3")}>
+            <div key={m.id} className={cn("max-w-[80%] whitespace-pre-line break-words rounded-2xl px-4 py-2.5", m.sender_id === me ? "ml-auto bg-gradient-primary text-white" : "bg-ink-3")}>
               {m.body}
               <span className={cn("mt-1 block text-[10px]", m.sender_id === me ? "text-white/70" : "text-ink-2")}>{tf.format(new Date(m.created_at))}</span>
             </div>
