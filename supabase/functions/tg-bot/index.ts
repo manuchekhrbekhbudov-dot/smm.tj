@@ -1,6 +1,8 @@
 // Telegram webhook: /start → ask to share contact → verify it is the sender's own number → send a login code.
+// Any other text that looks like a request ("дизайнер Хуҷанд") → up to 3 real approved specialists.
 // GET ?setup=1 registers this function as the bot's webhook (call once after setting TG_BOT_TOKEN).
 import { admin, json, normPhone, sha256, tg, TOKEN, webhookSecret, SITE_URL, isBlocked, BLOCKED_TEXT } from "../_shared/tg.ts";
+import { parseQuery, searchReply, SEARCH_HELP } from "../_shared/search.ts";
 
 const CODE_TTL_MIN = 10;
 const MAX_ATTEMPTS = 5;
@@ -8,7 +10,8 @@ const MAX_ATTEMPTS = 5;
 const T = {
   welcome:
     "👋 Салом! Ин боти расмии <b>SMM.TJ</b> аст.\n\nБарои гирифтани коди воридшавӣ тугмаи <b>«📱 Фиристодани рақами ман»</b>-ро пахш кунед.\n\n" +
-    "Здравствуйте! Чтобы получить код входа, нажмите <b>«📱 Отправить мой номер»</b>.",
+    "Здравствуйте! Чтобы получить код входа, нажмите <b>«📱 Отправить мой номер»</b>.\n\n" +
+    "🔎 Мутахассис лозим? Нависед, масалан: <code>дизайнер Хуҷанд</code> ё /find",
   button: "📱 Фиристодани рақами ман / Отправить мой номер",
   locked: (until: string) =>
     `⛔ Ин рақам барои 5 коди нодуруст муваққатан баста шуд то <b>${until}</b> (вақти Душанбе).\n` +
@@ -29,7 +32,10 @@ Deno.serve(async (req) => {
     const hook = `${Deno.env.get("SUPABASE_URL")}/functions/v1/tg-bot`;
     const set = await tg("setWebhook", { url: hook, secret_token: await webhookSecret(), allowed_updates: ["message"] });
     const me = await tg("getMe", {});
-    await tg("setMyCommands", { commands: [{ command: "start", description: "Гирифтани код / Получить код" }] });
+    await tg("setMyCommands", { commands: [
+      { command: "start", description: "Гирифтани код / Получить код" },
+      { command: "find", description: "Ҷустуҷӯи мутахассис / Найти специалиста" },
+    ] });
     return json({ webhook: set, bot: me?.result?.username ?? null });
   }
   if (req.method === "GET") {
@@ -73,6 +79,17 @@ Deno.serve(async (req) => {
       created_at: new Date().toISOString(),
     });
     await tg("sendMessage", { chat_id: chatId, text: T.code(code), parse_mode: "HTML", reply_markup: { remove_keyboard: true }, disable_web_page_preview: true });
+    return json({ ok: true });
+  }
+
+  // Search: "/find дизайнер Хуҷанд" or simply "дизайнер Хуҷанд"
+  const text = typeof msg.text === "string" ? msg.text.trim().slice(0, 300) : "";
+  const findCmd = /^\/find(@\w+)?(\s|$)/i.test(text);
+  const query = findCmd ? text.replace(/^\/find(@\w+)?/i, "").trim() : text.startsWith("/") ? "" : text;
+  const parsed = query ? parseQuery(findCmd ? `мутахассис ${query}` : query) : null;
+  if (findCmd || parsed) {
+    const reply = parsed ? await searchReply(parsed).catch((e) => { console.error("search", e); return null; }) : SEARCH_HELP;
+    await tg("sendMessage", { chat_id: chatId, text: reply ?? `👉 ${SITE_URL}/tg/specialists/`, parse_mode: "HTML", disable_web_page_preview: true });
     return json({ ok: true });
   }
 

@@ -1,4 +1,5 @@
 "use client";
+import { claimReferral } from "@/lib/growth";
 import { useEffect, useState } from "react";
 import { looksLikeGibberish } from "@/lib/quality";
 import { useTranslations } from "next-intl";
@@ -86,6 +87,7 @@ export function SpecialistEditor({ onSaved }: { onSaved: () => void }) {
       telegram: f.telegram.trim().slice(0, 100) || null, whatsapp: f.whatsapp.trim().slice(0, 30) || null, instagram: f.instagram.trim().slice(0, 100) || null,
     });
     if (r1.error || r2.error) { setState("error"); return; }
+    await claimReferral(sb, profile!.id); // invited by a colleague? (once; checked on the server)
     setF({ ...f, portfolio_links: links.length ? links : [""] });
     await refreshProfile();
     setState("saved");

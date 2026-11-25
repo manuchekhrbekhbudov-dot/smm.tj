@@ -95,3 +95,23 @@ export async function notifyPasswordChanged() {
   if (!token) return;
   fetch(fn("tg-notify"), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ event: "password_changed" }) }).catch(() => {});
 }
+
+/** After the director approves a profile: "you are in the catalog" (+ the referral gift) in Telegram. Idempotent. */
+export async function notifyApproved(specialistId: string) {
+  const token = (await getSupabase()?.auth.getSession())?.data.session?.access_token;
+  if (!token) return;
+  fetch(fn("tg-notify"), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ approved_specialist: specialistId }) }).catch(() => {});
+}
+
+/** The director's "today's report" preview (same text the bot sends in the evening). */
+export async function previewDailyReport(): Promise<string | null> {
+  const token = (await getSupabase()?.auth.getSession())?.data.session?.access_token;
+  if (!token) return null;
+  try {
+    const r = await fetch(`${fn("tg-daily-report")}?preview=1`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    const d = await r.json().catch(() => null);
+    return typeof d?.text === "string" ? d.text : null;
+  } catch {
+    return null;
+  }
+}

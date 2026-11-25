@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useLocale } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import { getSupabase } from "@/lib/supabase/client";
+import { rememberReferral } from "@/lib/growth";
 
 /** Counts page views (path + where the visitor came from). No cookies, no personal data, no third parties. */
 function sourceOf(): string {
@@ -22,6 +23,7 @@ function sourceOf(): string {
 export function VisitTracker() {
   const path = usePathname();
   const locale = useLocale();
+  useEffect(() => { rememberReferral(); }, [path]);
   useEffect(() => {
     const key = `smmtj_v:${path}`;
     try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, "1"); } catch { /* private mode: still count */ }

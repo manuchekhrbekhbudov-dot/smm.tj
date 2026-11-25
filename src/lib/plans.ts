@@ -1,6 +1,7 @@
 "use client";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Specialist } from "@/lib/supabase/types";
+import { withVerified } from "@/lib/growth";
 
 export type Plan = "top" | "standard" | "premium";
 export const PLANS: Plan[] = ["top", "standard", "premium"];
@@ -30,14 +31,15 @@ export function sortByPlan<T extends Pick<Specialist, "plan" | "plan_until">>(li
 }
 
 /**
- * Loads plan fields separately so pages keep working even before plans.sql was applied
+ * Loads plan fields (and the director's "verified" mark) separately so pages keep working even before plans.sql was applied
  * (a missing column then just means "no plans").
  */
 export async function withPlans<T extends Specialist>(sb: SupabaseClient, list: T[]): Promise<T[]> {
   if (!list.length) return list;
   const q = sb.from("mp_specialists").select("id, plan, plan_until").gt("plan_until", new Date().toISOString());
   const { data, error } = await (list.length <= 20 ? q.in("id", list.map((s) => s.id)) : q.limit(1000));
-  if (error || !data) return list;
+  const verified = await withVerified(sb, list); // "checked by the director" badge travels with the plan data
+  if (error || !data) return verified;
   const m = new Map(data.map((r) => [r.id as string, r as { plan: string | null; plan_until: string | null }]));
-  return list.map((s) => ({ ...s, plan: m.get(s.id)?.plan ?? null, plan_until: m.get(s.id)?.plan_until ?? null }));
+  return verified.map((s) => ({ ...s, plan: m.get(s.id)?.plan ?? null, plan_until: m.get(s.id)?.plan_until ?? null }));
 }

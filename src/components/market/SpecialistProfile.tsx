@@ -6,6 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { getSupabase } from "@/lib/supabase/client";
 import { withPlans } from "@/lib/plans";
 import { PlanBadge } from "@/components/ui/PlanBadge";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
+import { trackProfileView } from "@/lib/growth";
 import { SPECIALIST_SELECT, type Review, type Service, type Specialist } from "@/lib/supabase/types";
 import { formatTjs } from "@/content/site";
 import { safeHttpUrl, telegramUrl, whatsappUrl, instagramUrl, linkLabel } from "@/lib/links";
@@ -50,6 +52,11 @@ export function SpecialistProfile() {
     return () => { alive = false; };
   }, [sb, id]);
 
+  // Real view counter for the specialist's cabinet (own and director's views are not counted by the server).
+  useEffect(() => {
+    if (sb && s && s.status === "approved" && !s.banned_at) trackProfileView(sb, s.id);
+  }, [sb, s]);
+
   useEffect(() => {
     if (s?.profiles?.full_name) document.title = `${s.profiles.full_name} · SMM.TJ`;
   }, [s]);
@@ -87,6 +94,7 @@ export function SpecialistProfile() {
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-h2 font-bold">{name}</h1>
                 <PlanBadge s={s} />
+                <VerifiedBadge at={s.verified_at} />
                 {s.status === "approved" && <Badge tone="success"><Icon name="check" className="h-3.5 w-3.5" />{t("specialist.verified")}</Badge>}
               </div>
               <p className="mt-2 text-lg text-ink-1">{s.headline}</p>

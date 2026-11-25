@@ -19,15 +19,21 @@ import { cn } from "@/lib/cn";
 import { Analytics } from "./Analytics";
 import { Payments } from "./Payments";
 import { Complaints, FeedbackList } from "./TrustAdmin";
+import { Finance } from "./Finance";
+import { notifyApproved } from "@/lib/telegram";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
+import { useSearchParams } from "next/navigation";
 
-type Tab = SpecialistStatus | "reviews" | "payments" | "complaints" | "feedback" | "stats";
+type Tab = SpecialistStatus | "reviews" | "payments" | "complaints" | "feedback" | "stats" | "finance";
+const TABS: Tab[] = ["pending", "approved", "rejected", "finance", "payments", "complaints", "reviews", "feedback", "stats"];
 type ReviewRow = Review & { specialists?: { profiles: { full_name: string } | null } | null };
 
 export function AdminPanel() {
   const t = useTranslations();
   const { profile, signOut } = useAuth();
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("pending");
+  const fromUrl = useSearchParams().get("tab") as Tab | null; // e.g. the daily Telegram report links to ?tab=finance
+  const [tab, setTab] = useState<Tab>(fromUrl && TABS.includes(fromUrl) ? fromUrl : "pending");
   const [stats, setStats] = useState<{ specialists: number; completed_orders: number; reviews: number } | null>(null);
 
   useEffect(() => {
@@ -53,7 +59,7 @@ export function AdminPanel() {
         </div>
       )}
       <div role="tablist" className="-mx-4 mt-8 flex gap-2 overflow-x-auto px-4 pb-2">
-        {(["pending", "approved", "rejected", "payments", "complaints", "reviews", "feedback", "stats"] as Tab[]).map((k) => (
+        {TABS.map((k) => (
           <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
             className={cn("relative shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors", tab === k ? "text-white" : "glass text-ink-1 hover:text-ink-0")}>
             {tab === k && <motion.span layoutId="adm-tab" className="absolute inset-0 rounded-full bg-gradient-primary" transition={{ type: "spring", stiffness: 500, damping: 35 }} />}
@@ -62,7 +68,7 @@ export function AdminPanel() {
         ))}
       </div>
       <div className="mt-8">
-        {tab === "stats" ? <Analytics /> : tab === "reviews" ? <Reviews /> : tab === "payments" ? <Payments /> : tab === "complaints" ? <Complaints /> : tab === "feedback" ? <FeedbackList /> : <Specialists status={tab} />}
+        {tab === "finance" ? <Finance /> : tab === "stats" ? <Analytics /> : tab === "reviews" ? <Reviews /> : tab === "payments" ? <Payments /> : tab === "complaints" ? <Complaints /> : tab === "feedback" ? <FeedbackList /> : <Specialists status={tab} />}
       </div>
     </div>
   );
@@ -89,7 +95,24 @@ function Specialists({ status }: { status: SpecialistStatus }) {
     setBusy(id); setErr(false);
     const { error } = await sb.from("mp_specialists").update({ status: next, reject_reason: next === "rejected" ? r.slice(0, 500) : null }).eq("id", id);
     setBusy(null);
-    if (error) setErr(true); else void load();
+    if (error) { setErr(true); return; }
+    if (next === "approved") void notifyApproved(id); // Telegram: "you are in the catalog" (+ referral gift)
+    void load();
+  };
+  // Director's "work checked" badge
+  const [verified, setVerified] = useState<Record<string, string | null>>({});
+  useEffect(() => {
+    if (status !== "approved") return;
+    sb.from("mp_specialists").select("id, verified_at").eq("status", "approved").then(({ data, error }) => {
+      if (!error && data) setVerified(Object.fromEntries(data.map((r) => [r.id as string, (r.verified_at as string | null) ?? null])));
+    });
+  }, [sb, status, rows]);
+  const toggleVerified = async (id: string) => {
+    const at = verified[id] ? null : new Date().toISOString();
+    setBusy(id);
+    const { error } = await sb.from("mp_specialists").update({ verified_at: at }).eq("id", id);
+    setBusy(null);
+    if (!error) setVerified((v) => ({ ...v, [id]: at }));
   };
 
   if (rows === null) return <Skeleton className="h-40" />;
@@ -106,6 +129,7 @@ function Specialists({ status }: { status: SpecialistStatus }) {
               <Avatar name={name} url={s.profiles?.avatar_url} size={56} />
               <div className="min-w-0 flex-1">
                 <Link href={{ pathname: "/specialist", query: { id: s.id } }} className="font-display text-lg font-bold hover:text-purple">{name}</Link>
+                {status === "approved" && <VerifiedBadge at={verified[s.id]} className="ml-2 align-middle" />}
                 <p className="text-ink-1">{s.headline || "—"}</p>
                 <p className="mt-1 text-xs text-ink-2">{s.profiles?.city ? t(`cities.${s.profiles.city}`) : "—"} · {t("specialist.years", { count: s.experience_years })}</p>
                 <div className="mt-3 flex flex-wrap gap-1.5">{s.specialties.map((sp) => <Badge key={sp} tone="neutral">{t(`specialties.${sp}.title`)}</Badge>)}</div>
@@ -125,6 +149,11 @@ function Specialists({ status }: { status: SpecialistStatus }) {
             {s.reject_reason && status === "rejected" && <Notice tone="danger" className="mt-4">{s.reject_reason}</Notice>}
             <div className="mt-5 flex flex-wrap items-end gap-3">
               {status !== "approved" && <Button size="sm" loading={busy === s.id} onClick={() => act(s.id, "approved")}>{t("admin.approve")}</Button>}
+              {status === "approved" && s.id in verified && (
+                <Button size="sm" variant={verified[s.id] ? "ghost" : "outline"} disabled={busy === s.id} onClick={() => toggleVerified(s.id)}>
+                  {verified[s.id] ? t("verify.remove") : `✅ ${t("verify.give")}`}
+                </Button>
+              )}
               {status !== "rejected" && (<>
                 <Input className="min-w-[240px] flex-1" label={t("admin.rejectReason")} value={reason[s.id] ?? ""} onChange={(e) => setReason((x) => ({ ...x, [s.id]: e.target.value }))} maxLength={500} />
                 <Button size="sm" variant="outline" disabled={busy === s.id} onClick={() => act(s.id, "rejected")}>{status === "approved" ? t("admin.revoke") : t("admin.reject")}</Button>

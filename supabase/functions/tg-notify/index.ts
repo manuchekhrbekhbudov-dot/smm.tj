@@ -19,6 +19,7 @@ Deno.serve(async (req) => {
   if (auth.startsWith("Bearer ") && typeof body.trust_specialist === "string") return trustEvent(body.trust_specialist);
   if (auth.startsWith("Bearer ") && typeof body.conversation_id === "string") return chatEvent(auth, body.conversation_id);
   if (auth.startsWith("Bearer ") && body.event === "password_changed") return passwordChanged(auth);
+  if (auth.startsWith("Bearer ") && typeof body.approved_specialist === "string") return approvedEvent(body.approved_specialist);
   if (!auth.startsWith("Bearer ") || !order_id) return json({ error: "bad_request" }, 400);
 
   // Read the order AS THE CALLER: RLS guarantees they are its client or specialist.
@@ -136,4 +137,46 @@ async function passwordChanged(auth: string) {
     `⚠️ Агар ин шумо набудед — фавран ба директор занг занед: ${DIRECTOR_PHONE}`;
   await tg("sendMessage", { chat_id: link.chat_id, text, parse_mode: "HTML", disable_web_page_preview: true });
   return json({ ok: true, sent: true });
+}
+
+/**
+ * After the director approves a profile: "you are in the catalog" to the specialist, and — if a colleague
+ * invited them — the 7-day "Top" gift to both. Facts are read from the database (the gift is granted by
+ * mp_referral_reward in growth.sql); every message is sent once (logged in mp_ai_usage).
+ */
+async function approvedEvent(specialistId: string) {
+  const db = admin();
+  const { data: s } = await db.from("mp_specialists").select("id, status, referred_by, referral_rewarded_at, banned_at").eq("id", specialistId).maybeSingle();
+  if (!s || s.status !== "approved" || s.banned_at) return json({ ok: true, skipped: "not_approved" });
+  const { data: logs } = await db.from("mp_ai_usage").select("key").in("key", [`approved:${s.id}`, `refbonus:${s.id}`]);
+  const done = new Set((logs ?? []).map((l) => l.key));
+  const chat = async (userId: string) => (await db.from("mp_tg_links").select("chat_id").eq("user_id", userId).maybeSingle()).data?.chat_id;
+  const send = async (userId: string, text: string) => {
+    const c = await chat(userId);
+    if (c) await tg("sendMessage", { chat_id: c, text, parse_mode: "HTML", disable_web_page_preview: true }).catch(() => null);
+  };
+  const out: string[] = [];
+  const gift = !!(s.referred_by && s.referral_rewarded_at);
+  if (!done.has(`approved:${s.id}`)) {
+    await db.from("mp_ai_usage").insert({ key: `approved:${s.id}` });
+    await send(s.id,
+      `🎉 <b>Табрик! Профили шумо тасдиқ шуд.</b>\nАкнун мизоҷон шуморо дар каталоги SMM.TJ мебинанд.\n` +
+      (gift ? `\n🎁 Шуморо ҳамкоратон даъват кард — ба шумо <b>7 рӯз тарифи «Топ»</b> ройгон дода шуд.\n` : "") +
+      `\nПрофили шумо: ${SITE_URL}/tg/specialist/?id=${s.id}\n` +
+      `Ҳамкоронро даъват кунед ва барои ҳар кадом 7 рӯз «Топ» гиред: ${SITE_URL}/tg/cabinet/?tab=stats`);
+    out.push("approved");
+  }
+  if (gift && !done.has(`refbonus:${s.id}`)) {
+    await db.from("mp_ai_usage").insert({ key: `refbonus:${s.id}` });
+    const { data: p } = await db.from("mp_profiles").select("full_name").eq("id", s.id).maybeSingle();
+    const { count } = await db.from("mp_specialists").select("id", { count: "exact", head: true })
+      .eq("referred_by", s.referred_by).gt("referral_rewarded_at", new Date(Date.now() - 30 * 86400_000).toISOString());
+    if ((count ?? 0) <= 10) {
+      await send(s.referred_by,
+        `🎁 <b>${escapeHtml(p?.full_name || "Ҳамкори шумо")}</b> бо даъвати шумо ба SMM.TJ ҳамроҳ шуд ва тасдиқ гардид!\n` +
+        `Ба шумо <b>+7 рӯз тарифи «Топ»</b> илова шуд. Раҳмат! 💜\n\n${SITE_URL}/tg/cabinet/?tab=plan`);
+      out.push("referrer");
+    }
+  }
+  return json({ ok: true, sent: out });
 }

@@ -1,0 +1,18 @@
+# Every evening: the director's daily report in Telegram (income, expenses, new users, orders, complaints).
+# The function sends it at most once a day and only after 20:00 Dushanbe, so extra runs are harmless.
+name: Telegram daily report
+
+on:
+  schedule:
+    - cron: "43 15 * * *"   # every day 15:43 UTC (20:43 Dushanbe)
+  workflow_dispatch: {}
+
+permissions: {}
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Send the daily report
+        run: curl -fsS -X POST "https://lcldaingzicxbottlznq.supabase.co/functions/v1/tg-daily-report"

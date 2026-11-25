@@ -15,6 +15,7 @@ import { PriceList } from "./PriceList";
 import { SpecialistStats } from "@/components/stats/SpecialistStats";
 import { TelegramConnect } from "./TelegramConnect";
 import { PlanTab } from "./PlanTab";
+import { GrowthPanel } from "./GrowthPanel";
 import { PortfolioEditor } from "@/components/portfolio/PortfolioEditor";
 import { TrustBanner } from "@/components/trust/TrustBanner";
 import { GuideHint } from "@/components/guide/GuideHint";
@@ -95,7 +96,7 @@ export function Cabinet() {
         {tab === "incoming" && <OrderList mode="specialist" userId={profile!.id} />}
         {tab === "profile" && <SpecialistEditor onSaved={loadStatus} />}
         {tab === "prices" && <PriceList userId={profile!.id} />}
-        {tab === "stats" && <SpecialistStats specialistId={profile!.id} showTitle={false} />}
+        {tab === "stats" && <><GrowthPanel userId={profile!.id} /><SpecialistStats specialistId={profile!.id} showTitle={false} /></>}
         {tab === "plan" && <PlanTab userId={profile!.id} />}
         {tab === "portfolio" && <PortfolioEditor userId={profile!.id} />}
       </div>

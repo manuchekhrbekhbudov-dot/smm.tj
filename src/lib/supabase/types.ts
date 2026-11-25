@@ -30,6 +30,8 @@ export type Specialist = {
   warned_at?: string | null;
   banned_at?: string | null;
   bonus_given_at?: string | null;
+  /** growth.sql: the director checked this specialist's work (badge). */
+  verified_at?: string | null;
   profiles?: Pick<Profile, "full_name" | "city" | "avatar_url"> | null;
 };
 

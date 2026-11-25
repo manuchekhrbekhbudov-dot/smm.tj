@@ -2,6 +2,7 @@
 //  * Gentle reminder, once per person, 3–10 days after sign-up if they have not started yet:
 //      client  → no order and no chat;   specialist → profile, price list or portfolio still empty.
 //  * Launch announcement on 1–3 December 2026, once per person.
+//  * Mondays: approved specialists hear how many people viewed their profile in the last 7 days (only if > 0).
 // Safe to call any number of times: every message is sent at most once per person
 // (sent messages are logged in mp_ai_usage with keys "remind:<user>" / "launch2026:<user>").
 import { admin, json, tg, SITE_URL, DIRECTOR_PHONE } from "../_shared/tg.ts";
@@ -33,7 +34,7 @@ Deno.serve(async () => {
   const ids = links.map((l) => l.user_id);
   const { data: profs } = await db.from("mp_profiles").select("id, role, created_at, blocked_at").in("id", ids);
   const people = (profs ?? []).filter((p) => p.role !== "admin" && !p.blocked_at);
-  const { data: logs } = await db.from("mp_ai_usage").select("key").or("key.like.remind:%,key.like.launch2026:%").limit(10000);
+  const { data: logs } = await db.from("mp_ai_usage").select("key").or(`key.like.remind:%,key.like.launch2026:%,key.like.views:%:${today}`).limit(10000);
   const done = new Set((logs ?? []).map((l) => l.key));
   const chatOf = new Map(links.map((l) => [l.user_id, l.chat_id]));
   const out = { launch: 0, client: 0, specialist: 0, failed: 0 };
@@ -77,5 +78,22 @@ Deno.serve(async () => {
       if (!orders && !chats && await send(p.id, `remind:${p.id}`, T.client)) out.client++;
     }
   }
-  return json({ ok: true, today, ...out });
+  // 3) Monday: weekly profile views for approved specialists
+  let views = 0;
+  if (new Date(`${today}T12:00:00+05:00`).getUTCDay() === 1) {
+    const specs = people.filter((p) => p.role === "specialist").map((p) => p.id);
+    const weekAgo = new Date(new Date(`${today}T00:00:00+05:00`).getTime() - 7 * 86400_000).toISOString().slice(0, 10);
+    const { data: approved } = specs.length
+      ? await db.from("mp_specialists").select("id").in("id", specs).eq("status", "approved").is("banned_at", null)
+      : { data: [] };
+    for (const s of approved ?? []) {
+      const { count } = await db.from("mp_profile_views").select("id", { count: "exact", head: true })
+        .eq("specialist_id", s.id).gte("day", weekAgo).lt("day", today);
+      if (!count) continue;
+      const text = `👀 Дар 7 рӯзи охир профили шуморо дар <b>SMM.TJ</b> <b>${count}</b> нафар дид.\n\n` +
+        `Портфолио ва нархномаро нав нигоҳ доред — мизоҷон бештар менависанд.\n👉 ${SITE_URL}/tg/cabinet/?tab=stats`;
+      if (await send(s.id, `views:${s.id}:${today}`, text)) views++;
+    }
+  }
+  return json({ ok: true, today, ...out, views });
 });
