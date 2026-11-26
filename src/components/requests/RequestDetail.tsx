@@ -44,7 +44,8 @@ function SampleVideo({ o }: { o: Pick<Offer, "video_path" | "video_url"> }) {
   const sb = getSupabase();
   if (o.video_path && sb) {
     const src = sb.storage.from("mp-offer-videos").getPublicUrl(o.video_path).data.publicUrl;
-    return <video src={src} controls playsInline preload="metadata" className="mt-3 max-h-[420px] w-full rounded-[var(--radius-md)] bg-black" aria-label={t("sampleVideo")} />;
+    // "#t=0.3": browsers then show the first frame instead of a black box before play
+    return <video src={`${src}#t=0.3`} controls playsInline preload="metadata" className="mt-3 max-h-[420px] w-full rounded-[var(--radius-md)] bg-black" aria-label={t("sampleVideo")} />;
   }
   if (o.video_url) return <a href={o.video_url} target="_blank" rel="noopener noreferrer nofollow" className="mt-3 inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-semibold text-purple">▶ {t("watchVideo")}</a>;
   return null;
@@ -262,7 +263,9 @@ function OffersList({ r, offers, onChange, owner }: { r: Req; offers: Offer[]; o
     }
     if (data) void notifyOrder(data as string);
     onChange();
-    router.push({ pathname: "/messages" });
+    // straight into the chat with the chosen specialist
+    const { data: conv } = await getSupabase()!.from("mp_conversations").select("id").eq("client_id", r.client_id).eq("specialist_id", o.specialist_id).maybeSingle();
+    router.push(conv?.id ? { pathname: "/messages", query: { c: conv.id } } : { pathname: "/messages" });
   };
 
   if (decision) return <DecisionGate><Notice>{t("trust.decisionDone")}</Notice></DecisionGate>;
