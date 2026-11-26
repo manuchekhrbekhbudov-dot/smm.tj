@@ -115,3 +115,10 @@ export async function previewDailyReport(): Promise<string | null> {
     return null;
   }
 }
+
+/** New request → specialists of those directions; new offer → the client. Both idempotent on the server. */
+export async function notifyRequest(payload: { request_id: string } | { offer_id: string }) {
+  const token = (await getSupabase()?.auth.getSession())?.data.session?.access_token;
+  if (!token) return;
+  fetch(fn("tg-notify"), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) }).catch(() => {});
+}

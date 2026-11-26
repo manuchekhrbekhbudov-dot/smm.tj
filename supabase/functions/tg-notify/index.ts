@@ -20,6 +20,8 @@ Deno.serve(async (req) => {
   if (auth.startsWith("Bearer ") && typeof body.conversation_id === "string") return chatEvent(auth, body.conversation_id);
   if (auth.startsWith("Bearer ") && body.event === "password_changed") return passwordChanged(auth);
   if (auth.startsWith("Bearer ") && typeof body.approved_specialist === "string") return approvedEvent(body.approved_specialist);
+  if (auth.startsWith("Bearer ") && typeof body.request_id === "string") return requestEvent(body.request_id);
+  if (auth.startsWith("Bearer ") && typeof body.offer_id === "string") return offerEvent(body.offer_id);
   if (!auth.startsWith("Bearer ") || !order_id) return json({ error: "bad_request" }, 400);
 
   // Read the order AS THE CALLER: RLS guarantees they are its client or specialist.
@@ -179,4 +181,51 @@ async function approvedEvent(specialistId: string) {
     }
   }
   return json({ ok: true, sent: out });
+}
+
+const SPEC_TG: Record<string, string> = {
+  smm: "Instagram ва TikTok", reels: "Reels", design: "Дизайн", ads: "Рекламаи таргетӣ", branding: "Брендинг",
+  production: "Акс ва видео", copywriting: "Копирайтинг", consulting: "Машварат",
+};
+
+/** New client request → approved specialists of those directions (once per request). */
+async function requestEvent(requestId: string) {
+  const db = admin();
+  const { data: r } = await db.from("mp_requests").select("id, title, specialties, budget_tjs, status, tg_notified_at").eq("id", requestId).maybeSingle();
+  if (!r || r.status !== "open" || r.tg_notified_at) return json({ ok: true, skipped: "no_event" });
+  await db.from("mp_requests").update({ tg_notified_at: new Date().toISOString() }).eq("id", r.id);
+  const { data: specs } = await db.from("mp_specialists").select("id").eq("status", "approved").is("banned_at", null).overlaps("specialties", r.specialties).limit(300);
+  const ids = (specs ?? []).map((s) => s.id);
+  if (!ids.length) return json({ ok: true, sent: 0 });
+  const { data: links } = await db.from("mp_tg_links").select("chat_id").in("user_id", ids);
+  const text =
+    `📣 <b>Эълони нав / Новая заявка</b>\n\n<b>${escapeHtml(String(r.title))}</b>\n` +
+    `${(r.specialties as string[]).map((s) => SPEC_TG[s] ?? s).join(", ")} · ` +
+    `${r.budget_tjs ? `буҷет ${r.budget_tjs} TJS` : "нарх бо созиш"}\n\n` +
+    `Пешниҳоди худро фиристед / Отправьте предложение:\n👉 ${SITE_URL}/tg/request/?id=${r.id}`;
+  let sent = 0;
+  for (const l of links ?? []) {
+    const res = await tg("sendMessage", { chat_id: l.chat_id, text, parse_mode: "HTML", disable_web_page_preview: true }).catch(() => null);
+    if (res?.ok) sent++;
+  }
+  return json({ ok: true, sent });
+}
+
+/** New offer → the client of the request (once per offer). */
+async function offerEvent(offerId: string) {
+  const db = admin();
+  const { data: o } = await db.from("mp_request_offers").select("id, request_id, specialist_id, price_tjs, days, tg_notified_at").eq("id", offerId).maybeSingle();
+  if (!o || o.tg_notified_at) return json({ ok: true, skipped: "no_event" });
+  await db.from("mp_request_offers").update({ tg_notified_at: new Date().toISOString() }).eq("id", o.id);
+  const { data: r } = await db.from("mp_requests").select("client_id, title").eq("id", o.request_id).maybeSingle();
+  if (!r) return json({ ok: true, skipped: "no_request" });
+  const { data: p } = await db.from("mp_profiles").select("full_name").eq("id", o.specialist_id).maybeSingle();
+  const { data: link } = await db.from("mp_tg_links").select("chat_id").eq("user_id", r.client_id).maybeSingle();
+  if (!link) return json({ ok: true, skipped: "no_telegram" });
+  const text =
+    `💼 <b>Пешниҳоди нав / Новое предложение</b>\n\n«${escapeHtml(String(r.title))}»\n` +
+    `👤 ${escapeHtml(p?.full_name || "—")}` + (o.price_tjs ? ` · ${o.price_tjs} TJS` : "") + (o.days ? ` · ${o.days} рӯз` : "") +
+    `\n\n👉 ${SITE_URL}/tg/request/?id=${o.request_id}`;
+  await tg("sendMessage", { chat_id: link.chat_id, text, parse_mode: "HTML", disable_web_page_preview: true });
+  return json({ ok: true, sent: true });
 }

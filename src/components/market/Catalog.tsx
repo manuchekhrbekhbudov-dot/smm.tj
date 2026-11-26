@@ -87,7 +87,10 @@ export function Catalog() {
         ))}
       </div>
 
-      <p className="-mt-2 mb-4 text-sm"><Link href="/prices" className="font-semibold text-purple hover:underline">💰 {t("prices.title")} →</Link></p>
+      <p className="-mt-2 mb-4 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+        <Link href="/prices" className="font-semibold text-purple hover:underline">💰 {t("prices.title")} →</Link>
+        <Link href="/requests" className="font-semibold text-purple hover:underline">📣 {t("requests.catalogCta")}</Link>
+      </p>
       <div className="mb-8 grid gap-3 sm:grid-cols-3">
         <Select label={t("catalog.city")} value={city} onChange={(e) => setParam("city", e.target.value)}>
           <option value="">{t("catalog.anyCity")}</option>
