@@ -32,10 +32,27 @@ export function PriceGuide() {
   if (rows === null) return <Skeleton className="h-96" />;
   return (
     <div>
-      <div className="overflow-x-auto rounded-[var(--radius-lg)] glass">
+      {/* Phones: one card per direction (a wide table would need sideways scrolling) */}
+      <ul className="space-y-3 md:hidden">
+        {rows.map((r) => (
+          <li key={r.slug}>
+            <Link href={{ pathname: "/specialists", query: { s: r.slug } }} className="block rounded-[var(--radius-md)] glass p-4">
+              <span className="flex items-start justify-between gap-3">
+                <b>{t(`specialties.${r.slug}.title`)}</b>
+                <span className="shrink-0 text-sm text-ink-2">{t("prices.specialists")}: {r.n}</span>
+              </span>
+              {r.n >= MIN_DATA
+                ? <span className="mt-2 block text-sm text-ink-1">{t("prices.from")} {formatTjs(r.min)} · <b className="text-purple">{t("prices.median")} {formatTjs(r.median)} TJS</b> · {t("prices.to")} {formatTjs(r.max)}</span>
+                : <span className="mt-2 block text-sm text-ink-2">{t("prices.notEnough")}</span>}
+              <span className="mt-2 block text-sm font-semibold text-purple">{t("prices.see")} →</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <div className="hidden overflow-x-auto rounded-[var(--radius-lg)] glass md:block">
         <table className="w-full min-w-[560px] text-left">
           <thead className="text-sm text-ink-2">
-            <tr><th className="p-4">{t("prices.direction")}</th><th className="p-4">{t("prices.specialists")}</th><th className="p-4">{t("prices.from")}</th><th className="p-4">{t("prices.median")}</th><th className="p-4">{t("prices.to")}</th><th className="p-4" /></tr>
+            <tr><th className="p-4">{t("prices.direction")}</th><th className="p-4">{t("prices.specialists")}</th><th className="p-4">{t("prices.from")}</th><th className="p-4">{t("prices.median")}</th><th className="p-4">{t("prices.to")}</th><th className="p-4"><span className="sr-only">{t("prices.see")}</span></th></tr>
           </thead>
           <tbody>
             {rows.map((r) => (

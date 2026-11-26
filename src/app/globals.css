@@ -145,7 +145,7 @@
   :focus-visible { outline: 2px solid var(--color-purple); outline-offset: 3px; border-radius: 10px; }
   h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.03em; font-weight: 700; }
   /* User text (names, bios, reviews) may contain very long words or links: wrap them instead of widening the page. */
-  p, h1, h2, h3, h4, li, td, dd, blockquote, label { overflow-wrap: anywhere; }
+  p, h1, h2, h3, h4, li, td, dd, blockquote, label { overflow-wrap: break-word; }
 
   html.lenis, html.lenis body { height: auto; }
   .lenis.lenis-smooth { scroll-behavior: auto !important; }
@@ -270,7 +270,9 @@
 @keyframes word-in { from { opacity: 0; transform: translateY(0.35em); } to { opacity: 1; transform: none; } }
 @keyframes page-in { from { opacity: 0.6; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .word-in { display: inline-block; animation: word-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.page-in { animation: page-in 0.35s ease-out both; }
+/* "backwards", not "both": once finished the wrapper must have NO transform, otherwise it becomes the
+   containing block of every position:fixed child and the header / mobile menu scroll away with the page. */
+.page-in { animation: page-in 0.35s ease-out backwards; }
 .fade-up { animation: word-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
 /* Phones: cheaper glass (backdrop blur on many layers makes iOS scroll stutter) */

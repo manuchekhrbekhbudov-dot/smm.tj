@@ -1,7 +1,8 @@
 import { cn } from "@/lib/cn";
 
 export function Avatar({ name, url, size = 56, className }: { name: string; url?: string | null; size?: number; className?: string }) {
-  const initials = (name || "?").trim().split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase();
+  // First LETTER of the first two words (emoji, digits and symbols are skipped; works with any alphabet).
+  const initials = (name || "").split(/\s+/).map((w) => w.match(/\p{L}/u)?.[0] ?? "").filter(Boolean).join("").slice(0, 2).toUpperCase() || "?";
   return (
     <span
       className={cn("relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full orb font-display font-bold text-white", className)}

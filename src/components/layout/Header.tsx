@@ -13,6 +13,7 @@ import { cn } from "@/lib/cn";
 const links = [
   { href: "/", key: "home" },
   { href: "/specialists", key: "specialists" },
+  { href: "/prices", key: "prices" },
   { href: "/guide", key: "guide" },
   { href: "/about", key: "about" },
 ] as const;
@@ -69,12 +70,12 @@ export function Header() {
             <span className="hidden font-display text-lg font-bold tracking-tight min-[400px]:inline">SMM<span className="text-gradient">.TJ</span></span>
           </Link>
 
-          <ul className="hidden items-center gap-1 lg:flex">
+          <ul className="hidden items-center gap-1 xl:flex">
             {links.map((l) => {
               const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
               return (
                 <li key={l.href}>
-                  <Link href={l.href} className={cn("rounded-full px-4 py-2 text-sm font-medium transition-colors", active ? "bg-ink-3 text-ink-0" : "text-ink-2 hover:text-ink-0")}>
+                  <Link href={l.href} className={cn("whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors", active ? "bg-ink-3 text-ink-0" : "text-ink-2 hover:text-ink-0")}>
                     {t(`nav.${l.key}`)}
                   </Link>
                 </li>
@@ -89,7 +90,7 @@ export function Header() {
             <AuthButton className="hidden md:flex" />
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full glass lg:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full glass xl:hidden"
               aria-expanded={open}
               aria-controls="mobile-menu"
               aria-label={open ? t("common.close") : t("common.menu")}
@@ -105,7 +106,7 @@ export function Header() {
       </div>
 
       {open && (
-        <div id="mobile-menu" className="fixed inset-0 -z-10 flex flex-col bg-bg-0/95 px-5 pb-8 pt-[calc(6rem+var(--banner-h))] lg:hidden">
+        <div id="mobile-menu" className="fixed inset-0 -z-10 flex flex-col overflow-y-auto bg-bg-0/95 px-5 pb-8 pt-[calc(6rem+var(--banner-h))] backdrop-blur-md xl:hidden">
           <ul className="flex flex-col gap-1">
             {links.map((l) => (
               <li key={l.href}>

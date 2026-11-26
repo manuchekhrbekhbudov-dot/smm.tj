@@ -97,7 +97,7 @@ export function SpecialistProfile() {
                 <VerifiedBadge at={s.verified_at} />
                 {s.status === "approved" && <Badge tone="success"><Icon name="check" className="h-3.5 w-3.5" />{t("specialist.verified")}</Badge>}
               </div>
-              <p className="mt-2 text-lg text-ink-1">{s.headline}</p>
+              <p className="mt-2 text-lg text-ink-1 [overflow-wrap:anywhere]">{s.headline}</p>
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-ink-2">
                 {s.profiles?.city && <span className="inline-flex items-center gap-1.5"><Icon name="pin" className="h-4 w-4" />{t(`cities.${s.profiles.city}`)}</span>}
                 <span>{s.experience_years > 0 ? t("specialist.years", { count: s.experience_years }) : t("specialist.noExperience")}</span>
@@ -115,7 +115,7 @@ export function SpecialistProfile() {
         {s.bio && (
           <section>
             <h2 className="mb-4 text-h3 font-bold">{t("specialist.about")}</h2>
-            <p className="whitespace-pre-line text-ink-1">{s.bio}</p>
+            <p className="whitespace-pre-line text-ink-1 [overflow-wrap:anywhere]">{s.bio}</p>
           </section>
         )}
 

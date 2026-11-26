@@ -36,7 +36,7 @@ export function SpecialistCard({ s }: { s: Specialist }) {
           <div className="min-w-0 flex-1">
             <h3 className="truncate font-display text-lg font-bold">{name}</h3>
             <span className="flex flex-wrap gap-1"><PlanBadge s={s} className="mt-1" /><VerifiedBadge at={s.verified_at} className="mt-1" /></span>
-            <p className="mt-0.5 line-clamp-2 text-sm text-ink-1">{s.headline}</p>
+            <p className="mt-0.5 line-clamp-2 text-sm text-ink-1 [overflow-wrap:anywhere]">{s.headline}</p>
             {s.profiles?.city && <p className="mt-1 text-xs text-ink-2">{t(`cities.${s.profiles.city}`)}</p>}
           </div>
         </div>
