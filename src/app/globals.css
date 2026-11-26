@@ -278,5 +278,6 @@
 /* Phones: cheaper glass (backdrop blur on many layers makes iOS scroll stutter) */
 @media (max-width: 767px), (hover: none) {
   .glass { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--glass-solid); }
-  .glass-solid { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  /* no blur on phones, so make it nearly opaque: page text must not show through the header */
+  .glass-solid { backdrop-filter: none; -webkit-backdrop-filter: none; background: color-mix(in srgb, var(--bg-0) 94%, transparent); }
 }
