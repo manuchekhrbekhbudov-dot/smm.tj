@@ -16,12 +16,14 @@ import { SpecialistStats } from "@/components/stats/SpecialistStats";
 import { TelegramConnect } from "./TelegramConnect";
 import { PlanTab } from "./PlanTab";
 import { GrowthPanel } from "./GrowthPanel";
+import { ProfileChecklist } from "./ProfileChecklist";
+import { PackagesEditor } from "@/components/packages/packages";
 import { PortfolioEditor } from "@/components/portfolio/PortfolioEditor";
 import { TrustBanner } from "@/components/trust/TrustBanner";
 import { GuideHint } from "@/components/guide/GuideHint";
 import { cn } from "@/lib/cn";
 
-type Tab = "orders" | "incoming" | "profile" | "portfolio" | "prices" | "stats" | "plan";
+type Tab = "orders" | "incoming" | "profile" | "portfolio" | "packages" | "prices" | "stats" | "plan";
 
 export function Cabinet() {
   const t = useTranslations();
@@ -29,7 +31,7 @@ export function Cabinet() {
   const router = useRouter();
   const params = useSearchParams();
   const isSpecialist = profile!.role === "specialist";
-  const tabs = useMemo<Tab[]>(() => (isSpecialist ? ["incoming", "stats", "profile", "portfolio", "prices", "plan"] : ["orders"]), [isSpecialist]);
+  const tabs = useMemo<Tab[]>(() => (isSpecialist ? ["incoming", "stats", "profile", "portfolio", "packages", "prices", "plan"] : ["orders"]), [isSpecialist]);
   const initial = params.get("tab") as Tab | null;
   const [tab, setTab] = useState<Tab>(initial && tabs.includes(initial) ? initial : tabs[0]);
   // The director has no client/specialist cabinet: send them to the admin panel.
@@ -75,6 +77,8 @@ export function Cabinet() {
 
       {isSpecialist && status && status.s !== "none" && <TrustBanner specialistId={profile!.id} />}
 
+      {isSpecialist && status && <ProfileChecklist userId={profile!.id} refreshKey={tab} onGo={(k) => setTab(k as Tab)} />}
+
       <GuideHint who={isSpecialist ? "specialist" : "client"} />
 
       <TelegramConnect />
@@ -99,6 +103,7 @@ export function Cabinet() {
         {tab === "stats" && <><GrowthPanel userId={profile!.id} /><SpecialistStats specialistId={profile!.id} showTitle={false} /></>}
         {tab === "plan" && <PlanTab userId={profile!.id} />}
         {tab === "portfolio" && <PortfolioEditor userId={profile!.id} />}
+        {tab === "packages" && <PackagesEditor userId={profile!.id} />}
       </div>
     </div>
   );

@@ -4,10 +4,11 @@ import { useTranslations } from "next-intl";
 import { getSupabase } from "@/lib/supabase/client";
 import { loadPortfolio, type PortfolioItem } from "./portfolio";
 
-/** Public profile: grid of work examples with a full-screen viewer. */
+/** Public profile: the specialist's videos (play in place) and pictures (full-screen viewer). */
 export function PortfolioGallery({ specialistId }: { specialistId: string }) {
   const t = useTranslations("portfolio");
-  const [items, setItems] = useState<PortfolioItem[]>([]);
+  const [all, setItems] = useState<PortfolioItem[]>([]);
+  const items = all.filter((x) => x.kind !== "video");
   const [open, setOpen] = useState<number | null>(null);
   useEffect(() => { const sb = getSupabase(); if (sb) void loadPortfolio(sb, specialistId).then(setItems); }, [specialistId]);
   useEffect(() => {
@@ -19,11 +20,22 @@ export function PortfolioGallery({ specialistId }: { specialistId: string }) {
     };
     window.addEventListener("keydown", on); return () => window.removeEventListener("keydown", on);
   }, [open, items.length]);
-  if (!items.length) return null;
+  const videos = all.filter((x) => x.kind === "video");
+  if (!all.length) return null;
   const cur = open !== null ? items[open] : null;
   return (
     <section>
       <h2 className="mb-4 text-h3 font-bold">{t("public")}</h2>
+      {videos.length > 0 && (
+        <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {videos.map((v) => (
+            <figure key={v.id} className="overflow-hidden rounded-[var(--radius-md)] bg-ink-3">
+              <video src={`${v.url}#t=0.3`} poster={v.poster} controls playsInline preload="metadata" className="aspect-[9/16] w-full bg-ink-3 object-cover" aria-label={v.title || t("work")} />
+              {v.title && <figcaption className="p-2 text-sm text-ink-1">{v.title}</figcaption>}
+            </figure>
+          ))}
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {items.map((it, i) => (
           <button key={it.id} type="button" onClick={() => setOpen(i)} className="group relative overflow-hidden rounded-[var(--radius-md)] bg-ink-3 text-left">

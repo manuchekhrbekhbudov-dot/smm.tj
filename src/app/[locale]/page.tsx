@@ -12,6 +12,8 @@ import { LatestSpecialists } from "@/components/home/LatestSpecialists";
 import { Trust } from "@/components/home/Trust";
 import { Faq } from "@/components/home/Faq";
 import { CtaBand } from "@/components/home/CtaBand";
+import { HomeRequests } from "@/components/home/HomeRequests";
+import { SpecialistOfWeek } from "@/components/home/SpecialistOfWeek";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -31,9 +33,11 @@ export default function HomePage({ params }: { params: Promise<{ locale: string 
         <SectionHeader eyebrow={t("categories.eyebrow")} title={t("categories.title")} text={t("categories.text")} className="mb-12" />
         <Categories />
       </section>
+      <SpecialistOfWeek />
       <section className="container-x py-20 md:py-28">
         <LatestSpecialists />
       </section>
+      <HomeRequests />
       <section className="container-x py-20 md:py-28">
         <SectionHeader eyebrow={t("how.eyebrow")} title={t("how.title")} className="mb-12" />
         <HowItWorks />

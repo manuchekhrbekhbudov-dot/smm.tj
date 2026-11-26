@@ -15,6 +15,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Stars } from "@/components/ui/Stars";
 import { Notice, Skeleton } from "@/components/ui/Notice";
 import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
+import { MAX_VIDEO_MB, removeVideo, uploadVideo, videoOk, videoUrls } from "@/lib/video";
 import { DecisionGate } from "@/components/trust/DecisionGate";
 import { ago, type Req } from "./RequestsBoard";
 
@@ -28,7 +29,6 @@ type Offer = {
 
 const COUNTS = ["posts", "stories", "reels", "sales_videos"] as const;
 const ICON: Record<(typeof COUNTS)[number], string> = { posts: "📝", stories: "📲", reels: "🎬", sales_videos: "🛒" };
-const MAX_VIDEO_MB = 30;
 
 /** "12 пост · 20 история · 4 Reels · 2 видеои фурӯш" */
 function Package({ o }: { o: Pick<Offer, (typeof COUNTS)[number]> }) {
@@ -38,37 +38,12 @@ function Package({ o }: { o: Pick<Offer, (typeof COUNTS)[number]> }) {
   return <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm">{parts.map((x) => <span key={x}>{x}</span>)}</p>;
 }
 
-/** Cover picture of an uploaded sample video: same name, kept as a JPEG in the public portfolio bucket. */
-const posterPath = (videoPath: string) => videoPath.replace(/^([^/]+)\/(.+)\.[a-z0-9]+$/i, "$1/offer-$2.jpg");
-
-/** Takes one frame (0.5 s in) of the chosen video as a JPEG; null if the browser cannot decode it. */
-function grabPoster(file: File): Promise<Blob | null> {
-  return new Promise((resolve) => {
-    const url = URL.createObjectURL(file);
-    const v = document.createElement("video");
-    const done = (b: Blob | null) => { URL.revokeObjectURL(url); resolve(b); };
-    const timer = setTimeout(() => done(null), 10000);
-    v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = url;
-    v.onloadeddata = () => { v.currentTime = Math.min(0.5, (v.duration || 1) / 2); };
-    v.onseeked = () => {
-      try {
-        const w = Math.min(720, v.videoWidth || 720), h = Math.round(w * ((v.videoHeight || 1280) / (v.videoWidth || 720)));
-        const c = document.createElement("canvas"); c.width = w; c.height = h;
-        c.getContext("2d")!.drawImage(v, 0, 0, w, h);
-        c.toBlob((b) => { clearTimeout(timer); done(b); }, "image/jpeg", 0.82);
-      } catch { clearTimeout(timer); done(null); }
-    };
-    v.onerror = () => { clearTimeout(timer); done(null); };
-  });
-}
-
 /** The specialist's sample video: played right on the page when uploaded (with its cover picture), otherwise a link. */
 function SampleVideo({ o }: { o: Pick<Offer, "video_path" | "video_url"> }) {
   const t = useTranslations("requests");
   const sb = getSupabase();
   if (o.video_path && sb) {
-    const src = sb.storage.from("mp-offer-videos").getPublicUrl(o.video_path).data.publicUrl;
-    const poster = sb.storage.from("mp-portfolio").getPublicUrl(posterPath(o.video_path)).data.publicUrl;
+    const { src, poster } = videoUrls(sb, o.video_path);
     // poster = cover picture; "#t=0.3" = fallback so browsers show a frame instead of a black box
     return <video src={`${src}#t=0.3`} poster={poster} controls playsInline preload="metadata" className="mt-3 max-h-[420px] w-full rounded-[var(--radius-md)] bg-ink-3 object-contain" aria-label={t("sampleVideo")} />;
   }
@@ -190,7 +165,7 @@ function OfferForm({ r, onSent }: { r: Req; onSent: () => void }) {
     const videoUrl = f.videoUrl.trim();
     if (!file && !videoUrl) e2.video = t("requests.errors.video");
     else if (!file && !/^https?:\/\/\S+\.\S+/.test(videoUrl)) e2.video = t("requests.errors.videoUrl");
-    if (file && (file.size > MAX_VIDEO_MB * 1024 * 1024 || !/^video\/(mp4|quicktime|webm)$/.test(file.type))) e2.video = t("requests.errors.videoFile", { mb: MAX_VIDEO_MB });
+    if (file && !videoOk(file)) e2.video = t("requests.errors.videoFile", { mb: MAX_VIDEO_MB });
     const days = f.days ? Math.round(Number(f.days)) : null;
     if (f.days && !(days && days >= 1 && days <= 365)) e2.days = t("requests.errors.days");
     setErrs(e2);
@@ -199,19 +174,14 @@ function OfferForm({ r, onSent }: { r: Req; onSent: () => void }) {
     const sb = getSupabase()!;
     let video_path: string | null = null;
     if (file) {
-      const ext = file.type === "video/quicktime" ? "mov" : file.type === "video/webm" ? "webm" : "mp4";
-      const path = `${session.user.id}/${r.id}-${Date.now()}.${ext}`;
-      const up = await sb.storage.from("mp-offer-videos").upload(path, file, { contentType: file.type, upsert: false });
-      if (up.error) { setBusy(false); setFail(t("requests.errors.upload")); return; }
-      video_path = path;
-      // cover picture so the client sees the video's content before pressing play
-      const cover = await grabPoster(file);
-      if (cover) await sb.storage.from("mp-portfolio").upload(posterPath(path), cover, { contentType: "image/jpeg", upsert: false });
+      // the video + its cover picture, so the client sees the content before pressing play
+      video_path = await uploadVideo(sb, session.user.id, file, r.id);
+      if (!video_path) { setBusy(false); setFail(t("requests.errors.upload")); return; }
     }
     const { data, error } = await sb.from("mp_request_offers")
       .insert({ request_id: r.id, specialist_id: session.user.id, price_tjs: price, days, ...counts, video_path, video_url: video_path ? null : videoUrl, message: message.slice(0, 1000) }).select("id").single();
     setBusy(false);
-    if (error && video_path) void sb.storage.from("mp-offer-videos").remove([video_path]);
+    if (error && video_path) void removeVideo(sb, video_path);
     if (error) {
       const known = ["only_approved_specialists", "request_closed", "too_many_offers_today"].find((k) => error.message.includes(k));
       setFail(t(`requests.errors.${known ?? (error.message.includes("duplicate") ? "already" : "generic")}`)); return;

@@ -19,6 +19,7 @@ import { Notice, Skeleton } from "@/components/ui/Notice";
 import { Reveal } from "@/components/fx/Reveal";
 import { OrderForm } from "./OrderForm";
 import { PortfolioGallery } from "@/components/portfolio/PortfolioGallery";
+import { PackagesPublic } from "@/components/packages/packages";
 import { AskSpecialist } from "@/components/chat/AskSpecialist";
 
 export function SpecialistProfile() {
@@ -119,6 +120,7 @@ export function SpecialistProfile() {
           </section>
         )}
 
+        <PackagesPublic specialistId={s.id} />
         <PortfolioGallery specialistId={s.id} />
 
         <section>
@@ -181,7 +183,7 @@ export function SpecialistProfile() {
           {s.min_price != null && (
             <p className="mb-6 text-ink-2">{t("common.from")} <span className="tabular font-display text-3xl font-bold text-ink-0">{formatTjs(s.min_price)}</span> TJS</p>
           )}
-          <OrderForm specialistId={s.id} name={name} services={services} />
+          <div id="order-form" className="scroll-mt-28"><OrderForm specialistId={s.id} name={name} services={services} /></div>
           <AskSpecialist specialistId={s.id} />
         </Card>
         {contacts.length > 0 && (

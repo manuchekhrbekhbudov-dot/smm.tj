@@ -22,6 +22,8 @@ import { Complaints, FeedbackList } from "./TrustAdmin";
 import { Finance } from "./Finance";
 import { notifyApproved } from "@/lib/telegram";
 import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
+import { loadCheck, percent, type Check } from "@/components/cabinet/ProfileChecklist";
+import { InstaPost } from "./InstaPost";
 import { useSearchParams } from "next/navigation";
 
 type Tab = SpecialistStatus | "reviews" | "payments" | "complaints" | "feedback" | "stats" | "finance";
@@ -81,6 +83,8 @@ function Specialists({ status }: { status: SpecialistStatus }) {
   const [reason, setReason] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState(false);
+  const [incomplete, setIncomplete] = useState<string | null>(null);
+  const [checks, setChecks] = useState<Record<string, Check | null>>({});
 
   const load = useCallback(async () => {
     setRows(null);
@@ -95,10 +99,16 @@ function Specialists({ status }: { status: SpecialistStatus }) {
     setBusy(id); setErr(false);
     const { error } = await sb.from("mp_specialists").update({ status: next, reject_reason: next === "rejected" ? r.slice(0, 500) : null }).eq("id", id);
     setBusy(null);
+    if (error?.message.includes("profile_incomplete")) { setIncomplete(id); return; }
     if (error) { setErr(true); return; }
     if (next === "approved") void notifyApproved(id); // Telegram: "you are in the catalog" (+ referral gift)
     void load();
   };
+  // How complete each profile under review is (photo, texts, prices/packages, a video)
+  useEffect(() => {
+    if (status !== "pending" || !rows?.length) return;
+    void Promise.all(rows.map(async (r) => [r.id, await loadCheck(r.id)] as const)).then((x) => setChecks(Object.fromEntries(x)));
+  }, [status, rows]);
   // Director's "work checked" badge
   const [verified, setVerified] = useState<Record<string, string | null>>({});
   useEffect(() => {
@@ -147,8 +157,16 @@ function Specialists({ status }: { status: SpecialistStatus }) {
               </ul>
             )}
             {s.reject_reason && status === "rejected" && <Notice tone="danger" className="mt-4">{s.reject_reason}</Notice>}
+            {status === "pending" && checks[s.id] && (
+              <div className="mt-4 rounded-[var(--radius-md)] bg-ink-3/60 p-3 text-sm">
+                <b>{t("checklist.admin", { p: percent(checks[s.id]!) })}</b>
+                <span className="ml-2 text-ink-1">{(Object.keys(checks[s.id]!) as (keyof Check)[]).filter((k) => !checks[s.id]![k]).map((k) => t(`checklist.items.${k}`)).join(" · ") || "✅"}</span>
+              </div>
+            )}
+            {incomplete === s.id && <Notice tone="warning" className="mt-4">{t("checklist.cannotApprove")}</Notice>}
             <div className="mt-5 flex flex-wrap items-end gap-3">
               {status !== "approved" && <Button size="sm" loading={busy === s.id} onClick={() => act(s.id, "approved")}>{t("admin.approve")}</Button>}
+              {status === "approved" && <InstaPost s={s} />}
               {status === "approved" && s.id in verified && (
                 <Button size="sm" variant={verified[s.id] ? "ghost" : "outline"} disabled={busy === s.id} onClick={() => toggleVerified(s.id)}>
                   {verified[s.id] ? t("verify.remove") : `✅ ${t("verify.give")}`}

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/lib/auth";
@@ -22,6 +22,17 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
   const { session, profile, blocked, refreshProfile } = useAuth();
   const [state, setState] = useState<"idle" | "sending" | "done" | "error" | "decision">("idle");
   const [errors, setErrors] = useState<{ message?: string; phone?: string; name?: string }>({});
+  // "Order" on one of the specialist's packages fills the message and the budget.
+  const [preset, setPreset] = useState<{ key: number; message: string; budget: number } | null>(null);
+  useEffect(() => {
+    const on = (e: Event) => {
+      const p = (e as CustomEvent).detail as { name: string; price_tjs: number; per: string; posts: number | null; stories: number | null; reels: number | null; sales_videos: number | null; days: number | null; extras: string };
+      const parts = [p.posts ? `${p.posts} ${t("packages.items.posts")}` : "", p.stories ? `${p.stories} ${t("packages.items.stories")}` : "", p.reels ? `${p.reels} ${t("packages.items.reels")}` : "", p.sales_videos ? `${p.sales_videos} ${t("packages.items.sales_videos")}` : "", p.days ? t("packages.daysN", { n: p.days }) : ""].filter(Boolean);
+      setPreset({ key: Date.now(), budget: p.price_tjs, message: t("packages.orderMessage", { name: p.name, price: p.price_tjs, per: t(`packages.per.${p.per}`), items: parts.join(", ") || p.extras }) });
+    };
+    window.addEventListener("smmtj-package", on);
+    return () => window.removeEventListener("smmtj-package", on);
+  }, [t]);
 
   if (blocked) return <BlockedNotice />;
   if (!session) {
@@ -85,7 +96,7 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
   if (state === "decision") return <DecisionGate><Notice>{t("trust.decisionDone")}</Notice></DecisionGate>;
 
   return (
-    <form onSubmit={submit} className="space-y-4" noValidate>
+    <form key={preset?.key ?? 0} onSubmit={submit} className="space-y-4" noValidate>
       <h3 className="text-h3 font-bold">{t("order.title", { name })}</h3>
       {services.length > 0 && (
         <Select label={t("order.service")} name="service" defaultValue="">
@@ -104,8 +115,9 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
       </fieldset>
       <Input label={t("brief.link")} name="brief_link" maxLength={200} />
       {needName && <Input label={t("order.name")} name="full_name" autoComplete="name" maxLength={100} error={errors.name} />}
-      <Textarea label={t("order.message")} name="message" maxLength={3000} error={errors.message} />
-      <Input label={t("order.budget")} name="budget" type="number" inputMode="numeric" min={0} />
+      {preset && <Notice tone="success">{t("packages.chosen")}</Notice>}
+      <Textarea label={t("order.message")} name="message" maxLength={3000} error={errors.message} defaultValue={preset?.message} />
+      <Input label={t("order.budget")} name="budget" type="number" inputMode="numeric" min={0} defaultValue={preset?.budget} />
       <Input label={t("order.phone")} name="phone" type="tel" inputMode="tel" defaultValue={myPhone} error={errors.phone} />
       {state === "error" && <Notice tone="danger">{t("common.error")}</Notice>}
       <Button type="submit" size="lg" className="w-full" loading={state === "sending"}>{t("order.submit")}</Button>
