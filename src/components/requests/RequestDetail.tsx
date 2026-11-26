@@ -38,14 +38,39 @@ function Package({ o }: { o: Pick<Offer, (typeof COUNTS)[number]> }) {
   return <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm">{parts.map((x) => <span key={x}>{x}</span>)}</p>;
 }
 
-/** The specialist's sample video: played right on the page when uploaded, otherwise a link to it. */
+/** Cover picture of an uploaded sample video: same name, kept as a JPEG in the public portfolio bucket. */
+const posterPath = (videoPath: string) => videoPath.replace(/^([^/]+)\/(.+)\.[a-z0-9]+$/i, "$1/offer-$2.jpg");
+
+/** Takes one frame (0.5 s in) of the chosen video as a JPEG; null if the browser cannot decode it. */
+function grabPoster(file: File): Promise<Blob | null> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const v = document.createElement("video");
+    const done = (b: Blob | null) => { URL.revokeObjectURL(url); resolve(b); };
+    const timer = setTimeout(() => done(null), 10000);
+    v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = url;
+    v.onloadeddata = () => { v.currentTime = Math.min(0.5, (v.duration || 1) / 2); };
+    v.onseeked = () => {
+      try {
+        const w = Math.min(720, v.videoWidth || 720), h = Math.round(w * ((v.videoHeight || 1280) / (v.videoWidth || 720)));
+        const c = document.createElement("canvas"); c.width = w; c.height = h;
+        c.getContext("2d")!.drawImage(v, 0, 0, w, h);
+        c.toBlob((b) => { clearTimeout(timer); done(b); }, "image/jpeg", 0.82);
+      } catch { clearTimeout(timer); done(null); }
+    };
+    v.onerror = () => { clearTimeout(timer); done(null); };
+  });
+}
+
+/** The specialist's sample video: played right on the page when uploaded (with its cover picture), otherwise a link. */
 function SampleVideo({ o }: { o: Pick<Offer, "video_path" | "video_url"> }) {
   const t = useTranslations("requests");
   const sb = getSupabase();
   if (o.video_path && sb) {
     const src = sb.storage.from("mp-offer-videos").getPublicUrl(o.video_path).data.publicUrl;
-    // "#t=0.3": browsers then show the first frame instead of a black box before play
-    return <video src={`${src}#t=0.3`} controls playsInline preload="metadata" className="mt-3 max-h-[420px] w-full rounded-[var(--radius-md)] bg-black" aria-label={t("sampleVideo")} />;
+    const poster = sb.storage.from("mp-portfolio").getPublicUrl(posterPath(o.video_path)).data.publicUrl;
+    // poster = cover picture; "#t=0.3" = fallback so browsers show a frame instead of a black box
+    return <video src={`${src}#t=0.3`} poster={poster} controls playsInline preload="metadata" className="mt-3 max-h-[420px] w-full rounded-[var(--radius-md)] bg-ink-3 object-contain" aria-label={t("sampleVideo")} />;
   }
   if (o.video_url) return <a href={o.video_url} target="_blank" rel="noopener noreferrer nofollow" className="mt-3 inline-flex items-center gap-2 rounded-full glass px-4 py-2 text-sm font-semibold text-purple">▶ {t("watchVideo")}</a>;
   return null;
@@ -179,6 +204,9 @@ function OfferForm({ r, onSent }: { r: Req; onSent: () => void }) {
       const up = await sb.storage.from("mp-offer-videos").upload(path, file, { contentType: file.type, upsert: false });
       if (up.error) { setBusy(false); setFail(t("requests.errors.upload")); return; }
       video_path = path;
+      // cover picture so the client sees the video's content before pressing play
+      const cover = await grabPoster(file);
+      if (cover) await sb.storage.from("mp-portfolio").upload(posterPath(path), cover, { contentType: "image/jpeg", upsert: false });
     }
     const { data, error } = await sb.from("mp_request_offers")
       .insert({ request_id: r.id, specialist_id: session.user.id, price_tjs: price, days, ...counts, video_path, video_url: video_path ? null : videoUrl, message: message.slice(0, 1000) }).select("id").single();
