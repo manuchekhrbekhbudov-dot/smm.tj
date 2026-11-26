@@ -35,7 +35,7 @@ export function Cabinet() {
   const initial = params.get("tab") as Tab | null;
   const [tab, setTab] = useState<Tab>(initial && tabs.includes(initial) ? initial : tabs[0]);
   // The director has no client/specialist cabinet: send them to the admin panel.
-  useEffect(() => { if (profile?.role === "admin") router.replace("/admin"); }, [profile?.role, router]);
+  useEffect(() => { if (profile?.role === "admin") router.replace("/panel"); }, [profile?.role, router]);
   useEffect(() => { if (!tabs.includes(tab)) setTab(tabs[0] === "incoming" ? "profile" : tabs[0]); }, [tabs, tab]);
   const [status, setStatus] = useState<{ s: SpecialistStatus | "none"; reason: string | null } | null>(null);
 
@@ -60,7 +60,7 @@ export function Cabinet() {
           <h1 className="mt-1 text-h1 font-bold">{t("cabinet.hello", { name: profile!.full_name })}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
-          {profile!.role === "admin" && <Link href="/admin" className="rounded-full glass px-5 py-2.5 text-sm font-semibold">{t("common.admin")}</Link>}
+          {profile!.role === "admin" && <Link href="/panel" className="rounded-full glass px-5 py-2.5 text-sm font-semibold">{t("common.admin")}</Link>}
           {profile!.role === "client" && <Button variant="outline" size="sm" onClick={becomeSpecialist}>{t("nav.join")}</Button>}
           <Button variant="ghost" size="sm" onClick={async () => { await signOut(); router.replace("/"); }}>{t("common.signOut")}</Button>
         </div>

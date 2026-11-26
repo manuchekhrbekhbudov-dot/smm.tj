@@ -4,6 +4,8 @@ Disallow: /tg/cabinet
 Disallow: /ru/cabinet
 Disallow: /tg/admin
 Disallow: /ru/admin
+Disallow: /tg/panel
+Disallow: /ru/panel
 Disallow: /tg/login
 Disallow: /ru/login
 Disallow: /tg/onboarding

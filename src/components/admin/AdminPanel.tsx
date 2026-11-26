@@ -76,7 +76,7 @@ export function AdminPanel() {
   );
 }
 
-function Specialists({ status }: { status: SpecialistStatus }) {
+export function Specialists({ status }: { status: SpecialistStatus }) {
   const t = useTranslations();
   const sb = getSupabase()!;
   const [rows, setRows] = useState<(Specialist & { specialist_services: { price_tjs: number; title: string }[] })[] | null>(null);
@@ -184,7 +184,7 @@ function Specialists({ status }: { status: SpecialistStatus }) {
   );
 }
 
-function Reviews() {
+export function Reviews() {
   const t = useTranslations();
   const locale = useLocale();
   const sb = getSupabase()!;

@@ -146,6 +146,7 @@ function NewRequest({ onDone }: { onDone: () => void }) {
       </Notice>
     );
   }
+  if (profile?.role === "admin") return <Notice>{t("order.director")}</Notice>;
   if (profile && profile.role !== "client") return <Notice>{t("requests.onlyClients")}</Notice>;
   const needName = !profile?.full_name;
 

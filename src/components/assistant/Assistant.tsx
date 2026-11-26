@@ -46,7 +46,7 @@ export function Assistant() {
   const pathname = usePathname();
   const onHome = pathname === "/";
   // The chat and admin pages have their own input at the bottom: keep the helper out of the way there.
-  const hidden = pathname.startsWith("/messages") || pathname.startsWith("/admin");
+  const hidden = pathname.startsWith("/messages") || pathname.startsWith("/admin") || pathname.startsWith("/panel");
   // Rendered into <body>: an animated (transformed) page wrapper would otherwise pin "fixed" elements to the page bottom.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);

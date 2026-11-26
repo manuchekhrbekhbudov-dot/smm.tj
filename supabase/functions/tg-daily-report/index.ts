@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
     "",
     `📅 <b>Моҳ (${m}.${y})</b>: даромад ${fmt(mIncome)} · хароҷот ${fmt(mExpenses)} · фоида <b>${sign(mIncome - mExpenses)} TJS</b>`,
     "",
-    `👉 ${SITE_URL}/tg/admin/?tab=finance`,
+    `👉 ${SITE_URL}/tg/panel/?s=finance`,
   ];
   const text = lines.join("\n");
   if (preview) return json({ ok: true, today, text });

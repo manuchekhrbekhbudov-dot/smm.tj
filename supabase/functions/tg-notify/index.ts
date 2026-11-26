@@ -87,8 +87,8 @@ async function trustEvent(specialistId: string) {
   const who = escapeHtml(p?.full_name || "—");
   for (const a of admins ?? []) {
     await send(a.id, state === "banned"
-      ? `⛔ ${who} худкор аз платформа хориҷ шуд (3 шикоят).\n${SITE_URL}/tg/admin/`
-      : `⚠️ ${who}: 2 шикоят / баҳои паст — огоҳӣ фиристода шуд.\n${SITE_URL}/tg/admin/`);
+      ? `⛔ ${who} худкор аз платформа хориҷ шуд (3 шикоят).\n${SITE_URL}/tg/panel/`
+      : `⚠️ ${who}: 2 шикоят / баҳои паст — огоҳӣ фиристода шуд.\n${SITE_URL}/tg/panel/`);
   }
   return json({ ok: true, sent: state });
 }

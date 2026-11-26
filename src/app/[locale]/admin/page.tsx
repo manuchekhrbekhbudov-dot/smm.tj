@@ -1,18 +1,12 @@
 import { setRequestLocale } from "next-intl/server";
-import { SiteShell } from "@/components/layout/SiteShell";
-import { RequireAuth } from "@/components/auth/RequireAuth";
-import { AdminPanel } from "@/components/admin/AdminPanel";
+import { ClientOnly } from "@/components/ui/ClientOnly";
+import { ToPanel } from "@/components/panel/ToPanel";
 
 export const metadata = { robots: { index: false } };
 
+/** Old address of the director's page: forwards to the separate panel (/panel), keeping ?tab=. */
 export default async function AdminPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return (
-    <SiteShell>
-      <section className="container-x min-h-[80dvh] pb-24 pt-32 md:pt-40">
-        <RequireAuth><AdminPanel /></RequireAuth>
-      </section>
-    </SiteShell>
-  );
+  return <ClientOnly><ToPanel /></ClientOnly>;
 }

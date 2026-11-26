@@ -41,7 +41,7 @@ export function Onboarding() {
     if (error) { setFail(true); return; }
     await refreshProfile();
     // The database decides the final role (the director always stays admin).
-    if (isAdmin || data?.role === "admin") router.replace("/admin");
+    if (isAdmin || data?.role === "admin") router.replace("/panel");
     else if (role === "specialist") router.replace({ pathname: "/cabinet", query: { tab: "profile" } });
     else router.replace(safeNext(params.get("next")) ?? "/specialists");
   };

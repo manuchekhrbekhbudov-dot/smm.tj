@@ -50,7 +50,7 @@ export function LoginForm() {
     } else if (next) {
       router.replace(next);
     } else {
-      router.replace(profile.role === "admin" ? "/admin" : profile.role === "specialist" ? "/cabinet" : "/specialists");
+      router.replace(profile.role === "admin" ? "/panel" : profile.role === "specialist" ? "/cabinet" : "/specialists");
     }
   }, [ready, session, profile, role, next, router, flow]);
 

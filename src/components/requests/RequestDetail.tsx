@@ -146,6 +146,7 @@ function OfferForm({ r, onSent }: { r: Req; onSent: () => void }) {
       </div>
     );
   }
+  if (profile?.role === "admin") return <Notice>{t("order.director")}</Notice>;
   if (profile?.role !== "specialist") return <Notice>{t("requests.onlySpecialistsOffer")}</Notice>;
 
   const submit = async (e: React.FormEvent) => {

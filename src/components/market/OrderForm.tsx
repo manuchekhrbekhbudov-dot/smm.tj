@@ -52,6 +52,7 @@ export function OrderForm({ specialistId, name, services }: { specialistId: stri
   }
   if (profile === undefined) return null;
   if (session.user.id === specialistId) return <Notice>{t("order.own")}</Notice>;
+  if (profile?.role === "admin") return <Notice>{t("order.director")}</Notice>;
   if (profile && profile.role !== "client") return <Notice>{t("order.onlyClients")}</Notice>;
   if (state === "done") return <Notice tone="success">{t("order.success")} <Link href="/cabinet" className="font-semibold underline">{t("common.cabinet")}</Link></Notice>;
 
