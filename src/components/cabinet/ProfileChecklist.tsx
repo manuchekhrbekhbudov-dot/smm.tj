@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { getSupabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/cn";
+import { notifyProfileReady } from "@/lib/telegram";
 
 export type Check = Record<"photo" | "name" | "headline" | "about" | "directions" | "prices" | "video", boolean>;
 const ORDER: (keyof Check)[] = ["photo", "name", "headline", "about", "directions", "prices", "video"];
@@ -18,7 +19,13 @@ export const percent = (c: Check) => Math.round((ORDER.filter((k) => c[k]).lengt
 export function ProfileChecklist({ userId, refreshKey, onGo }: { userId: string; refreshKey: unknown; onGo: (tab: string) => void }) {
   const t = useTranslations("checklist");
   const [c, setC] = useState<Check | null>(null);
-  useEffect(() => { void loadCheck(userId).then(setC); }, [userId, refreshKey]);
+  useEffect(() => {
+    void loadCheck(userId).then((x) => {
+      setC(x);
+      // complete → the director gets a Telegram note (only if the profile is waiting for approval; server-checked)
+      if (x && percent(x) === 100) void notifyProfileReady(userId);
+    });
+  }, [userId, refreshKey]);
   if (!c) return null;
   const p = percent(c);
   if (p === 100) return null;

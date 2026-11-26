@@ -8,7 +8,7 @@ import { admin, cors, escapeHtml, json, tg, SITE_URL, DIRECTOR_PHONE } from "../
 const statusText: Record<string, string> = {
   accepted: "✅ Мутахассис фармоиши шуморо қабул кард / Специалист принял ваш заказ",
   declined: "❌ Мутахассис фармоишро рад кард / Специалист отклонил заказ",
-  done: "🎉 Фармоиш анҷом ёфт! Акнун шарҳ навишта метавонед / Заказ выполнен! Оставьте отзыв",
+  done: "🎉 Фармоиш анҷом ёфт! Кор чӣ тавр буд? ⭐ Шарҳ нависед: барои шарҳи муфассал ва ростқавлона ширкат тӯҳфа медиҳад 🎁\nЗаказ выполнен! Оставьте отзыв: за подробный честный отзыв компания дарит подарок 🎁",
 };
 
 Deno.serve(async (req) => {
@@ -21,6 +21,7 @@ Deno.serve(async (req) => {
   if (auth.startsWith("Bearer ") && body.event === "password_changed") return passwordChanged(auth);
   if (auth.startsWith("Bearer ") && typeof body.approved_specialist === "string") return approvedEvent(body.approved_specialist);
   if (auth.startsWith("Bearer ") && typeof body.request_id === "string") return requestEvent(body.request_id);
+  if (auth.startsWith("Bearer ") && typeof body.profile_ready === "string") return profileReady(body.profile_ready);
   if (auth.startsWith("Bearer ") && typeof body.offer_id === "string") return offerEvent(body.offer_id);
   if (!auth.startsWith("Bearer ") || !order_id) return json({ error: "bad_request" }, 400);
 
@@ -228,4 +229,40 @@ async function offerEvent(offerId: string) {
     `\n\n👉 ${SITE_URL}/tg/request/?id=${o.request_id}`;
   await tg("sendMessage", { chat_id: link.chat_id, text, parse_mode: "HTML", disable_web_page_preview: true });
   return json({ ok: true, sent: true });
+}
+
+/**
+ * A specialist's profile became 100% complete and waits for approval → the director hears about it
+ * (and the specialist gets a "sent to the director" note). Facts come from mp_profile_check; once per day per profile.
+ */
+async function profileReady(specialistId: string) {
+  const db = admin();
+  const { data: s } = await db.from("mp_specialists").select("id, status, headline, specialties").eq("id", specialistId).maybeSingle();
+  if (!s || s.status !== "pending") return json({ ok: true, skipped: "not_pending" });
+  const { data: check } = await db.rpc("mp_profile_check", { sid: s.id });
+  if (!check || Object.values(check as Record<string, boolean>).some((v) => !v)) return json({ ok: true, skipped: "incomplete" });
+  const key = `ready:${s.id}:${new Date(Date.now() + 5 * 3600_000).toISOString().slice(0, 10)}`;
+  const { data: done } = await db.from("mp_ai_usage").select("id").eq("key", key).limit(1);
+  if (done?.length) return json({ ok: true, skipped: "already" });
+  await db.from("mp_ai_usage").insert({ key });
+  const { data: p } = await db.from("mp_profiles").select("full_name, city").eq("id", s.id).maybeSingle();
+  const who = escapeHtml(p?.full_name || "—");
+  const text = `🆕 <b>Профили нав барои тасдиқ</b>\n\n👤 ${who}\n${escapeHtml(String(s.headline || ""))}\n` +
+    `${(s.specialties as string[]).map((x) => SPEC_TG[x] ?? x).join(", ")}\n\nПрофил 100% пур аст ✅\n👉 ${SITE_URL}/tg/panel/?s=pending`;
+  // admins' Telegram, or the chat that asked the bot for the director's code
+  const { data: admins } = await db.from("mp_profiles").select("id").eq("role", "admin");
+  const ids = (admins ?? []).map((a) => a.id);
+  const { data: links } = ids.length ? await db.from("mp_tg_links").select("chat_id").in("user_id", ids) : { data: [] };
+  const chats = new Set<number>((links ?? []).map((l) => Number(l.chat_id)));
+  if (!chats.size) {
+    const { data: code } = await db.from("mp_tg_codes").select("chat_id").eq("phone", "992504440101").maybeSingle();
+    if (code?.chat_id) chats.add(Number(code.chat_id));
+  }
+  for (const chat_id of chats) await tg("sendMessage", { chat_id, text, parse_mode: "HTML", disable_web_page_preview: true }).catch(() => null);
+  const { data: own } = await db.from("mp_tg_links").select("chat_id").eq("user_id", s.id).maybeSingle();
+  if (own) {
+    await tg("sendMessage", { chat_id: own.chat_id, parse_mode: "HTML", disable_web_page_preview: true,
+      text: `✅ <b>Профили шумо 100% пур шуд</b> ва ба директор барои санҷиш фиристода шуд.\nОдатан дар давоми як рӯз ҷавоб меояд. Мо дар ҳамин ҷо хабар медиҳем.` }).catch(() => null);
+  }
+  return json({ ok: true, director: chats.size });
 }

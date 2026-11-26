@@ -122,3 +122,10 @@ export async function notifyRequest(payload: { request_id: string } | { offer_id
   if (!token) return;
   fetch(fn("tg-notify"), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) }).catch(() => {});
 }
+
+/** The profile reached 100%: tells the director it waits for approval (the server re-checks; once a day). */
+export async function notifyProfileReady(specialistId: string) {
+  const token = (await getSupabase()?.auth.getSession())?.data.session?.access_token;
+  if (!token) return;
+  fetch(fn("tg-notify"), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ profile_ready: specialistId }) }).catch(() => {});
+}

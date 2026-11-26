@@ -24,7 +24,7 @@ export function HomeRequests() {
       {d.list.length > 0 && <ul className="grid gap-4 md:grid-cols-3">{d.list.map((r) => <li key={r.id}><RequestCard r={r} /></li>)}</ul>}
       <div className="mt-8 flex flex-wrap gap-3">
         <Link href="/requests" className={buttonClasses("primary", "md")}>{d.count ? t("home.requests.all") : t("home.requests.post")}</Link>
-        <Link href={{ pathname: "/login", query: { role: "specialist" } }} className={buttonClasses("outline", "md")}>{t("home.requests.join")}</Link>
+        <Link href="/join" className={buttonClasses("outline", "md")}>{t("home.requests.join")}</Link>
       </div>
     </section>
   );

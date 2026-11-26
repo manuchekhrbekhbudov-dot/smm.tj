@@ -1,12 +1,14 @@
 // Daily Telegram messages, called once a day by GitHub Actions (.github/workflows/telegram-reminders.yml).
-//  * Gentle reminder, once per person, 3–10 days after sign-up if they have not started yet:
-//      client  → no order and no chat;   specialist → profile, price list or portfolio still empty.
+//  * Gentle reminder, once per person, if they have not started yet:
+//      client (3–10 days after sign-up) → no order and no chat;
+//      specialist (2–10 days) → profile not complete: the message lists exactly what is missing.
+//  * Review request: 3–10 days after an order was finished without a review, once per order.
 //  * Launch announcement on 1–3 December 2026, once per person.
 //  * Mondays: approved specialists hear how many people viewed their profile in the last 7 days (only if > 0),
 //    and the specialist of the week (real reviews only) gets a congratulation.
 // Safe to call any number of times: every message is sent at most once per person
 // (sent messages are logged in mp_ai_usage with keys "remind:<user>" / "launch2026:<user>").
-import { admin, json, tg, SITE_URL, DIRECTOR_PHONE } from "../_shared/tg.ts";
+import { admin, escapeHtml, json, tg, SITE_URL, DIRECTOR_PHONE } from "../_shared/tg.ts";
 
 const MAX_PER_RUN = 200;
 const LAUNCH_FROM = "2026-12-01", LAUNCH_TO = "2026-12-03";
@@ -16,10 +18,14 @@ const T = {
     `Салом! 👋\n\nШумо чанд рӯз пеш дар <b>SMM.TJ</b> сабти ном кардед — ташаккур! 💜\n\n` +
     `Мутахассиси SMM ёфтан осон аст:\n🔎 самтро интихоб кунед\n📸 портфолио ва нархҳоро бинед\n💬 дар чат савол диҳед — ройгон\n\n` +
     `👉 ${SITE_URL}/tg/specialists/`,
-  specialist:
-    `Салом! 👋\n\nПрофили шумо дар <b>SMM.TJ</b> ҳанӯз пурра нест — мизоҷон онро намебинанд.\n\n` +
-    `5 дақиқа вақт ҷудо кунед:\n✅ сурат ва тавсиф\n✅ нархнома\n✅ 3–9 намунаи кор дар портфолио\n\n` +
-    `Баъд директор профилро месанҷад ва шумо дар каталог пайдо мешавед 🚀\n🎁 3 шарҳи хуб дар моҳи аввал — 1 ҳафта «Топ» ройгон.\n\n` +
+  specialist: (missing: string[]) =>
+    `Салом! 👋\n\nПрофили шумо дар <b>SMM.TJ</b> ҳанӯз пурра нест, бинобар ин мизоҷон онро намебинанд.\n\n` +
+    `<b>Намерасад:</b>\n${missing.map((m) => `⬜ ${m}`).join("\n")}\n\n` +
+    `5 дақиқа вақт ҷудо кунед. Баъд директор профилро месанҷад ва шумо дар каталог пайдо мешавед 🚀\n🎁 3 шарҳи хуб дар моҳи аввал: 1 ҳафта «Топ» ройгон.\n\n` +
+    `👉 ${SITE_URL}/tg/cabinet/`,
+  review: (name: string) =>
+    `Салом! 👋\n\nФармоиши шумо бо <b>${name}</b> анҷом ёфт. Кор чӣ тавр буд?\n\n` +
+    `⭐ Шарҳи кӯтоҳ нависед: ба мизоҷони дигар дар интихоб кумак мекунад. Барои шарҳи муфассал ва ростқавлона ширкат тӯҳфа медиҳад 🎁\n\n` +
     `👉 ${SITE_URL}/tg/cabinet/`,
   launch:
     `🚀 <b>SMM.TJ оғоз шуд!</b>\n\nИмрӯз бозори мутахассисони SMM дар Тоҷикистон ба кор даромад. Раҳмат, ки аз рӯзҳои аввал бо мо ҳастед! 💜\n\n` +
@@ -35,7 +41,7 @@ Deno.serve(async () => {
   const ids = links.map((l) => l.user_id);
   const { data: profs } = await db.from("mp_profiles").select("id, role, created_at, blocked_at").in("id", ids);
   const people = (profs ?? []).filter((p) => p.role !== "admin" && !p.blocked_at);
-  const { data: logs } = await db.from("mp_ai_usage").select("key").or(`key.like.remind:%,key.like.launch2026:%,key.like.views:%:${today},key.like.sotw:%:${today}`).limit(10000);
+  const { data: logs } = await db.from("mp_ai_usage").select("key").or(`key.like.remind:%,key.like.launch2026:%,key.like.views:%:${today},key.like.sotw:%:${today},key.like.review:%`).limit(10000);
   const done = new Set((logs ?? []).map((l) => l.key));
   const chatOf = new Map(links.map((l) => [l.user_id, l.chat_id]));
   const out = { launch: 0, client: 0, specialist: 0, failed: 0 };
@@ -60,17 +66,15 @@ Deno.serve(async () => {
   const now = Date.now();
   const due = people.filter((p) => {
     const age = (now - new Date(p.created_at).getTime()) / 86400000;
-    return age >= 3 && age <= 10 && !done.has(`remind:${p.id}`);
+    return age >= (p.role === "specialist" ? 2 : 3) && age <= 10 && !done.has(`remind:${p.id}`);
   });
   for (const p of due) {
     if (p.role === "specialist") {
-      const [{ data: s }, { count: services }, { count: works }] = await Promise.all([
-        db.from("mp_specialists").select("headline, bio").eq("id", p.id).maybeSingle(),
-        db.from("mp_specialist_services").select("id", { count: "exact", head: true }).eq("specialist_id", p.id),
-        db.from("mp_portfolio_items").select("id", { count: "exact", head: true }).eq("specialist_id", p.id),
-      ]);
-      const incomplete = !s || !s.headline || !s.bio || !services || !works;
-      if (incomplete && await send(p.id, `remind:${p.id}`, T.specialist)) out.specialist++;
+      const { data: check } = await db.rpc("mp_profile_check", { sid: p.id });
+      const c = (check ?? {}) as Record<string, boolean>;
+      const LABEL: Record<string, string> = { photo: "Сурати профил", name: "Ном", headline: "Сарлавҳа (кӣ ҳастед)", about: "«Дар бораи худ»", directions: "Самтҳо", prices: "Нархнома ё баста", video: "Ақаллан 1 видеои кор" };
+      const missing = Object.keys(LABEL).filter((k) => c[k] === false).map((k) => LABEL[k]);
+      if (missing.length && await send(p.id, `remind:${p.id}`, T.specialist(missing))) out.specialist++;
     } else {
       const [{ count: orders }, { count: chats }] = await Promise.all([
         db.from("mp_orders").select("id", { count: "exact", head: true }).eq("client_id", p.id),
@@ -79,6 +83,18 @@ Deno.serve(async () => {
       if (!orders && !chats && await send(p.id, `remind:${p.id}`, T.client)) out.client++;
     }
   }
+  // 2b) Ask for a review 3–10 days after an order was finished without one (once per order)
+  let reviews = 0;
+  const from = new Date(now - 10 * 86400000).toISOString(), to = new Date(now - 3 * 86400000).toISOString();
+  const { data: doneOrders } = await db.from("mp_orders").select("id, client_id, specialist_id").eq("status", "done").gte("updated_at", from).lte("updated_at", to).limit(300);
+  for (const o of doneOrders ?? []) {
+    if (done.has(`review:${o.id}`) || !chatOf.has(o.client_id)) continue;
+    const { count } = await db.from("mp_reviews").select("id", { count: "exact", head: true }).eq("order_id", o.id);
+    if (count) continue;
+    const { data: sp } = await db.from("mp_profiles").select("full_name").eq("id", o.specialist_id).maybeSingle();
+    if (await send(o.client_id, `review:${o.id}`, T.review(escapeHtml(sp?.full_name || "мутахассис")))) reviews++;
+  }
+
   // 3) Monday: weekly profile views for approved specialists
   let views = 0;
   if (new Date(`${today}T12:00:00+05:00`).getUTCDay() === 1) {
@@ -106,5 +122,5 @@ Deno.serve(async () => {
       if (await send(best as string, `sotw:${best}:${today}`, text)) sotw++;
     }
   }
-  return json({ ok: true, today, ...out, views, sotw });
+  return json({ ok: true, today, ...out, reviews, views, sotw });
 });
