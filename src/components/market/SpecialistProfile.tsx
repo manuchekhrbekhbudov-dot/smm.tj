@@ -85,7 +85,7 @@ export function SpecialistProfile() {
   }
 
   return (
-    <div className="grid items-start gap-8 lg:grid-cols-[1.6fr_1fr]">
+    <div className="grid items-start gap-8 lg:grid-cols-[1.6fr_1fr] [&>*]:min-w-0">
       <div className="space-y-8">
         <Reveal>
           <Card className="flex flex-col gap-6 sm:flex-row sm:items-center">

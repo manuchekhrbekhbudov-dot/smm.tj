@@ -144,6 +144,8 @@
   ::selection { background: var(--color-purple); color: #fff; }
   :focus-visible { outline: 2px solid var(--color-purple); outline-offset: 3px; border-radius: 10px; }
   h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.03em; font-weight: 700; }
+  /* User text (names, bios, reviews) may contain very long words or links: wrap them instead of widening the page. */
+  p, h1, h2, h3, h4, li, td, dd, blockquote, label { overflow-wrap: anywhere; }
 
   html.lenis, html.lenis body { height: auto; }
   .lenis.lenis-smooth { scroll-behavior: auto !important; }
